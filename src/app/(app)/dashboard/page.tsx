@@ -24,25 +24,14 @@ import { Expense } from '@/types';
 import AIInsightsWidget from '@/components/AIInsightsWidget';
 import PredictiveSpendingWidget from '@/components/PredictiveSpendingWidget';
 
-// Dummy data for demo (będzie zastąpione danymi z Firestore)
-const demoStats = {
-    monthlyExpenses: 234500, // 2345.00 PLN
-    monthlySaved: 45000,     // 450.00 PLN
-    streak: 7,
-    expenseChange: -12.5,    // % vs poprzedni miesiąc
-    savedChange: 23.4,
+// Empty state defaults for new users
+const emptyStats = {
+    monthlyExpenses: 0,
+    monthlySaved: 0,
+    streak: 0,
+    expenseChange: 0,
+    savedChange: 0,
 };
-
-const demoGoals = [
-    { id: '1', name: 'Wakacje', emoji: '✈️', current: 150000, target: 500000, deadline: '2024-08' },
-    { id: '2', name: 'iPhone', emoji: '📱', current: 250000, target: 499900, deadline: '2024-06' },
-];
-
-const demoRecentExpenses = [
-    { id: '1', merchant: 'Biedronka', amount: 8750, category: 'groceries', date: new Date() },
-    { id: '2', merchant: 'Orlen', amount: 25000, category: 'transport', date: new Date(Date.now() - 86400000) },
-    { id: '3', merchant: 'Netflix', amount: 4300, category: 'subscriptions', date: new Date(Date.now() - 172800000) },
-];
 
 interface StatCardProps {
     title: string;
@@ -94,6 +83,7 @@ function StatCard({ title, value, change, icon, color }: StatCardProps) {
 export default function DashboardPage() {
     const { userData } = useAuth();
     const [expenses, setExpenses] = useState<Expense[]>([]);
+    const [goals, setGoals] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
 
     // Get greeting based on time
@@ -126,12 +116,30 @@ export default function DashboardPage() {
         return () => unsubscribe();
     }, [userData?.id]);
 
-    // Use demo data if no real expenses
-    const displayExpenses = expenses.length > 0 ? expenses : demoRecentExpenses;
+    // Listen for goals
+    useEffect(() => {
+        if (!userData?.id) return;
+
+        const goalsRef = collection(db, 'users', userData.id, 'goals');
+        const q = query(goalsRef, orderBy('createdAt', 'desc'), limit(3));
+
+        const unsubscribe = onSnapshot(q, (snapshot) => {
+            const data = snapshot.docs.map(doc => ({
+                id: doc.id,
+                ...doc.data()
+            }));
+            setGoals(data);
+        });
+
+        return () => unsubscribe();
+    }, [userData?.id]);
+
+    // Use real data only - no fallback to demo
+    const displayExpenses = expenses;
     const userStats = userData?.stats;
-    const monthlyExpenses = userStats?.totalExpenses ?? demoStats.monthlyExpenses;
-    const monthlySaved = userStats?.totalSaved ?? demoStats.monthlySaved;
-    const currentStreak = userStats?.currentStreak ?? demoStats.streak;
+    const monthlyExpenses = userStats?.totalExpenses ?? 0;
+    const monthlySaved = userStats?.totalSaved ?? 0;
+    const currentStreak = userStats?.currentStreak ?? 0;
 
     return (
         <div className="max-w-7xl mx-auto">
@@ -164,14 +172,12 @@ export default function DashboardPage() {
                 <StatCard
                     title="Wydatki w tym miesiącu"
                     value={formatMoney(monthlyExpenses)}
-                    change={demoStats.expenseChange}
                     icon={<Receipt className="w-5 h-5" />}
                     color="rose"
                 />
                 <StatCard
                     title="Zaoszczędzone"
                     value={formatMoney(monthlySaved)}
-                    change={demoStats.savedChange}
                     icon={<PiggyBank className="w-5 h-5" />}
                     color="emerald"
                 />
@@ -183,7 +189,7 @@ export default function DashboardPage() {
                 />
                 <StatCard
                     title="Cele w trakcie"
-                    value={`${demoGoals.length} aktywne`}
+                    value={`${goals.length} aktywne`}
                     icon={<Target className="w-5 h-5" />}
                     color="blue"
                 />
@@ -214,7 +220,7 @@ export default function DashboardPage() {
                         </CardHeader>
                         <CardContent>
                             <div className="space-y-4">
-                                {demoGoals.map((goal, i) => {
+                                {goals.map((goal: any, i: number) => {
                                     const progress = (goal.current / goal.target) * 100;
                                     return (
                                         <motion.div
@@ -250,7 +256,7 @@ export default function DashboardPage() {
                                     );
                                 })}
 
-                                {demoGoals.length === 0 && (
+                                {goals.length === 0 && (
                                     <div className="text-center py-8">
                                         <Target className="w-12 h-12 text-slate-600 mx-auto mb-3" />
                                         <p className="text-slate-400">Brak aktywnych celów</p>
