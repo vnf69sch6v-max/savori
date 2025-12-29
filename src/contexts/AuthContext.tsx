@@ -46,6 +46,7 @@ const DEFAULT_STATS: UserStats = {
     totalExpenses: 0,
     goalsCompleted: 0,
     currentStreak: 0,
+    longestStreak: 0,
 };
 
 const DEFAULT_SUBSCRIPTION: Subscription = {

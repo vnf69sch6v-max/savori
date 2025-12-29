@@ -23,6 +23,8 @@ import { db } from '@/lib/firebase';
 import { Expense } from '@/types';
 import AIInsightsWidget from '@/components/AIInsightsWidget';
 import PredictiveSpendingWidget from '@/components/PredictiveSpendingWidget';
+import StreakWidget from '@/components/engagement/StreakWidget';
+import XPProgress from '@/components/engagement/XPProgress';
 import EmptyDashboard from '@/components/EmptyDashboard';
 
 // Minimum thresholds for showing advanced features
@@ -213,18 +215,20 @@ export default function DashboardPage() {
                     icon={<PiggyBank className="w-5 h-5" />}
                     color="emerald"
                 />
-                <StatCard
-                    title="Aktywny streak"
-                    value={`${currentStreak} dni 🔥`}
-                    icon={<Flame className="w-5 h-5" />}
-                    color="amber"
-                />
-                <StatCard
-                    title="Cele w trakcie"
-                    value={`${goals.length} aktywne`}
-                    icon={<Target className="w-5 h-5" />}
-                    color="blue"
-                />
+
+                {/* Engagement Widgets */}
+                <div className="md:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <StreakWidget
+                        currentStreak={currentStreak}
+                        longestStreak={userData?.stats?.longestStreak || currentStreak}
+                        compact
+                    />
+                    <XPProgress
+                        xp={userData?.gamification?.xp || 0}
+                        level={userData?.gamification?.level || 1}
+                        compact
+                    />
+                </div>
             </div>
 
             <div className="grid lg:grid-cols-3 gap-6">

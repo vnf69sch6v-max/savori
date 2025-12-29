@@ -1,6 +1,18 @@
 import { Timestamp } from 'firebase/firestore';
 
 // ============ USER ============
+export interface UserGamification {
+    xp: number;
+    level: number;
+    points: number;
+    currentStreak: number;
+    longestStreak: number;
+    badges: string[];
+    achievementsUnlocked: string[];
+    totalScans: number;
+    totalExpenses: number;
+}
+
 export interface User {
     id: string;
     email: string;
@@ -10,6 +22,7 @@ export interface User {
     subscription: Subscription;
     settings: UserSettings;
     stats: UserStats;
+    gamification?: UserGamification;
     onboardingComplete?: boolean;
 }
 
@@ -35,6 +48,7 @@ export interface UserStats {
     totalExpenses: number;    // w groszach
     goalsCompleted: number;
     currentStreak: number;    // dni z rzędu
+    longestStreak: number;
 }
 
 // ============ EXPENSES ============

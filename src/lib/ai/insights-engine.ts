@@ -522,6 +522,75 @@ export class InsightsEngine {
             total: sorted[0][1],
         };
     }
+    /**
+     * Analyze expenses for dashboard display
+     */
+    analyzeDashboard(
+        expenses: Expense[],
+        budgets: Array<{ category: ExpenseCategory; limit: number; spent: number }>
+    ): AIInsight[] {
+        const insights: Partial<AIInsight>[] = [];
+        const now = new Date();
+
+        if (expenses.length === 0) return [];
+
+        // Sort expenses desc
+        const sorted = [...expenses].sort((a, b) => {
+            const dateA = a.date?.toDate ? a.date.toDate() : new Date(a.date as unknown as string);
+            const dateB = b.date?.toDate ? b.date.toDate() : new Date(b.date as unknown as string);
+            return dateB.getTime() - dateA.getTime();
+        });
+
+        const recentExpenses = sorted.slice(0, 50);
+        const lastExpense = sorted[0];
+
+        // 1. Check budget health (global)
+        budgets.forEach(budget => {
+            if (budget.spent > budget.limit * 0.8) {
+                const percent = Math.round((budget.spent / budget.limit) * 100);
+                insights.push({
+                    type: 'budget_warning',
+                    priority: percent > 100 ? 'critical' : 'high',
+                    emoji: percent > 100 ? '🔴' : '⚠️',
+                    title: percent > 100 ? 'Budżet przekroczony' : 'Budżet zagrożony',
+                    message: `Kategoria ${this.getCategoryLabel(budget.category)}: ${percent}% limitu`,
+                    userId: expenses[0].userId,
+                });
+            }
+        });
+
+        // 2. Weekly Summary (if enabled/needed)
+        const weeklyInsight = this.generateWeeklySummary(
+            expenses[0].userId,
+            recentExpenses.filter(e => {
+                const d = e.date?.toDate ? e.date.toDate() : new Date(e.date as unknown as string);
+                return d > new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+            }),
+            0 // Simplified for now
+        );
+        if (weeklyInsight) insights.push(weeklyInsight);
+
+        // 3. Tip based on most frequent category
+        if (Math.random() > 0.5) { // 50% chance
+            const tip = this.generateSavingsTip(lastExpense, recentExpenses);
+            if (tip) insights.push(tip);
+        }
+
+        // Complete insights
+        return insights.map(insight => ({
+            id: `dash_insight_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+            userId: insight.userId || 'unknown',
+            type: insight.type || 'tip',
+            priority: insight.priority || 'low',
+            title: insight.title || '',
+            message: insight.message || '',
+            emoji: insight.emoji || '💡',
+            confidence: insight.confidence || 0.8,
+            status: 'new' as const,
+            createdAt: now,
+            ...insight,
+        } as AIInsight));
+    }
 }
 
 // Singleton export
