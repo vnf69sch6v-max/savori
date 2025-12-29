@@ -23,6 +23,11 @@ import { db } from '@/lib/firebase';
 import { Expense } from '@/types';
 import AIInsightsWidget from '@/components/AIInsightsWidget';
 import PredictiveSpendingWidget from '@/components/PredictiveSpendingWidget';
+import EmptyDashboard from '@/components/EmptyDashboard';
+
+// Minimum thresholds for showing advanced features
+const MIN_EXPENSES_FOR_AI = 5;
+const MIN_EXPENSES_FOR_PREDICTIONS = 3;
 
 // Empty state defaults for new users
 const emptyStats = {
@@ -141,6 +146,20 @@ export default function DashboardPage() {
     const monthlySaved = userStats?.totalSaved ?? 0;
     const currentStreak = userStats?.currentStreak ?? 0;
 
+    // Check if user has enough data
+    const isEmpty = expenses.length === 0;
+    const showAI = expenses.length >= MIN_EXPENSES_FOR_AI;
+    const showPredictions = expenses.length >= MIN_EXPENSES_FOR_PREDICTIONS;
+
+    // EMPTY STATE: Show guided onboarding dashboard
+    if (isEmpty && !loading) {
+        return (
+            <EmptyDashboard
+                userName={userData?.displayName?.split(' ')[0] || 'tam'}
+            />
+        );
+    }
+
     return (
         <div className="max-w-7xl mx-auto">
             {/* Header */}
@@ -196,14 +215,62 @@ export default function DashboardPage() {
             </div>
 
             <div className="grid lg:grid-cols-3 gap-6">
-                {/* Predictive Spending Widget */}
+                {/* Predictive Spending Widget - show only if enough data */}
                 <div className="lg:col-span-2">
-                    <PredictiveSpendingWidget />
+                    {showPredictions ? (
+                        <PredictiveSpendingWidget />
+                    ) : (
+                        <Card className="p-6">
+                            <div className="flex items-center gap-3 mb-4">
+                                <div className="w-10 h-10 rounded-xl bg-blue-500/20 flex items-center justify-center">
+                                    <TrendingUp className="w-5 h-5 text-blue-400" />
+                                </div>
+                                <div>
+                                    <h3 className="font-semibold">Prognoza wydatków</h3>
+                                    <p className="text-sm text-slate-400">Wymaga min. {MIN_EXPENSES_FOR_PREDICTIONS} wydatków</p>
+                                </div>
+                            </div>
+                            <div className="text-center py-8">
+                                <p className="text-slate-500 mb-4">Dodaj jeszcze {MIN_EXPENSES_FOR_PREDICTIONS - expenses.length} wydatek(ów) aby odblokować prognozy AI</p>
+                                <Link href="/scan">
+                                    <Button size="sm">
+                                        <Camera className="w-4 h-4 mr-2" />
+                                        Zeskanuj paragon
+                                    </Button>
+                                </Link>
+                            </div>
+                        </Card>
+                    )}
                 </div>
 
-                {/* AI Insights Widget */}
+                {/* AI Insights Widget - show only if enough data */}
                 <div>
-                    <AIInsightsWidget />
+                    {showAI ? (
+                        <AIInsightsWidget />
+                    ) : (
+                        <Card className="p-6">
+                            <div className="flex items-center gap-3 mb-4">
+                                <div className="w-10 h-10 rounded-xl bg-purple-500/20 flex items-center justify-center">
+                                    <Sparkles className="w-5 h-5 text-purple-400" />
+                                </div>
+                                <div>
+                                    <h3 className="font-semibold">AI Insights</h3>
+                                    <p className="text-sm text-slate-400">Wymaga min. {MIN_EXPENSES_FOR_AI} wydatków</p>
+                                </div>
+                            </div>
+                            <div className="text-center py-4">
+                                <p className="text-slate-500 text-sm">
+                                    {expenses.length}/{MIN_EXPENSES_FOR_AI} wydatków
+                                </p>
+                                <div className="h-2 bg-slate-700 rounded-full overflow-hidden mt-2">
+                                    <div
+                                        className="h-full bg-purple-500 rounded-full transition-all"
+                                        style={{ width: `${Math.min(100, (expenses.length / MIN_EXPENSES_FOR_AI) * 100)}%` }}
+                                    />
+                                </div>
+                            </div>
+                        </Card>
+                    )}
                 </div>
 
                 {/* Goals Progress */}
