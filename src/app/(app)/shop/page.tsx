@@ -27,7 +27,7 @@ import { db } from '@/lib/firebase';
 
 export default function ShopPage() {
     const { userData } = useAuth();
-    const [userPoints, setUserPoints] = useState(0);
+    const userPoints = userData?.gamification?.points || 0;
     const [ownedItems, setOwnedItems] = useState<string[]>([]);
     const [loading, setLoading] = useState(true);
     const [selectedCategory, setSelectedCategory] = useState<string>('all');
@@ -39,13 +39,8 @@ export default function ShopPage() {
 
         const fetchData = async () => {
             try {
-                // Get gamification data
-                const gamifRef = doc(db, 'users', userData.id, 'gamification', 'progress');
-                const gamifSnap = await getDoc(gamifRef);
-
-                if (gamifSnap.exists()) {
-                    setUserPoints(gamifSnap.data().points || 0);
-                }
+                // Points are now available in userData directly
+                // No need to fetch separate gamification doc
 
                 // Get kitchen data
                 const kitchenRef = doc(db, 'users', userData.id, 'kitchen', 'items');
@@ -80,9 +75,9 @@ export default function ShopPage() {
 
         try {
             // Deduct points
-            const gamifRef = doc(db, 'users', userData.id, 'gamification', 'progress');
-            await updateDoc(gamifRef, {
-                points: increment(-item.price),
+            const userRef = doc(db, 'users', userData.id);
+            await updateDoc(userRef, {
+                'gamification.points': increment(-item.price),
             });
 
             // Add item to kitchen
@@ -99,8 +94,8 @@ export default function ShopPage() {
                 });
             }
 
-            // Update local state
-            setUserPoints(prev => prev - item.price);
+            // Update local state is handled by real-time listener in AuthContext
+            // setUserPoints(prev => prev - item.price);
             setOwnedItems(prev => [...prev, item.id]);
 
             toast.success(
@@ -185,8 +180,8 @@ export default function ShopPage() {
                         key={cat}
                         onClick={() => setSelectedCategory(cat)}
                         className={`px-4 py-2 rounded-xl text-sm font-medium whitespace-nowrap transition-all ${selectedCategory === cat
-                                ? 'bg-emerald-500 text-white'
-                                : 'bg-slate-800 text-slate-400 hover:bg-slate-700'
+                            ? 'bg-emerald-500 text-white'
+                            : 'bg-slate-800 text-slate-400 hover:bg-slate-700'
                             }`}
                     >
                         {cat === 'all' ? '🏠 Wszystko' : `${getCategoryEmoji(cat as KitchenItem['category'])} ${getCategoryLabel(cat as KitchenItem['category'])}`}
@@ -209,10 +204,10 @@ export default function ShopPage() {
                         >
                             <Card
                                 className={`relative overflow-hidden transition-all ${owned
-                                        ? 'border-emerald-500/30 bg-emerald-500/5'
-                                        : canAfford
-                                            ? 'hover:border-slate-600'
-                                            : 'opacity-60'
+                                    ? 'border-emerald-500/30 bg-emerald-500/5'
+                                    : canAfford
+                                        ? 'hover:border-slate-600'
+                                        : 'opacity-60'
                                     }`}
                             >
                                 {/* Rarity Badge */}

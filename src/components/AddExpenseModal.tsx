@@ -12,7 +12,7 @@ import { db } from '@/lib/firebase';
 import { ExpenseCategory, Budget } from '@/types';
 import { toast } from 'react-hot-toast';
 import { format, startOfMonth } from 'date-fns';
-import { awardPoints, incrementStat, POINTS_CONFIG, getStreakMultiplier, UserProgress } from '@/lib/gamification';
+import { engagementService, XP_ACTIONS, UserEngagement } from '@/lib/engagement/xp-system';
 import ExpenseAnalysisCard from './ExpenseAnalysisCard';
 
 interface AddExpenseModalProps {
@@ -55,8 +55,7 @@ export default function AddExpenseModal({ isOpen, onClose, onSuccess }: AddExpen
         aiComment: string;
         budgetRemaining?: number;
         streak?: number;
-        points?: number;
-        multiplier?: number;
+        xp?: number;
     } | null>(null);
     const [savedExpense, setSavedExpense] = useState<{ merchant: string; amount: number; category: string } | null>(null);
 
@@ -108,14 +107,11 @@ export default function AddExpenseModal({ isOpen, onClose, onSuccess }: AddExpen
             // Log security event
             await logSecurityEvent(userData.id, SecurityEvents.expenseAdded(merchant, amountInCents));
 
-            // Award points and update stats
-            await incrementStat(userData.id, 'totalScans', 1);
-            const { points, newAchievements } = await awardPoints(userData.id, POINTS_CONFIG.MANUAL_EXPENSE, 'manual_expense');
+            // Award XP and update stats
+            const { xp, newBadges } = await engagementService.awardXP(userData.id, 'add_expense_manual');
 
-            // Get current progress for streak
-            const progressRef = doc(db, 'users', userData.id, 'gamification', 'progress');
-            const progressSnap = await getDoc(progressRef);
-            const progress = progressSnap.exists() ? progressSnap.data() as UserProgress : null;
+            // Get updated engagement data
+            const engagement = await engagementService.getEngagement(userData.id);
 
             // Get budget for remaining
             const monthKey = format(new Date(), 'yyyy-MM');
@@ -141,15 +137,15 @@ export default function AddExpenseModal({ isOpen, onClose, onSuccess }: AddExpen
             setAnalysisData({
                 aiComment: `Wydatek ${merchant} zapisany. ${budget ? `Pozostało ${((budget.totalLimit - monthlySpent) / 100).toFixed(2)} zł w budżecie.` : 'Ustaw budżet, aby śledzić wydatki!'}`,
                 budgetRemaining: budget ? budget.totalLimit - monthlySpent : undefined,
-                streak: progress?.streak || 1,
-                points: points,
-                multiplier: getStreakMultiplier(progress?.streak || 1),
+                streak: engagement.currentStreak,
+                xp: xp,
             });
             setShowAnalysis(true);
 
             // Show achievement toasts
-            newAchievements.forEach(achievement => {
-                toast.success(`🏆 Nowe osiągnięcie: ${achievement.name}!`, { duration: 5000 });
+            // Show badge toasts
+            newBadges.forEach(badge => {
+                toast.success(`🏆 Nowa odznaka: ${badge.name}!`, { duration: 5000 });
             });
 
             // Reset form

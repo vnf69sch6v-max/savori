@@ -26,7 +26,7 @@ export interface DashboardData {
     gamification: {
         level: number;
         points: number;
-        achievements: string[];
+        badges: string[];
     };
 }
 
@@ -77,7 +77,7 @@ class DataAggregator {
             gamification: {
                 level: gamification.level || 1,
                 points: gamification.points || 0,
-                achievements: gamification.unlockedAchievements || [],
+                badges: gamification.badges || [],
             },
         };
 
@@ -184,22 +184,24 @@ class DataAggregator {
         points: number;
         streak: number;
         longestStreak: number;
-        unlockedAchievements: string[];
+        badges: string[];
     }> {
-        const ref = doc(db, 'users', userId, 'gamification', 'progress');
+        const ref = doc(db, 'users', userId);
         const snap = await getDoc(ref);
 
         if (!snap.exists()) {
-            return { level: 1, points: 0, streak: 0, longestStreak: 0, unlockedAchievements: [] };
+            return { level: 1, points: 0, streak: 0, longestStreak: 0, badges: [] };
         }
 
         const data = snap.data();
+        const gamification = data.gamification || {};
+
         return {
-            level: data.level || 1,
-            points: data.points || 0,
-            streak: data.streak || 0,
-            longestStreak: data.longestStreak || 0,
-            unlockedAchievements: data.unlockedAchievements || [],
+            level: gamification.level || 1,
+            points: gamification.points || 0,
+            streak: gamification.currentStreak || 0,
+            longestStreak: gamification.longestStreak || 0,
+            badges: gamification.badges || [],
         };
     }
 

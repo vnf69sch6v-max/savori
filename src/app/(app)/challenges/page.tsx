@@ -27,7 +27,7 @@ import { collection, query, where, getDocs, addDoc, updateDoc, doc, Timestamp } 
 import { db } from '@/lib/firebase';
 import { toast } from 'react-hot-toast';
 import { addDays, differenceInDays, format } from 'date-fns';
-import { awardPoints } from '@/lib/gamification';
+import { engagementService } from '@/lib/engagement/xp-system';
 
 export default function ChallengesPage() {
     const { userData } = useAuth();
@@ -107,7 +107,7 @@ export default function ChallengesPage() {
             });
 
             // Award points
-            await awardPoints(userData.id, challenge.reward.points, `challenge_${challenge.id}`);
+            await engagementService.awardCustomXP(userData.id, challenge.reward.points, `Ukończono wyzwanie: ${challenge.name}`);
 
             setActiveChallenges(activeChallenges.filter(c => c.id !== userChallenge.id));
             setCompletedChallenges([
@@ -220,8 +220,8 @@ export default function ChallengesPage() {
                         key={diff}
                         onClick={() => setFilter(diff)}
                         className={`px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-colors ${filter === diff
-                                ? 'bg-amber-500 text-white'
-                                : 'bg-slate-800 text-slate-400 hover:bg-slate-700'
+                            ? 'bg-amber-500 text-white'
+                            : 'bg-slate-800 text-slate-400 hover:bg-slate-700'
                             }`}
                     >
                         {diff === 'all' ? 'Wszystkie' : getDifficultyLabel(diff)}

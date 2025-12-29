@@ -137,6 +137,7 @@ export class EngagementService {
         // Update in Firestore
         await updateDoc(doc(db, 'users', userId), {
             'gamification.xp': increment(action.xp),
+            'gamification.points': increment(action.xp),
             'gamification.level': newLevel.level,
         });
 
@@ -145,6 +146,38 @@ export class EngagementService {
 
         return {
             xp: action.xp,
+            levelUp,
+            newLevel: levelUp ? newLevel : undefined,
+            newBadges,
+        };
+    }
+
+    /**
+     * Award custom amount of XP (e.g. for challenges with variable rewards)
+     */
+    async awardCustomXP(userId: string, amount: number, reason: string): Promise<{ xp: number; levelUp: boolean; newLevel?: LevelInfo; newBadges: Badge[] }> {
+        // Get current engagement
+        const engagement = await this.getEngagement(userId);
+
+        // Calculate new XP
+        const newXP = engagement.xp + amount;
+        const currentLevel = this.getLevelForXP(engagement.xp);
+        const newLevel = this.getLevelForXP(newXP);
+        const levelUp = newLevel.level > currentLevel.level;
+
+        // Update in Firestore
+        await updateDoc(doc(db, 'users', userId), {
+            'gamification.xp': increment(amount),
+            'gamification.level': newLevel.level,
+            // Also add points if we want to track them separately (legacy or currency)
+            'gamification.points': increment(amount),
+        });
+
+        // Check for new badges
+        const newBadges = await this.checkNewBadges(userId, { ...engagement, xp: newXP, level: newLevel.level });
+
+        return {
+            xp: amount,
             levelUp,
             newLevel: levelUp ? newLevel : undefined,
             newBadges,

@@ -25,7 +25,7 @@ import { db } from '@/lib/firebase';
 import { Expense, Budget, SavingGoal } from '@/types';
 import { format, startOfMonth, endOfMonth, subMonths, addMonths } from 'date-fns';
 import { pl } from 'date-fns/locale';
-import { UserProgress, ACHIEVEMENTS } from '@/lib/gamification';
+import { UserEngagement, BADGES } from '@/lib/engagement/xp-system';
 
 interface MonthlyStats {
     totalSpent: number;
@@ -36,9 +36,9 @@ interface MonthlyStats {
     previousMonthSpent: number;
     categories: { name: string; amount: number; percent: number }[];
     goalsProgress: { name: string; current: number; target: number; added: number }[];
-    newAchievements: string[];
+    newBadges: string[];
     streak: number;
-    points: number;
+    xp: number;
     level: number;
 }
 
@@ -137,7 +137,7 @@ export default function ReportsPage() {
             // Gamification progress
             const progressRef = doc(db, 'users', userData.id, 'gamification', 'progress');
             const progressSnap = await getDoc(progressRef);
-            const progress = progressSnap.exists() ? progressSnap.data() as UserProgress : null;
+            const progress = progressSnap.exists() ? progressSnap.data() as UserEngagement : null;
 
             setStats({
                 totalSpent,
@@ -148,9 +148,9 @@ export default function ReportsPage() {
                 previousMonthSpent,
                 categories: categories.slice(0, 5),
                 goalsProgress,
-                newAchievements: progress?.unlockedAchievements || [],
-                streak: progress?.streak || 0,
-                points: progress?.points || 0,
+                newBadges: progress?.badges || [],
+                streak: progress?.currentStreak || 0,
+                xp: progress?.xp || 0,
                 level: progress?.level || 1,
             });
 
@@ -284,7 +284,7 @@ export default function ReportsPage() {
 
                         <Card className="p-4 text-center">
                             <p className="text-2xl font-bold text-purple-400">Lv.{stats.level}</p>
-                            <p className="text-xs text-slate-400">{stats.points.toLocaleString()} pkt</p>
+                            <p className="text-xs text-slate-400">{stats.xp.toLocaleString()} XP</p>
                         </Card>
                     </div>
 
@@ -389,26 +389,26 @@ export default function ReportsPage() {
                     )}
 
                     {/* Achievements unlocked */}
-                    {stats.newAchievements.length > 0 && (
+                    {stats.newBadges.length > 0 && (
                         <Card>
                             <CardHeader>
                                 <CardTitle className="text-lg flex items-center gap-2">
                                     <Trophy className="w-5 h-5 text-amber-400" />
-                                    Odblokowane osiągnięcia
+                                    Zdobyte odznaki
                                 </CardTitle>
                             </CardHeader>
                             <CardContent>
                                 <div className="flex flex-wrap gap-2">
-                                    {stats.newAchievements.slice(0, 6).map((achievementId) => {
-                                        const achievement = ACHIEVEMENTS.find(a => a.id === achievementId);
-                                        if (!achievement) return null;
+                                    {stats.newBadges.slice(0, 6).map((badgeId) => {
+                                        const badge = BADGES.find(b => b.id === badgeId);
+                                        if (!badge) return null;
                                         return (
                                             <div
-                                                key={achievementId}
+                                                key={badgeId}
                                                 className="flex items-center gap-2 px-3 py-2 bg-amber-500/10 border border-amber-500/20 rounded-lg"
                                             >
-                                                <span className="text-xl">{achievement.icon}</span>
-                                                <span className="text-sm">{achievement.name}</span>
+                                                <span className="text-xl">{badge.emoji}</span>
+                                                <span className="text-sm">{badge.name}</span>
                                             </div>
                                         );
                                     })}

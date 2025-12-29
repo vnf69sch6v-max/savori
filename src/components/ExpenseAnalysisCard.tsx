@@ -18,8 +18,7 @@ interface ExpenseAnalysisProps {
         aiComment: string;
         budgetRemaining?: number;
         streak?: number;
-        points?: number;
-        multiplier?: number;
+        xp?: number;
     };
     loading?: boolean;
 }
@@ -123,7 +122,7 @@ export default function ExpenseAnalysisCard({
                                         </motion.div>
                                     )}
 
-                                    {analysis.points !== undefined && (
+                                    {analysis.xp !== undefined && (
                                         <motion.div
                                             initial={{ opacity: 0, y: 10 }}
                                             animate={{ opacity: 1, y: 0 }}
@@ -132,12 +131,9 @@ export default function ExpenseAnalysisCard({
                                         >
                                             <Target className="w-5 h-5 text-emerald-400 mx-auto mb-1" />
                                             <p className="text-sm font-medium">
-                                                +{analysis.points}
-                                                {analysis.multiplier && analysis.multiplier > 1 && (
-                                                    <span className="text-purple-400"> ×{analysis.multiplier}</span>
-                                                )}
+                                                +{analysis.xp} XP
                                             </p>
-                                            <p className="text-xs text-slate-500">punktów</p>
+                                            <p className="text-xs text-slate-500">zdobyte</p>
                                         </motion.div>
                                     )}
                                 </div>

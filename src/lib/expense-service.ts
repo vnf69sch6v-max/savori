@@ -22,7 +22,7 @@ import { Expense, ExpenseCategory, Merchant, ExpenseMetadata } from '@/types';
 import { eventBus } from './event-bus';
 import { cache, getMonthRange, getWeekRange } from './service-base';
 import { detectAnomaly, AnomalyResult } from './anomaly-detector';
-import { awardPoints, POINTS_CONFIG } from './gamification';
+import { engagementService } from '@/lib/engagement/xp-system';
 
 export interface CreateExpenseInput {
     userId: string;
@@ -65,7 +65,7 @@ class ExpenseService {
     async create(input: CreateExpenseInput): Promise<{
         expenseId: string;
         anomaly: AnomalyResult | null;
-        points: number;
+        xp: number;
     }> {
         const { userId, amount, merchant, date, items, source, notes, tags } = input;
 
@@ -97,9 +97,9 @@ class ExpenseService {
 
         const docRef = await addDoc(this.expensesRef(userId), expenseData);
 
-        // 3. Award points (also handles streak update internally)
-        const pointsToAward = source === 'scan' ? POINTS_CONFIG.RECEIPT_SCAN : POINTS_CONFIG.MANUAL_EXPENSE;
-        const { points } = await awardPoints(userId, pointsToAward, source);
+        // 3. Award XP
+        const actionKey = source === 'scan' ? 'scan_receipt' : 'add_expense_manual';
+        const { xp } = await engagementService.awardXP(userId, actionKey);
 
         // 4. Emit events
         await eventBus.emit('expense:added', {
@@ -108,7 +108,7 @@ class ExpenseService {
         });
 
         await eventBus.emit('points:awarded', {
-            points,
+            points: xp,
             reason: source === 'scan' ? 'Skanowanie paragonu' : 'Dodanie wydatku',
             userId,
         });
@@ -127,7 +127,7 @@ class ExpenseService {
         cache.invalidate(`expenses:${userId}`);
         cache.invalidate(`stats:${userId}`);
 
-        return { expenseId: docRef.id, anomaly: anomaly.isAnomaly ? anomaly : null, points };
+        return { expenseId: docRef.id, anomaly: anomaly.isAnomaly ? anomaly : null, xp };
     }
 
     /**

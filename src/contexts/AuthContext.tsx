@@ -11,7 +11,7 @@ import {
     signOut as firebaseSignOut,
     updateProfile,
 } from 'firebase/auth';
-import { doc, getDoc, setDoc, Timestamp } from 'firebase/firestore';
+import { doc, getDoc, setDoc, Timestamp, onSnapshot } from 'firebase/firestore';
 import { auth, db } from '@/lib/firebase';
 import { User, UserSettings, UserStats, Subscription } from '@/types';
 import { logSecurityEvent, SecurityEvents } from '@/lib/security';
@@ -59,18 +59,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
-    // Pobierz dane użytkownika z Firestore
-    const fetchUserData = async (uid: string) => {
-        try {
-            const userRef = doc(db, 'users', uid);
-            const userSnap = await getDoc(userRef);
-
-            if (userSnap.exists()) {
-                setUserData(userSnap.data() as User);
-            }
-        } catch (err) {
-            console.error('Błąd pobierania danych użytkownika:', err);
-        }
+    // Helper to manually refetch if needed (though onSnapshot handles most cases)
+    const refetchUserData = async () => {
+        if (!user) return;
+        // Logic handled by onSnapshot, but keeping method sig if needed for immediate forced refreshes via other means, though currently empty
     };
 
     // Stwórz profil użytkownika w Firestore
@@ -95,21 +87,41 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return newUser;
     };
 
-    // Obserwuj zmiany stanu autoryzacji
+    // Obserwuj zmiany stanu autoryzacji i danych użytkownika
     useEffect(() => {
-        const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+        let unsubscribeUserDoc: (() => void) | null = null;
+
+        const unsubscribeAuth = onAuthStateChanged(auth, async (firebaseUser) => {
             setUser(firebaseUser);
 
             if (firebaseUser) {
-                await fetchUserData(firebaseUser.uid);
+                // Subscribe to user document changes
+                const userRef = doc(db, 'users', firebaseUser.uid);
+                unsubscribeUserDoc = onSnapshot(userRef, (docSnap) => {
+                    if (docSnap.exists()) {
+                        setUserData(docSnap.data() as User);
+                    }
+                    setLoading(false);
+                }, (error) => {
+                    console.error("Error watching user data:", error);
+                    setLoading(false);
+                });
             } else {
+                if (unsubscribeUserDoc) {
+                    unsubscribeUserDoc();
+                    unsubscribeUserDoc = null;
+                }
                 setUserData(null);
+                setLoading(false);
             }
-
-            setLoading(false);
         });
 
-        return () => unsubscribe();
+        return () => {
+            unsubscribeAuth();
+            if (unsubscribeUserDoc) {
+                unsubscribeUserDoc();
+            }
+        };
     }, []);
 
     // Logowanie email/hasło
@@ -213,8 +225,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             const userRef = doc(db, 'users', user.uid);
             await setDoc(userRef, data, { merge: true });
 
-            // Odśwież dane lokalne
-            await fetchUserData(user.uid);
+            // Dane odświeżą się same dzięki onSnapshot
         } catch (err: unknown) {
             const message = err instanceof Error ? err.message : 'Błąd aktualizacji profilu';
             setError(message);
