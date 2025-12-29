@@ -139,12 +139,25 @@ export default function DashboardPage() {
         return () => unsubscribe();
     }, [userData?.id]);
 
-    // Use real data only - no fallback to demo
+    // Calculate stats from actual expenses (not userData.stats which isn't updated)
     const displayExpenses = expenses;
-    const userStats = userData?.stats;
-    const monthlyExpenses = userStats?.totalExpenses ?? 0;
-    const monthlySaved = userStats?.totalSaved ?? 0;
-    const currentStreak = userStats?.currentStreak ?? 0;
+
+    // Calculate total from current month expenses
+    const now = new Date();
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    const monthlyExpensesTotal = expenses
+        .filter(e => {
+            if (!e.date) return true; // Include if no date
+            const expenseDate = typeof e.date.toDate === 'function'
+                ? e.date.toDate()
+                : new Date(e.date as unknown as string);
+            return expenseDate >= startOfMonth;
+        })
+        .reduce((sum, e) => sum + (e.amount || 0), 0);
+
+    const monthlyExpenses = monthlyExpensesTotal;
+    const monthlySaved = userData?.stats?.totalSaved ?? 0;
+    const currentStreak = userData?.stats?.currentStreak ?? 0;
 
     // Check if user has enough data
     const isEmpty = expenses.length === 0;
