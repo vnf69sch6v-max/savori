@@ -1,0 +1,143 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ============ HELPER FUNCTIONS ============
+    
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return request.auth.uid == userId;
+    }
+    
+    function isValidExpense() {
+      let data = request.resource.data;
+      return data.keys().hasAll(['userId', 'amount', 'merchant', 'date'])
+          && data.amount is number 
+          && data.amount > 0
+          && data.merchant is map
+          && data.merchant.name is string;
+    }
+    
+    function isValidGoal() {
+      let data = request.resource.data;
+      return data.keys().hasAll(['userId', 'name', 'targetAmount'])
+          && data.name is string
+          && data.targetAmount is number
+          && data.targetAmount > 0;
+    }
+
+    // ============ USERS COLLECTION ============
+    
+    match /users/{userId} {
+      // Read own profile
+      allow read: if isOwner(userId);
+      
+      // Create own profile
+      allow create: if isAuthenticated() 
+                    && isOwner(userId)
+                    && request.resource.data.id == userId;
+      
+      // Update own profile (except subscription - only server can update)
+      allow update: if isOwner(userId);
+      
+      // Delete own profile
+      allow delete: if isOwner(userId);
+      
+      // ============ EXPENSES SUBCOLLECTION ============
+      
+      match /expenses/{expenseId} {
+        allow read: if isOwner(userId);
+        
+        allow create: if isOwner(userId) 
+                      && isValidExpense()
+                      && request.resource.data.userId == userId;
+        
+        allow update: if isOwner(userId)
+                      && request.resource.data.userId == userId;
+        
+        allow delete: if isOwner(userId);
+      }
+      
+      // ============ GOALS SUBCOLLECTION ============
+      
+      match /goals/{goalId} {
+        allow read: if isOwner(userId);
+        
+        allow create: if isOwner(userId) 
+                      && isValidGoal()
+                      && request.resource.data.userId == userId;
+        
+        allow update: if isOwner(userId)
+                      && request.resource.data.userId == userId;
+        
+        allow delete: if isOwner(userId);
+      }
+      
+      // ============ REPORTS SUBCOLLECTION ============
+      
+      match /reports/{reportId} {
+        // Users can read their own reports
+        allow read: if isOwner(userId);
+        
+        // Only Cloud Functions can write reports (no client writes)
+        allow write: if false;
+      }
+      
+      // ============ SECURITY EVENTS SUBCOLLECTION ============
+      
+      match /securityEvents/{eventId} {
+        // Users can read their own security events
+        allow read: if isOwner(userId);
+        
+        // Users can create security events for themselves
+        allow create: if isOwner(userId);
+        
+        // Security events cannot be updated or deleted (audit trail)
+        allow update, delete: if false;
+      }
+      
+      // ============ BUDGETS SUBCOLLECTION ============
+      
+      match /budgets/{budgetId} {
+        // Users can read their own budgets
+        allow read: if isOwner(userId);
+        
+        // Users can create and update their own budgets
+        allow create, update: if isOwner(userId)
+                              && request.resource.data.userId == userId;
+        
+        // Users can delete their own budgets
+        allow delete: if isOwner(userId);
+      }
+      
+      // ============ GAMIFICATION SUBCOLLECTION ============
+      
+      match /gamification/{docId} {
+        // Users can read their own gamification data
+        allow read: if isOwner(userId);
+        
+        // Users can create and update their own progress
+        allow create, update: if isOwner(userId);
+        
+        // Gamification data cannot be deleted
+        allow delete: if false;
+      }
+      
+      // ============ CHALLENGES SUBCOLLECTION ============
+      
+      match /challenges/{challengeId} {
+        // Users can read their own challenges
+        allow read: if isOwner(userId);
+        
+        // Users can create and update their challenges
+        allow create, update: if isOwner(userId);
+        
+        // Users can delete (abandon) challenges
+        allow delete: if isOwner(userId);
+      }
+    }
+  }
+}
