@@ -26,6 +26,7 @@ import {
 import { useAuth } from '@/contexts/AuthContext';
 import { useState } from 'react';
 import OnboardingWizard from '@/components/OnboardingWizard';
+import MobileBottomNav from '@/components/MobileBottomNav';
 
 const navItems = [
     { href: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
@@ -201,24 +202,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             )}
 
             {/* Mobile Bottom Navigation */}
-            <nav className="lg:hidden fixed bottom-0 left-0 right-0 h-16 bg-slate-900/95 backdrop-blur border-t border-slate-800 z-50">
-                <div className="flex items-center justify-around h-full">
-                    {navItems.slice(0, 5).map((item) => {
-                        const isActive = pathname === item.href;
-                        return (
-                            <Link
-                                key={item.href}
-                                href={item.href}
-                                className={`flex flex-col items-center justify-center gap-1 px-3 py-2 transition-colors ${isActive ? 'text-emerald-400' : 'text-slate-400'
-                                    }`}
-                            >
-                                <item.icon className="w-5 h-5" />
-                                <span className="text-xs">{item.label}</span>
-                            </Link>
-                        );
-                    })}
-                </div>
-            </nav>
+            <MobileBottomNav />
 
             {/* Main Content */}
             <main className="flex-1 lg:ml-64 pt-16 lg:pt-0 pb-20 lg:pb-0">
