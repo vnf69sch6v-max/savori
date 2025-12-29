@@ -25,6 +25,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useState } from 'react';
+import OnboardingWizard from '@/components/OnboardingWizard';
 
 const navItems = [
     { href: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
@@ -47,6 +48,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     const pathname = usePathname();
     const { user, userData, loading, signOut } = useAuth();
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+    const [showOnboarding, setShowOnboarding] = useState(true);
 
     // Redirect to login if not authenticated
     useEffect(() => {
@@ -72,8 +74,15 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         return null; // Will redirect
     }
 
+    // Show onboarding for new users
+    const shouldShowOnboarding = showOnboarding && userData && !userData.onboardingComplete;
+
     return (
         <div className="min-h-screen flex">
+            {/* Onboarding Wizard */}
+            {shouldShowOnboarding && (
+                <OnboardingWizard onComplete={() => setShowOnboarding(false)} />
+            )}
             {/* Desktop Sidebar */}
             <aside className="hidden lg:flex w-64 flex-col fixed inset-y-0 left-0 bg-slate-900/50 border-r border-slate-800">
                 {/* Logo */}

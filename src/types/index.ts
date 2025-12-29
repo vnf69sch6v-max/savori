@@ -10,6 +10,7 @@ export interface User {
     subscription: Subscription;
     settings: UserSettings;
     stats: UserStats;
+    onboardingComplete?: boolean;
 }
 
 export interface Subscription {
