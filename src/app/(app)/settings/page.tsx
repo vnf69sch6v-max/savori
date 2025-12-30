@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { toast } from 'react-hot-toast';
 import {
@@ -39,6 +39,23 @@ export default function SettingsPage() {
             goals: true,
         },
     });
+
+    // Sync settings with userData when it loads
+    useEffect(() => {
+        if (userData) {
+            setSettings({
+                displayName: userData.displayName || '',
+                currency: userData.settings?.currency || 'PLN',
+                language: userData.settings?.language || 'pl',
+                darkMode: userData.settings?.darkMode ?? true,
+                notifications: userData.settings?.notifications || {
+                    daily: true,
+                    weekly: true,
+                    goals: true,
+                },
+            });
+        }
+    }, [userData]);
 
     const handleSave = async () => {
         if (!user) return;
