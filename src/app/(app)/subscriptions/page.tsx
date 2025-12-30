@@ -303,7 +303,23 @@ export default function SubscriptionsPage() {
     const [subscriptions, setSubscriptions] = useState<RecurringExpense[]>([]);
     const [loading, setLoading] = useState(true);
     const [showAddModal, setShowAddModal] = useState(false);
-    const [monthlyTotal, setMonthlyTotal] = useState(0);
+    const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
+    const [now] = useState(() => new Date()); // Changed to Date object for consistency with new derived state
+
+    // Derived state
+    const totalMonthly = subscriptions.reduce((sum, sub) => {
+        return sum + getMonthlyEquivalent(sub.amount, sub.frequency);
+    }, 0);
+
+    const sortedSubscriptions = [...subscriptions].sort((a, b) => {
+        return a.nextDueDate.seconds - b.nextDueDate.seconds;
+    });
+
+    const upcomingSubscriptions = sortedSubscriptions.filter(sub => {
+        const dueDate = sub.nextDueDate.toDate();
+        const daysUntil = Math.ceil((dueDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+        return daysUntil >= 0 && daysUntil <= 7;
+    });
 
     // Subscribe to recurring expenses
     useEffect(() => {
@@ -315,12 +331,6 @@ export default function SubscriptionsPage() {
         const unsubscribe = recurringExpensesService.subscribe(userData.id, (expenses) => {
             setSubscriptions(expenses);
             setTimeout(() => setLoading(false), 0);
-
-            // Calculate monthly total
-            const total = expenses.reduce((sum, exp) => {
-                return sum + getMonthlyEquivalent(exp.amount, exp.frequency);
-            }, 0);
-            setMonthlyTotal(total);
         });
 
         return () => unsubscribe();
@@ -379,17 +389,6 @@ export default function SubscriptionsPage() {
     const activeSubscriptions = subscriptions.filter((s) => s.isActive);
     const inactiveSubscriptions = subscriptions.filter((s) => !s.isActive);
 
-    // Get upcoming payments
-    const [now] = useState(() => Date.now());
-    const upcoming = activeSubscriptions
-        .filter((s) => {
-            const days = Math.ceil(
-                (s.nextDueDate.toDate().getTime() - now) / (1000 * 60 * 60 * 24)
-            );
-            return days <= 7 && days >= 0;
-        })
-        .sort((a, b) => a.nextDueDate.toDate().getTime() - b.nextDueDate.toDate().getTime());
-
     return (
         <div className="max-w-4xl mx-auto px-4 md:px-6 pb-20">
             {/* Header */}
@@ -408,20 +407,12 @@ export default function SubscriptionsPage() {
             </div>
 
             {/* Summary Cards */}
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 mb-6">
-                <Card className="bg-gradient-to-br from-purple-500/10 to-pink-500/10 border-purple-500/20">
-                    <div className="p-4">
-                        <p className="text-sm text-slate-400 mb-1">Miesięcznie</p>
-                        <p className="text-2xl font-bold text-purple-400">
-                            {formatMoney(monthlyTotal)}
-                        </p>
-                    </div>
-                </Card>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
                 <Card className="bg-gradient-to-br from-blue-500/10 to-cyan-500/10 border-blue-500/20">
                     <div className="p-4">
                         <p className="text-sm text-slate-400 mb-1">Rocznie</p>
                         <p className="text-2xl font-bold text-blue-400">
-                            {formatMoney(monthlyTotal * 12)}
+                            {formatMoney(totalMonthly * 12)}
                         </p>
                     </div>
                 </Card>
@@ -435,28 +426,28 @@ export default function SubscriptionsPage() {
                 </Card>
                 <Card className="bg-gradient-to-br from-amber-500/10 to-orange-500/10 border-amber-500/20">
                     <div className="p-4">
-                        <p className="text-sm text-slate-400 mb-1">Nadchodzi</p>
+                        <p className="text-sm text-slate-400 mb-1">Nadchodzi (7 dni)</p>
                         <p className="text-2xl font-bold text-amber-400">
-                            {upcoming.length}
+                            {upcomingSubscriptions.length}
                         </p>
                     </div>
                 </Card>
             </div>
 
             {/* Upcoming payments */}
-            {upcoming.length > 0 && (
+            {upcomingSubscriptions.length > 0 && (
                 <Card className="mb-6 bg-gradient-to-br from-amber-500/5 to-orange-500/5 border-amber-500/20">
                     <CardHeader className="pb-2">
                         <CardTitle className="text-base flex items-center gap-2">
                             <Bell className="w-4 h-4 text-amber-400" />
-                            Nadchodzące płatności (7 dni)
+                            Nadchodzące płatności
                         </CardTitle>
                     </CardHeader>
                     <CardContent>
                         <div className="space-y-2">
-                            {upcoming.map((sub) => {
+                            {upcomingSubscriptions.map((sub) => {
                                 const days = Math.ceil(
-                                    (sub.nextDueDate.toDate().getTime() - now) / (1000 * 60 * 60 * 24)
+                                    (sub.nextDueDate.toDate().getTime() - now.getTime()) / (1000 * 60 * 60 * 24)
                                 );
                                 return (
                                     <div
@@ -468,7 +459,7 @@ export default function SubscriptionsPage() {
                                             <div>
                                                 <p className="font-medium">{sub.name}</p>
                                                 <p className="text-xs text-slate-400">
-                                                    {days === 0 ? 'Dzisiaj' : `Za ${days} dni`}
+                                                    {days <= 0 ? 'Dzisiaj' : `Za ${days} dni`}
                                                 </p>
                                             </div>
                                         </div>
