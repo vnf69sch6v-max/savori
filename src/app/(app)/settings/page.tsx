@@ -214,27 +214,90 @@ export default function SettingsPage() {
                             {plans.map((plan) => (
                                 <button
                                     key={plan.id}
+                                    onClick={async () => {
+                                        if (plan.current || !userData?.id) return;
+
+                                        const confirmed = confirm(
+                                            `Czy chcesz zmienić plan na ${plan.name}?\n\n` +
+                                            (plan.price === '0'
+                                                ? 'To spowoduje utratę dostępu do funkcji premium.'
+                                                : `Cena: ${plan.price} zł/msc\n(Demo - bez płatności)`)
+                                        );
+
+                                        if (!confirmed) return;
+
+                                        try {
+                                            const { subscriptionService } = await import('@/lib/subscription-service');
+                                            const result = await subscriptionService.upgradeSubscription(
+                                                userData.id,
+                                                plan.id as 'free' | 'pro' | 'premium'
+                                            );
+
+                                            if (result.success) {
+                                                toast.success(`🎉 Plan zmieniony na ${plan.name}!`);
+                                            } else {
+                                                toast.error(result.error || 'Błąd zmiany planu');
+                                            }
+                                        } catch (error) {
+                                            console.error(error);
+                                            toast.error('Błąd zmiany planu');
+                                        }
+                                    }}
                                     className={`p-4 rounded-xl text-center transition-all ${plan.current
                                         ? 'bg-emerald-500/10 border-2 border-emerald-500'
-                                        : 'bg-slate-800/50 border border-slate-700 hover:border-emerald-500/50'
+                                        : 'bg-slate-800/50 border border-slate-700 hover:border-emerald-500/50 cursor-pointer'
                                         }`}
-                                    disabled={plan.current}
                                 >
                                     <p className="font-semibold mb-1">{plan.name}</p>
                                     <p className="text-sm text-slate-400">
                                         {plan.price} zł/msc
                                     </p>
-                                    {plan.current && (
+                                    {plan.current ? (
                                         <div className="flex items-center justify-center gap-1 mt-2 text-xs text-emerald-400">
                                             <Check className="w-3 h-3" />
                                             Aktywny
+                                        </div>
+                                    ) : (
+                                        <div className="mt-2 text-xs text-blue-400">
+                                            Wybierz
                                         </div>
                                     )}
                                 </button>
                             ))}
                         </div>
+
+                        {/* Features comparison */}
+                        <div className="mt-4 pt-4 border-t border-slate-800">
+                            <p className="text-sm font-medium mb-2">Co zawiera {userData?.subscription?.plan || 'Free'}:</p>
+                            <ul className="text-sm text-slate-400 space-y-1">
+                                {userData?.subscription?.plan === 'premium' && (
+                                    <>
+                                        <li className="flex items-center gap-2"><Check className="w-3 h-3 text-emerald-400" /> Wszystko z Pro</li>
+                                        <li className="flex items-center gap-2"><Check className="w-3 h-3 text-emerald-400" /> Priorytetowe wsparcie</li>
+                                        <li className="flex items-center gap-2"><Check className="w-3 h-3 text-emerald-400" /> Wczesny dostęp do nowości</li>
+                                        <li className="flex items-center gap-2"><Check className="w-3 h-3 text-emerald-400" /> Group challenges</li>
+                                    </>
+                                )}
+                                {userData?.subscription?.plan === 'pro' && (
+                                    <>
+                                        <li className="flex items-center gap-2"><Check className="w-3 h-3 text-emerald-400" /> Nielimitowane skany</li>
+                                        <li className="flex items-center gap-2"><Check className="w-3 h-3 text-emerald-400" /> AI Insights</li>
+                                        <li className="flex items-center gap-2"><Check className="w-3 h-3 text-emerald-400" /> Eksport CSV & PDF</li>
+                                        <li className="flex items-center gap-2"><Check className="w-3 h-3 text-emerald-400" /> Znajomi & ranking</li>
+                                    </>
+                                )}
+                                {(!userData?.subscription?.plan || userData?.subscription?.plan === 'free') && (
+                                    <>
+                                        <li className="flex items-center gap-2"><Check className="w-3 h-3 text-emerald-400" /> Do 10 skanów miesięcznie</li>
+                                        <li className="flex items-center gap-2"><Check className="w-3 h-3 text-emerald-400" /> Podstawowe statystyki</li>
+                                        <li className="flex items-center gap-2"><Check className="w-3 h-3 text-emerald-400" /> Eksport CSV</li>
+                                    </>
+                                )}
+                            </ul>
+                        </div>
+
                         <p className="text-xs text-slate-500 mt-4 text-center">
-                            Płatności obsługiwane przez Stripe (wkrótce)
+                            🧪 Tryb testowy - bez rzeczywistych płatności
                         </p>
                     </CardContent>
                 </Card>

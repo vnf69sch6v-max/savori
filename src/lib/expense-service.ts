@@ -23,6 +23,9 @@ import { eventBus } from './event-bus';
 import { cache, getMonthRange, getWeekRange } from './service-base';
 import { detectAnomaly, AnomalyResult } from './anomaly-detector';
 import { engagementService } from '@/lib/engagement/xp-system';
+import { insightsEngine } from '@/lib/ai/insights-engine';
+import { notificationService } from '@/lib/engagement/notifications';
+import { Budget } from '@/types';
 
 export interface CreateExpenseInput {
     userId: string;
@@ -113,7 +116,6 @@ class ExpenseService {
             userId,
         });
 
-        // 6. Emit anomaly event if detected
         if (anomaly.isAnomaly) {
             await eventBus.emit('ai:anomaly_detected', {
                 expenseId: docRef.id,
@@ -121,6 +123,47 @@ class ExpenseService {
                 reason: anomaly.reason,
                 userId,
             });
+        }
+
+        // 7. Generate AI Insights & Notifications
+        try {
+            // Fetch necessary data
+            const recentExpenses = await this.getByPeriod(userId, 'month');
+            const budgetsSnap = await getDocs(collection(db, 'users', userId, 'budgets'));
+            const budgets = budgetsSnap.docs.map(d => {
+                const b = d.data() as Budget;
+                const limits = b.categoryLimits ? Object.entries(b.categoryLimits).map(([cat, l]: [string, any]) => ({
+                    category: cat as ExpenseCategory,
+                    limit: l.limit,
+                    spent: l.spent || 0
+                })) : [];
+                return limits;
+            }).flat();
+
+            const fullExpense: Expense = { ...expenseData, id: docRef.id, createdAt: Timestamp.now() } as Expense;
+
+            // Generate insights
+            const insights = insightsEngine.generateInsightsForExpense(
+                fullExpense,
+                recentExpenses,
+                null, // Profile can be null, engine handles it
+                budgets
+            );
+
+            // Send notifications for important insights
+            for (const insight of insights) {
+                if (insight.priority === 'critical' || insight.priority === 'high') {
+                    await notificationService.send(userId, {
+                        type: insight.type === 'budget_warning' ? 'budget_alert' : 'insight',
+                        title: insight.title,
+                        message: insight.message,
+                        emoji: insight.emoji,
+                        actionUrl: insight.actionUrl
+                    });
+                }
+            }
+        } catch (e) {
+            console.error('Error in AI pipeline:', e);
         }
 
         // 7. Invalidate cache

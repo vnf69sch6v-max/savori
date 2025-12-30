@@ -5,6 +5,7 @@
 
 import { db } from '@/lib/firebase';
 import { doc, updateDoc, increment, getDoc, setDoc, Timestamp } from 'firebase/firestore';
+import { notificationService } from '@/lib/engagement/notifications';
 
 // ============ TYPES ============
 
@@ -141,6 +142,15 @@ export class EngagementService {
             'gamification.level': newLevel.level,
         });
 
+        if (levelUp) {
+            await notificationService.send(userId, {
+                type: 'system',
+                title: 'Awans Poziomu! 🎉',
+                message: `Gratulacje! Osiągnąłeś poziom ${newLevel.level}: ${newLevel.name}.`,
+                emoji: '🆙'
+            });
+        }
+
         // Check for new badges
         const newBadges = await this.checkNewBadges(userId, { ...engagement, xp: newXP, level: newLevel.level });
 
@@ -172,6 +182,15 @@ export class EngagementService {
             // Also add points if we want to track them separately (legacy or currency)
             'gamification.points': increment(amount),
         });
+
+        if (levelUp) {
+            await notificationService.send(userId, {
+                type: 'system',
+                title: 'Awans Poziomu! 🎉',
+                message: `Gratulacje! Osiągnąłeś poziom ${newLevel.level}: ${newLevel.name}.`,
+                emoji: '🆙'
+            });
+        }
 
         // Check for new badges
         const newBadges = await this.checkNewBadges(userId, { ...engagement, xp: newXP, level: newLevel.level });
@@ -278,6 +297,13 @@ export class EngagementService {
                 // Award badge
                 await updateDoc(doc(db, 'users', userId), {
                     'gamification.badges': [...engagement.badges, badge.id],
+                });
+
+                await notificationService.send(userId, {
+                    type: 'achievement',
+                    title: `Nowa Odznaka: ${badge.name}`,
+                    message: badge.description,
+                    emoji: badge.emoji
                 });
 
                 engagement.badges.push(badge.id);

@@ -23,9 +23,9 @@ import { db } from '@/lib/firebase';
 import { Expense } from '@/types';
 import AIInsightsWidget from '@/components/AIInsightsWidget';
 import PredictiveSpendingWidget from '@/components/PredictiveSpendingWidget';
-import StreakWidget from '@/components/engagement/StreakWidget';
-import XPProgress from '@/components/engagement/XPProgress';
 import EmptyDashboard from '@/components/EmptyDashboard';
+import SafeToSpendCard from '@/components/SafeToSpendCard';
+import GamificationHub from '@/components/GamificationHub';
 
 // Minimum thresholds for showing advanced features
 const MIN_EXPENSES_FOR_AI = 5;
@@ -161,6 +161,10 @@ export default function DashboardPage() {
     const monthlySaved = userData?.stats?.totalSaved ?? 0;
     const currentStreak = userData?.stats?.currentStreak ?? 0;
 
+    // Budget calculations for Safe-to-Spend card
+    const monthlyBudget = 500000; // 5000 PLN default - should come from user settings
+    const plannedExpenses = 0; // Recurring expenses - will be implemented later
+
     // Check if user has enough data
     const isEmpty = expenses.length === 0;
     const showAI = expenses.length >= MIN_EXPENSES_FOR_AI;
@@ -201,34 +205,27 @@ export default function DashboardPage() {
                 </div>
             </div>
 
-            {/* Stats Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-                <StatCard
-                    title="Wydatki w tym miesiącu"
-                    value={formatMoney(monthlyExpenses)}
-                    icon={<Receipt className="w-5 h-5" />}
-                    color="rose"
+            {/* Hero Section - Safe to Spend + Gamification */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-8">
+                <SafeToSpendCard
+                    totalBalance={100000} // Will be updated with real balance later
+                    plannedExpenses={plannedExpenses}
+                    spentThisMonth={monthlyExpenses}
+                    budgetLimit={monthlyBudget}
                 />
-                <StatCard
-                    title="Zaoszczędzone"
-                    value={formatMoney(monthlySaved)}
-                    icon={<PiggyBank className="w-5 h-5" />}
-                    color="emerald"
+                <GamificationHub
+                    xp={userData?.gamification?.xp || 0}
+                    level={userData?.gamification?.level || 1}
+                    levelName="Nowicjusz"
+                    xpToNextLevel={((userData?.gamification?.level || 1) + 1) * 500}
+                    currentLevelXP={(userData?.gamification?.level || 1) * 500}
+                    streak={currentStreak}
+                    points={userData?.gamification?.points || 0}
+                    recentBadge={userData?.gamification?.badges?.slice(-1)[0] ? {
+                        name: userData.gamification.badges.slice(-1)[0],
+                        emoji: '🏅'
+                    } : undefined}
                 />
-
-                {/* Engagement Widgets */}
-                <div className="md:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <StreakWidget
-                        currentStreak={currentStreak}
-                        longestStreak={userData?.stats?.longestStreak || currentStreak}
-                        compact
-                    />
-                    <XPProgress
-                        xp={userData?.gamification?.xp || 0}
-                        level={userData?.gamification?.level || 1}
-                        compact
-                    />
-                </div>
             </div>
 
             <div className="grid lg:grid-cols-3 gap-6">

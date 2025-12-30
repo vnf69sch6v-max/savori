@@ -120,10 +120,37 @@ export default function AIInsightsWidget() {
                 </AnimatePresence>
 
                 {insights.length === 0 && (
-                    <div className="text-center py-6 text-slate-400">
-                        <Sparkles className="w-8 h-8 mx-auto mb-2 opacity-30" />
-                        <p className="text-sm">Brak nowych insightów na ten moment.</p>
-                        <p className="text-xs text-slate-500 mt-1">Używaj aplikacji regularnie, aby otrzymać więcej analiz.</p>
+                    <div className="space-y-3">
+                        {/* Demo insights for new users */}
+                        <div className="text-center mb-4">
+                            <p className="text-xs text-purple-400 font-medium">✨ Przykładowe insighty</p>
+                        </div>
+
+                        {/* Demo insight 1 */}
+                        <div className="p-3 rounded-xl bg-slate-800/50 border border-slate-700/50 opacity-60">
+                            <div className="flex items-start gap-3">
+                                <span className="text-lg">📊</span>
+                                <div>
+                                    <p className="font-medium text-sm text-slate-300">Trend wydatków</p>
+                                    <p className="text-xs text-slate-500">AI wykryje Twoje wzorce wydatków i zasugeruje oszczędności</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Demo insight 2 */}
+                        <div className="p-3 rounded-xl bg-slate-800/50 border border-slate-700/50 opacity-60">
+                            <div className="flex items-start gap-3">
+                                <span className="text-lg">💡</span>
+                                <div>
+                                    <p className="font-medium text-sm text-slate-300">Inteligentne sugestie</p>
+                                    <p className="text-xs text-slate-500">Otrzymasz personalizowane porady finansowe</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <p className="text-xs text-center text-slate-500 pt-2">
+                            Dodaj więcej wydatków, aby odblokować AI analizę
+                        </p>
                     </div>
                 )}
             </CardContent>

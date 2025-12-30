@@ -269,3 +269,27 @@ export interface BudgetFormData {
     }[];
 }
 
+
+// ============ NOTIFICATIONS ============
+export type NotificationType =
+    | 'achievement'
+    | 'streak_warning'
+    | 'streak_restored'
+    | 'budget_alert'
+    | 'insight'
+    | 'daily_reminder'
+    | 'system';
+
+export interface Notification {
+    id: string;
+    userId: string;
+    type: NotificationType;
+    title: string;
+    message: string;
+    emoji?: string;
+    read: boolean;
+    createdAt: Timestamp;
+    actionUrl?: string;
+    metadata?: Record<string, any>;
+}
+

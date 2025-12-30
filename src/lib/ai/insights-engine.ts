@@ -5,6 +5,7 @@
 
 import { Timestamp } from 'firebase/firestore';
 import { ExpenseCategory, Expense } from '@/types';
+import { notificationService } from '@/lib/engagement/notifications';
 
 // ============ TYPES ============
 
