@@ -33,7 +33,7 @@ import OnboardingWizard from '@/components/OnboardingWizard';
 import MobileBottomNav from '@/components/MobileBottomNav';
 import NotificationCenter from '@/components/NotificationCenter';
 import OmniSearch from '@/components/OmniSearch';
-import AICoachChat from '@/components/ai/AICoachChat';
+
 
 // Grouped navigation structure (Miller's Law: 5-7 items max)
 const navGroups = [
@@ -307,8 +307,4 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                 <div className="p-4 lg:p-8">{children}</div>
             </main>
 
-            {/* Global AI Coach Chat */}
-            <AICoachChat />
-        </div>
-    );
-}
+
