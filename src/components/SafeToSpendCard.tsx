@@ -16,8 +16,8 @@ export default function SafeToSpendCard({
     spentThisMonth,
     budgetLimit
 }: SafeToSpendCardProps) {
-    // Calculate safe to spend
-    const safeToSpend = Math.max(0, totalBalance - plannedExpenses);
+    // Safe to spend is already calculated as (budget - spent) passed as totalBalance
+    const safeToSpend = Math.max(0, totalBalance);
     const safeToSpendDisplay = (safeToSpend / 100).toFixed(2);
 
     // Calculate percentage of budget used
@@ -92,8 +92,8 @@ export default function SafeToSpendCard({
                                 animate={{ width: `${budgetUsedPercent}%` }}
                                 transition={{ duration: 1, ease: 'easeOut' }}
                                 className={`h-full rounded-full ${isHealthy ? 'bg-emerald-500' :
-                                        isWarning ? 'bg-amber-500' :
-                                            'bg-red-500'
+                                    isWarning ? 'bg-amber-500' :
+                                        'bg-red-500'
                                     }`}
                             />
                         </div>

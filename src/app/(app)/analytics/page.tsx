@@ -1,15 +1,20 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
     BarChart3,
     TrendingUp,
     TrendingDown,
     PieChart,
     Calendar,
-    ArrowUpRight,
     Sparkles,
+    Zap,
+    Target,
+    Award,
+    ChevronDown,
+    ArrowRight,
+    Flame,
 } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent, Button } from '@/components/ui';
 import { useAuth } from '@/contexts/AuthContext';
@@ -29,18 +34,210 @@ import {
     PieChart as RePieChart,
     Pie,
     Cell,
-    LineChart,
-    Line,
-    Legend,
+    AreaChart,
+    Area,
 } from 'recharts';
 
 type Period = 'week' | 'month' | 'quarter' | 'year';
+
+// Animated counter component
+function AnimatedNumber({ value, prefix = '', suffix = '' }: { value: number; prefix?: string; suffix?: string }) {
+    const [displayValue, setDisplayValue] = useState(0);
+
+    useEffect(() => {
+        const duration = 1000;
+        const steps = 30;
+        const stepValue = value / steps;
+        let current = 0;
+
+        const timer = setInterval(() => {
+            current += stepValue;
+            if (current >= value) {
+                setDisplayValue(value);
+                clearInterval(timer);
+            } else {
+                setDisplayValue(Math.floor(current));
+            }
+        }, duration / steps);
+
+        return () => clearInterval(timer);
+    }, [value]);
+
+    return <span>{prefix}{displayValue.toLocaleString('pl-PL')}{suffix}</span>;
+}
+
+// Interactive stat card with hover effects
+function InteractiveStat({
+    label,
+    value,
+    icon,
+    color,
+    trend,
+    onClick
+}: {
+    label: string;
+    value: string;
+    icon: React.ReactNode;
+    color: string;
+    trend?: { value: number; isPositive: boolean };
+    onClick?: () => void;
+}) {
+    return (
+        <motion.div
+            whileHover={{ scale: 1.02, y: -2 }}
+            whileTap={{ scale: 0.98 }}
+            onClick={onClick}
+            className={`relative overflow-hidden cursor-pointer rounded-2xl p-5 bg-gradient-to-br ${color} border border-white/10 group`}
+        >
+            {/* Animated background glow */}
+            <div className="absolute inset-0 bg-white/0 group-hover:bg-white/5 transition-all duration-300" />
+            <div className="absolute -top-10 -right-10 w-24 h-24 bg-white/5 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-500" />
+
+            <div className="relative">
+                <div className="flex items-center justify-between mb-3">
+                    <span className="text-sm text-white/70">{label}</span>
+                    <motion.div
+                        whileHover={{ rotate: 15 }}
+                        className="text-white/80"
+                    >
+                        {icon}
+                    </motion.div>
+                </div>
+                <p className="text-2xl font-bold text-white mb-1">{value}</p>
+                {trend && (
+                    <motion.div
+                        initial={{ opacity: 0, x: -10 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        className={`flex items-center gap-1 text-sm ${trend.isPositive ? 'text-emerald-400' : 'text-rose-400'}`}
+                    >
+                        {trend.isPositive ? <TrendingDown className="w-4 h-4" /> : <TrendingUp className="w-4 h-4" />}
+                        <span>{Math.abs(trend.value)}% vs ostatni okres</span>
+                    </motion.div>
+                )}
+            </div>
+        </motion.div>
+    );
+}
+
+// Category breakdown with animated bars
+function CategoryRing({ data, onSelect }: { data: any[]; onSelect: (cat: string) => void }) {
+    const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+    const total = data.reduce((sum, d) => sum + d.amount, 0);
+
+    return (
+        <div className="relative">
+            <div className="h-52">
+                <ResponsiveContainer width="100%" height="100%">
+                    <RePieChart>
+                        <Pie
+                            data={data}
+                            cx="50%"
+                            cy="50%"
+                            innerRadius={55}
+                            outerRadius={hoveredIndex !== null ? 85 : 80}
+                            paddingAngle={3}
+                            dataKey="amount"
+                            onMouseEnter={(_, index) => setHoveredIndex(index)}
+                            onMouseLeave={() => setHoveredIndex(null)}
+                            onClick={(_, index) => onSelect(data[index].category)}
+                        >
+                            {data.map((entry, index) => (
+                                <Cell
+                                    key={`cell-${index}`}
+                                    fill={entry.color}
+                                    stroke="transparent"
+                                    style={{
+                                        filter: hoveredIndex === index ? 'drop-shadow(0 0 8px rgba(255,255,255,0.3))' : 'none',
+                                        cursor: 'pointer',
+                                        transition: 'all 0.3s ease',
+                                    }}
+                                />
+                            ))}
+                        </Pie>
+                        <Tooltip
+                            contentStyle={{
+                                backgroundColor: '#0f172a',
+                                border: '1px solid #334155',
+                                borderRadius: '12px',
+                                padding: '12px',
+                            }}
+                            formatter={(value) => [formatMoney(value as number), 'Kwota']}
+                        />
+                    </RePieChart>
+                </ResponsiveContainer>
+            </div>
+
+            {/* Center stats */}
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center pointer-events-none">
+                <motion.p
+                    key={hoveredIndex}
+                    initial={{ scale: 0.8, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    className="text-2xl font-bold"
+                >
+                    {hoveredIndex !== null
+                        ? `${Math.round((data[hoveredIndex].amount / total) * 100)}%`
+                        : formatMoney(total)
+                    }
+                </motion.p>
+                <p className="text-xs text-slate-400">
+                    {hoveredIndex !== null ? data[hoveredIndex].name : 'Suma'}
+                </p>
+            </div>
+        </div>
+    );
+}
+
+// Achievement-style insight card
+function InsightAchievement({
+    icon,
+    title,
+    value,
+    description,
+    color,
+    delay
+}: {
+    icon: React.ReactNode;
+    title: string;
+    value: string;
+    description: string;
+    color: string;
+    delay: number;
+}) {
+    return (
+        <motion.div
+            initial={{ opacity: 0, y: 20, scale: 0.9 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            transition={{ delay, type: 'spring', stiffness: 200 }}
+            whileHover={{ scale: 1.02 }}
+            className={`relative overflow-hidden p-4 rounded-xl bg-gradient-to-br ${color} border border-white/10 cursor-pointer group`}
+        >
+            <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
+            </div>
+
+            <div className="flex items-start gap-3 relative">
+                <div className="p-2 rounded-lg bg-white/10">
+                    {icon}
+                </div>
+                <div className="flex-1 min-w-0">
+                    <p className="text-sm text-white/70">{title}</p>
+                    <p className="text-lg font-bold text-white">{value}</p>
+                    <p className="text-xs text-white/50 truncate">{description}</p>
+                </div>
+                <Zap className="w-4 h-4 text-amber-400 opacity-0 group-hover:opacity-100 transition-opacity" />
+            </div>
+        </motion.div>
+    );
+}
 
 export default function AnalyticsPage() {
     const { userData } = useAuth();
     const [expenses, setExpenses] = useState<Expense[]>([]);
     const [loading, setLoading] = useState(true);
     const [period, setPeriod] = useState<Period>('month');
+    const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+    const [showAllCategories, setShowAllCategories] = useState(false);
 
     // Get date range
     const getDateRange = (p: Period) => {
@@ -94,7 +291,10 @@ export default function AnalyticsPage() {
 
     // Calculate stats
     const totalExpenses = expenses.reduce((sum, e) => sum + (e.amount || 0), 0);
-    const avgDaily = totalExpenses / (period === 'week' ? 7 : period === 'month' ? 30 : period === 'quarter' ? 90 : 365);
+    const days = period === 'week' ? 7 : period === 'month' ? 30 : period === 'quarter' ? 90 : 365;
+    const avgDaily = totalExpenses / days;
+    const transactionCount = expenses.length;
+    const avgTransaction = transactionCount > 0 ? totalExpenses / transactionCount : 0;
 
     // Category breakdown
     const categoryData = Object.entries(
@@ -109,10 +309,11 @@ export default function AnalyticsPage() {
             name: CATEGORY_LABELS[category] || category,
             amount,
             color: CATEGORY_COLORS[category] || '#6b7280',
+            icon: CATEGORY_ICONS[category] || '📦',
         }))
         .sort((a, b) => b.amount - a.amount);
 
-    // Daily trend
+    // Daily trend with area chart
     const dailyData = expenses.reduce((acc, e) => {
         const date = e.date?.toDate?.()?.toISOString().split('T')[0] || '';
         if (!acc[date]) {
@@ -125,6 +326,7 @@ export default function AnalyticsPage() {
     const trendData = Object.entries(dailyData)
         .map(([date, amount]) => ({
             date: new Date(date).toLocaleDateString('pl-PL', { day: 'numeric', month: 'short' }),
+            fullDate: date,
             amount: amount / 100,
         }))
         .reverse()
@@ -142,15 +344,6 @@ export default function AnalyticsPage() {
         .sort((a, b) => b.amount - a.amount)
         .slice(0, 5);
 
-    // AI insights (demo)
-    const insights = [
-        `Największa kategoria wydatków: ${categoryData[0]?.name || 'brak danych'}`,
-        `Średni dzienny wydatek: ${formatMoney(avgDaily)}`,
-        categoryData.length > 1
-            ? `${categoryData[0]?.name} stanowi ${Math.round((categoryData[0]?.amount / totalExpenses) * 100)}% wydatków`
-            : '',
-    ].filter(Boolean);
-
     const periodLabels = {
         week: 'Tydzień',
         month: 'Miesiąc',
@@ -158,218 +351,326 @@ export default function AnalyticsPage() {
         year: 'Rok',
     };
 
+    const periodIcons = {
+        week: '7d',
+        month: '30d',
+        quarter: '90d',
+        year: '365d',
+    };
+
     return (
-        <div className="max-w-6xl mx-auto">
-            {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
-                <div>
-                    <h1 className="text-2xl md:text-3xl font-bold">Analityka</h1>
-                    <p className="text-slate-400 mt-1">
-                        Wydatki w okresie: <span className="text-white font-medium">{formatMoney(totalExpenses)}</span>
-                    </p>
-                </div>
-                <div className="flex gap-2">
-                    {(['week', 'month', 'quarter', 'year'] as Period[]).map((p) => (
-                        <Button
-                            key={p}
-                            variant={period === p ? 'primary' : 'ghost'}
-                            size="sm"
-                            onClick={() => setPeriod(p)}
+        <div className="max-w-7xl mx-auto">
+            {/* Header with animated background */}
+            <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-900 via-slate-900 to-purple-900/30 border border-slate-800 p-6 mb-6">
+                <div className="absolute -top-20 -right-20 w-40 h-40 bg-purple-500/20 rounded-full blur-3xl" />
+                <div className="absolute -bottom-20 -left-20 w-40 h-40 bg-emerald-500/10 rounded-full blur-3xl" />
+
+                <div className="relative flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div>
+                        <motion.h1
+                            initial={{ opacity: 0, y: -10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            className="text-3xl md:text-4xl font-bold flex items-center gap-3"
                         >
-                            {periodLabels[p]}
-                        </Button>
-                    ))}
+                            <BarChart3 className="w-8 h-8 text-purple-400" />
+                            Analityka
+                        </motion.h1>
+                        <motion.p
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            transition={{ delay: 0.1 }}
+                            className="text-slate-400 mt-2 flex items-center gap-2"
+                        >
+                            Zagłęb się w swoje finanse
+                            <Sparkles className="w-4 h-4 text-amber-400" />
+                        </motion.p>
+                    </div>
+
+                    {/* Period selector with animation */}
+                    <div className="flex gap-2 bg-slate-800/50 p-1 rounded-xl">
+                        {(['week', 'month', 'quarter', 'year'] as Period[]).map((p) => (
+                            <motion.button
+                                key={p}
+                                whileHover={{ scale: 1.05 }}
+                                whileTap={{ scale: 0.95 }}
+                                onClick={() => setPeriod(p)}
+                                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${period === p
+                                        ? 'bg-purple-500 text-white shadow-lg shadow-purple-500/25'
+                                        : 'text-slate-400 hover:text-white hover:bg-slate-700/50'
+                                    }`}
+                            >
+                                <span className="hidden sm:inline">{periodLabels[p]}</span>
+                                <span className="sm:hidden">{periodIcons[p]}</span>
+                            </motion.button>
+                        ))}
+                    </div>
                 </div>
             </div>
 
-            {/* AI Commentary */}
-            {!loading && expenses.length > 0 && (
-                <div className="mb-6">
-                    <AICommentary
-                        categoryData={categoryData}
-                        totalExpenses={totalExpenses}
-                        avgDaily={avgDaily}
-                        period={period}
-                        merchantData={merchantData}
-                    />
-                </div>
-            )}
-
             {loading ? (
-                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
                     {[1, 2, 3, 4].map(i => (
-                        <div key={i} className="skeleton h-64 rounded-xl" />
+                        <div key={i} className="h-32 rounded-2xl bg-slate-800/50 animate-pulse" />
                     ))}
                 </div>
             ) : expenses.length === 0 ? (
-                <Card className="p-12 text-center">
-                    <BarChart3 className="w-16 h-16 text-slate-600 mx-auto mb-4" />
-                    <h3 className="text-lg font-medium mb-2">Brak danych</h3>
-                    <p className="text-slate-400">
-                        Dodaj wydatki, aby zobaczyć statystyki
-                    </p>
-                </Card>
+                <motion.div
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="text-center py-16 bg-slate-900/50 rounded-2xl border border-slate-800"
+                >
+                    <BarChart3 className="w-20 h-20 text-slate-700 mx-auto mb-4" />
+                    <h3 className="text-xl font-medium mb-2">Brak danych do analizy</h3>
+                    <p className="text-slate-400 mb-6">Dodaj wydatki, aby zobaczyć szczegółowe statystyki</p>
+                    <Button>Dodaj pierwszy wydatek</Button>
+                </motion.div>
             ) : (
-                <div className="grid lg:grid-cols-3 gap-6">
-                    {/* Trend Chart */}
-                    <Card className="lg:col-span-2">
-                        <CardHeader>
-                            <CardTitle className="flex items-center gap-2">
-                                <TrendingUp className="w-5 h-5 text-emerald-400" />
-                                Trend wydatków
-                            </CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <div className="h-64">
-                                <ResponsiveContainer width="100%" height="100%">
-                                    <BarChart data={trendData}>
-                                        <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
-                                        <XAxis
-                                            dataKey="date"
-                                            stroke="#64748b"
-                                            fontSize={12}
-                                            tickLine={false}
-                                        />
-                                        <YAxis
-                                            stroke="#64748b"
-                                            fontSize={12}
-                                            tickLine={false}
-                                            tickFormatter={(v) => `${v} zł`}
-                                        />
-                                        <Tooltip
-                                            contentStyle={{
-                                                backgroundColor: '#1e293b',
-                                                border: '1px solid #334155',
-                                                borderRadius: '8px',
-                                            }}
-                                            formatter={(value) => [`${(value as number)?.toFixed(2) ?? 0} zł`, 'Wydatki']}
-                                        />
-                                        <Bar
-                                            dataKey="amount"
-                                            fill="#10b981"
-                                            radius={[4, 4, 0, 0]}
-                                        />
-                                    </BarChart>
-                                </ResponsiveContainer>
-                            </div>
-                        </CardContent>
-                    </Card>
+                <>
+                    {/* AI Commentary - at top */}
+                    <div className="mb-6">
+                        <AICommentary
+                            categoryData={categoryData}
+                            totalExpenses={totalExpenses}
+                            avgDaily={avgDaily}
+                            period={period}
+                            merchantData={merchantData}
+                        />
+                    </div>
 
-                    {/* AI Insights */}
-                    <Card variant="gradient">
-                        <CardHeader>
-                            <CardTitle className="flex items-center gap-2">
-                                <Sparkles className="w-5 h-5 text-amber-400" />
-                                Wnioski AI
-                            </CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <ul className="space-y-3">
-                                {insights.map((insight, i) => (
-                                    <motion.li
-                                        key={i}
-                                        initial={{ opacity: 0, x: 10 }}
-                                        animate={{ opacity: 1, x: 0 }}
-                                        transition={{ delay: i * 0.1 }}
-                                        className="flex items-start gap-2 text-sm"
-                                    >
-                                        <ArrowUpRight className="w-4 h-4 text-emerald-400 mt-0.5 flex-shrink-0" />
-                                        <span className="text-slate-300">{insight}</span>
-                                    </motion.li>
-                                ))}
-                            </ul>
-                        </CardContent>
-                    </Card>
+                    {/* Quick Stats Row */}
+                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                        <InteractiveStat
+                            label="Suma wydatków"
+                            value={formatMoney(totalExpenses)}
+                            icon={<Flame className="w-5 h-5" />}
+                            color="from-rose-500/20 to-pink-500/20"
+                        />
+                        <InteractiveStat
+                            label="Średnio dziennie"
+                            value={formatMoney(avgDaily)}
+                            icon={<Calendar className="w-5 h-5" />}
+                            color="from-blue-500/20 to-cyan-500/20"
+                        />
+                        <InteractiveStat
+                            label="Transakcji"
+                            value={transactionCount.toString()}
+                            icon={<BarChart3 className="w-5 h-5" />}
+                            color="from-purple-500/20 to-violet-500/20"
+                        />
+                        <InteractiveStat
+                            label="Śr. wartość"
+                            value={formatMoney(avgTransaction)}
+                            icon={<Target className="w-5 h-5" />}
+                            color="from-emerald-500/20 to-teal-500/20"
+                        />
+                    </div>
 
-                    {/* Category Pie Chart */}
-                    <Card>
-                        <CardHeader>
-                            <CardTitle className="flex items-center gap-2">
-                                <PieChart className="w-5 h-5 text-blue-400" />
-                                Kategorie
-                            </CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <div className="h-48">
-                                <ResponsiveContainer width="100%" height="100%">
-                                    <RePieChart>
-                                        <Pie
-                                            data={categoryData}
-                                            cx="50%"
-                                            cy="50%"
-                                            innerRadius={40}
-                                            outerRadius={70}
-                                            paddingAngle={2}
-                                            dataKey="amount"
-                                        >
-                                            {categoryData.map((entry, index) => (
-                                                <Cell key={`cell-${index}`} fill={entry.color} />
-                                            ))}
-                                        </Pie>
-                                        <Tooltip
-                                            contentStyle={{
-                                                backgroundColor: '#1e293b',
-                                                border: '1px solid #334155',
-                                                borderRadius: '8px',
-                                            }}
-                                            formatter={(value) => [formatMoney(value as number), 'Kwota']}
-                                        />
-                                    </RePieChart>
-                                </ResponsiveContainer>
-                            </div>
-                            <div className="space-y-2 mt-4">
-                                {categoryData.slice(0, 4).map((cat) => (
-                                    <div key={cat.category} className="flex items-center justify-between text-sm">
-                                        <div className="flex items-center gap-2">
-                                            <div
-                                                className="w-3 h-3 rounded-full"
-                                                style={{ backgroundColor: cat.color }}
-                                            />
-                                            <span className="text-slate-300">{cat.name}</span>
-                                        </div>
-                                        <span className="text-slate-400">{formatMoney(cat.amount)}</span>
-                                    </div>
-                                ))}
-                            </div>
-                        </CardContent>
-                    </Card>
-
-                    {/* Top Merchants */}
-                    <Card className="lg:col-span-2">
-                        <CardHeader>
-                            <CardTitle>Top sprzedawcy</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <div className="space-y-3">
-                                {merchantData.map((merchant, i) => (
-                                    <motion.div
-                                        key={merchant.name}
-                                        initial={{ opacity: 0, x: -20 }}
-                                        animate={{ opacity: 1, x: 0 }}
-                                        transition={{ delay: i * 0.1 }}
-                                        className="flex items-center gap-4"
-                                    >
-                                        <span className="text-slate-500 w-5 text-sm">{i + 1}</span>
-                                        <div className="flex-1">
-                                            <div className="flex items-center justify-between mb-1">
-                                                <span className="font-medium">{merchant.name}</span>
-                                                <span className="text-slate-400">{formatMoney(merchant.amount)}</span>
-                                            </div>
-                                            <div className="h-2 bg-slate-700/50 rounded-full overflow-hidden">
-                                                <motion.div
-                                                    initial={{ width: 0 }}
-                                                    animate={{ width: `${(merchant.amount / merchantData[0].amount) * 100}%` }}
-                                                    transition={{ duration: 0.5, delay: i * 0.1 }}
-                                                    className="h-full bg-gradient-to-r from-emerald-500 to-emerald-400 rounded-full"
+                    {/* Main Grid */}
+                    <div className="grid lg:grid-cols-3 gap-6 mb-6">
+                        {/* Trend Chart - Area chart for dopamine */}
+                        <motion.div
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            className="lg:col-span-2"
+                        >
+                            <Card className="overflow-hidden bg-gradient-to-br from-slate-900 to-slate-900/50 border-slate-700/50">
+                                <CardHeader className="pb-2">
+                                    <CardTitle className="flex items-center gap-2 text-lg">
+                                        <TrendingUp className="w-5 h-5 text-emerald-400" />
+                                        Trend wydatków
+                                        <span className="ml-auto text-sm text-slate-400 font-normal">
+                                            Ostatnie 14 dni
+                                        </span>
+                                    </CardTitle>
+                                </CardHeader>
+                                <CardContent>
+                                    <div className="h-64">
+                                        <ResponsiveContainer width="100%" height="100%">
+                                            <AreaChart data={trendData}>
+                                                <defs>
+                                                    <linearGradient id="colorAmount" x1="0" y1="0" x2="0" y2="1">
+                                                        <stop offset="5%" stopColor="#10b981" stopOpacity={0.4} />
+                                                        <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
+                                                    </linearGradient>
+                                                </defs>
+                                                <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
+                                                <XAxis
+                                                    dataKey="date"
+                                                    stroke="#475569"
+                                                    fontSize={11}
+                                                    tickLine={false}
+                                                    axisLine={false}
                                                 />
-                                            </div>
-                                        </div>
-                                    </motion.div>
-                                ))}
-                            </div>
-                        </CardContent>
-                    </Card>
-                </div>
+                                                <YAxis
+                                                    stroke="#475569"
+                                                    fontSize={11}
+                                                    tickLine={false}
+                                                    axisLine={false}
+                                                    tickFormatter={(v) => `${v}`}
+                                                />
+                                                <Tooltip
+                                                    contentStyle={{
+                                                        backgroundColor: '#0f172a',
+                                                        border: '1px solid #334155',
+                                                        borderRadius: '12px',
+                                                        boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)',
+                                                    }}
+                                                    formatter={(value) => [`${(value as number)?.toFixed(2)} zł`, 'Wydatki']}
+                                                />
+                                                <Area
+                                                    type="monotone"
+                                                    dataKey="amount"
+                                                    stroke="#10b981"
+                                                    strokeWidth={2}
+                                                    fillOpacity={1}
+                                                    fill="url(#colorAmount)"
+                                                />
+                                            </AreaChart>
+                                        </ResponsiveContainer>
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        </motion.div>
+
+                        {/* Category Ring */}
+                        <motion.div
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.1 }}
+                        >
+                            <Card className="h-full bg-gradient-to-br from-slate-900 to-slate-900/50 border-slate-700/50">
+                                <CardHeader className="pb-2">
+                                    <CardTitle className="flex items-center gap-2 text-lg">
+                                        <PieChart className="w-5 h-5 text-blue-400" />
+                                        Kategorie
+                                    </CardTitle>
+                                </CardHeader>
+                                <CardContent>
+                                    <CategoryRing
+                                        data={categoryData}
+                                        onSelect={(cat) => setSelectedCategory(cat === selectedCategory ? null : cat)}
+                                    />
+
+                                    {/* Category list */}
+                                    <div className="space-y-2 mt-4">
+                                        {(showAllCategories ? categoryData : categoryData.slice(0, 3)).map((cat, i) => (
+                                            <motion.div
+                                                key={cat.category}
+                                                initial={{ opacity: 0, x: -10 }}
+                                                animate={{ opacity: 1, x: 0 }}
+                                                transition={{ delay: i * 0.05 }}
+                                                whileHover={{ x: 4 }}
+                                                onClick={() => setSelectedCategory(cat.category === selectedCategory ? null : cat.category)}
+                                                className={`flex items-center gap-2 p-2 rounded-lg cursor-pointer transition-all ${selectedCategory === cat.category
+                                                        ? 'bg-white/10'
+                                                        : 'hover:bg-white/5'
+                                                    }`}
+                                            >
+                                                <span className="text-lg">{cat.icon}</span>
+                                                <span className="flex-1 text-sm">{cat.name}</span>
+                                                <span className="text-sm text-slate-400">{formatMoney(cat.amount)}</span>
+                                            </motion.div>
+                                        ))}
+                                        {categoryData.length > 3 && (
+                                            <button
+                                                onClick={() => setShowAllCategories(!showAllCategories)}
+                                                className="w-full flex items-center justify-center gap-1 py-2 text-sm text-slate-400 hover:text-white transition-colors"
+                                            >
+                                                {showAllCategories ? 'Pokaż mniej' : `+${categoryData.length - 3} więcej`}
+                                                <ChevronDown className={`w-4 h-4 transition-transform ${showAllCategories ? 'rotate-180' : ''}`} />
+                                            </button>
+                                        )}
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        </motion.div>
+                    </div>
+
+                    {/* Achievement-style Insights Row */}
+                    <div className="grid md:grid-cols-3 gap-4 mb-6">
+                        <InsightAchievement
+                            icon={<Award className="w-5 h-5 text-amber-400" />}
+                            title="Top Kategoria"
+                            value={categoryData[0]?.name || '—'}
+                            description={`${Math.round((categoryData[0]?.amount / totalExpenses) * 100)}% Twoich wydatków`}
+                            color="from-amber-500/10 to-orange-500/10"
+                            delay={0}
+                        />
+                        <InsightAchievement
+                            icon={<Target className="w-5 h-5 text-emerald-400" />}
+                            title="Dzienny limit"
+                            value={formatMoney(avgDaily)}
+                            description="Średnia z tego okresu"
+                            color="from-emerald-500/10 to-teal-500/10"
+                            delay={0.1}
+                        />
+                        <InsightAchievement
+                            icon={<Sparkles className="w-5 h-5 text-purple-400" />}
+                            title="Największy wydatek"
+                            value={merchantData[0]?.name || '—'}
+                            description={formatMoney(merchantData[0]?.amount || 0)}
+                            color="from-purple-500/10 to-pink-500/10"
+                            delay={0.2}
+                        />
+                    </div>
+
+                    {/* Top Merchants with interactive bars */}
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.2 }}
+                    >
+                        <Card className="bg-gradient-to-br from-slate-900 to-slate-900/50 border-slate-700/50">
+                            <CardHeader>
+                                <CardTitle className="flex items-center gap-2 text-lg">
+                                    <TrendingUp className="w-5 h-5 text-cyan-400" />
+                                    Gdzie wydajesz najwięcej
+                                </CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <div className="space-y-4">
+                                    {merchantData.map((merchant, i) => {
+                                        const percentage = (merchant.amount / merchantData[0].amount) * 100;
+                                        return (
+                                            <motion.div
+                                                key={merchant.name}
+                                                initial={{ opacity: 0, x: -20 }}
+                                                animate={{ opacity: 1, x: 0 }}
+                                                transition={{ delay: i * 0.1 }}
+                                                whileHover={{ scale: 1.01 }}
+                                                className="group cursor-pointer"
+                                            >
+                                                <div className="flex items-center gap-4">
+                                                    <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-slate-700 to-slate-800 flex items-center justify-center text-sm font-bold">
+                                                        {i + 1}
+                                                    </div>
+                                                    <div className="flex-1">
+                                                        <div className="flex items-center justify-between mb-2">
+                                                            <span className="font-medium group-hover:text-emerald-400 transition-colors">
+                                                                {merchant.name}
+                                                            </span>
+                                                            <span className="text-slate-400 group-hover:text-white transition-colors">
+                                                                {formatMoney(merchant.amount)}
+                                                            </span>
+                                                        </div>
+                                                        <div className="h-2 bg-slate-800 rounded-full overflow-hidden">
+                                                            <motion.div
+                                                                initial={{ width: 0 }}
+                                                                animate={{ width: `${percentage}%` }}
+                                                                transition={{ duration: 0.8, delay: i * 0.1, ease: 'easeOut' }}
+                                                                className="h-full rounded-full bg-gradient-to-r from-emerald-500 via-teal-400 to-cyan-400"
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </motion.div>
+                                        );
+                                    })}
+                                </div>
+                            </CardContent>
+                        </Card>
+                    </motion.div>
+                </>
             )}
         </div>
     );

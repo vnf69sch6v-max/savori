@@ -208,7 +208,7 @@ export default function DashboardPage() {
             {/* Hero Section - Safe to Spend + Gamification */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-8">
                 <SafeToSpendCard
-                    totalBalance={100000} // Will be updated with real balance later
+                    totalBalance={Math.max(0, monthlyBudget - monthlyExpenses)} // Actual safe-to-spend
                     plannedExpenses={plannedExpenses}
                     spentThisMonth={monthlyExpenses}
                     budgetLimit={monthlyBudget}
