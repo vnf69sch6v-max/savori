@@ -251,7 +251,7 @@ export default function AnalyticsPage() {
     };
 
     return (
-        <div className="max-w-7xl mx-auto">
+        <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8 pb-20">
             {/* Header with animated background */}
             <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-900 via-slate-900 to-purple-900/30 border border-slate-800 p-6 mb-6">
                 <div className="absolute -top-20 -right-20 w-40 h-40 bg-purple-500/20 rounded-full blur-3xl" />
@@ -330,7 +330,7 @@ export default function AnalyticsPage() {
                     </div>
 
                     {/* Quick Stats Row */}
-                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
                         <InteractiveStat
                             label="Suma wydatków"
                             value={formatMoney(totalExpenses)}

@@ -266,7 +266,7 @@ export default function ReportsPage() {
         : 0;
 
     return (
-        <div className="max-w-4xl mx-auto">
+        <div className="max-w-4xl mx-auto px-4 md:px-6 pb-20">
             {/* Header */}
             <div className="flex items-center justify-between mb-6">
                 <div className="flex items-center gap-3">
@@ -336,7 +336,7 @@ export default function ReportsPage() {
             ) : stats ? (
                 <div className="space-y-6">
                     {/* Summary cards */}
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                         <Card className="p-4 text-center">
                             <p className="text-2xl font-bold text-rose-400">{formatMoney(stats.totalSpent)}</p>
                             <p className="text-xs text-slate-400">Wydatki</p>
