@@ -212,9 +212,9 @@ class ExpenseService {
             })()
         );
 
-        // Execute all side effects in parallel without blocking the return
-        // We don't await this promise chain to return immediately to the UI
-        Promise.allSettled(tasks);
+        // Execute all side effects and await them to ensure they complete in Serverless env
+        // (Previously we didn't await, which caused Vercel to kill the process before completion)
+        await Promise.allSettled(tasks);
 
         // 4. Invalidate cache immediately
         cache.invalidate(`expenses:${userId}`);
