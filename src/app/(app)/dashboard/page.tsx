@@ -26,6 +26,7 @@ import PredictiveSpendingWidget from '@/components/PredictiveSpendingWidget';
 import EmptyDashboard from '@/components/EmptyDashboard';
 import SafeToSpendCard from '@/components/SafeToSpendCard';
 import GamificationHub from '@/components/GamificationHub';
+import { recurringExpensesService, getMonthlyEquivalent } from '@/lib/subscriptions/recurring-service';
 
 // Minimum thresholds for showing advanced features
 const MIN_EXPENSES_FOR_AI = 5;
@@ -162,8 +163,17 @@ export default function DashboardPage() {
     const currentStreak = userData?.stats?.currentStreak ?? 0;
 
     // Budget calculations for Safe-to-Spend card
-    const monthlyBudget = 500000; // 5000 PLN default - should come from user settings
-    const plannedExpenses = 0; // Recurring expenses - will be implemented later
+    const monthlyBudget = (userData?.settings as any)?.monthlyBudget || 500000; // From settings or 5000 PLN default
+    const [plannedExpenses, setPlannedExpenses] = useState(0);
+
+    // Fetch recurring expenses for planned amount
+    useEffect(() => {
+        if (!userData?.id) return;
+
+        recurringExpensesService.getMonthlyTotal(userData.id)
+            .then(total => setPlannedExpenses(Math.round(total)))
+            .catch(console.error);
+    }, [userData?.id]);
 
     // Check if user has enough data
     const isEmpty = expenses.length === 0;

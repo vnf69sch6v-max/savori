@@ -25,6 +25,7 @@ import { detectAnomaly, AnomalyResult } from './anomaly-detector';
 import { engagementService } from '@/lib/engagement/xp-system';
 import { insightsEngine } from '@/lib/ai/insights-engine';
 import { notificationService } from '@/lib/engagement/notifications';
+import { recurringExpensesService } from '@/lib/subscriptions/recurring-service';
 import { Budget } from '@/types';
 
 export interface CreateExpenseInput {
@@ -166,7 +167,29 @@ class ExpenseService {
             console.error('Error in AI pipeline:', e);
         }
 
-        // 7. Invalidate cache
+        // 8. Check for subscription patterns and auto-create recurring expense
+        try {
+            const subscriptionResult = await recurringExpensesService.detectAndCreate(
+                userId,
+                merchant.name,
+                amount,
+                docRef.id
+            );
+
+            if (subscriptionResult?.isNew) {
+                await notificationService.send(userId, {
+                    type: 'insight',
+                    title: `${subscriptionResult.subscription.emoji} Wykryto subskrypcję`,
+                    message: `Dodano ${subscriptionResult.subscription.name} do stałych opłat`,
+                    emoji: subscriptionResult.subscription.emoji,
+                    actionUrl: '/subscriptions'
+                });
+            }
+        } catch (e) {
+            console.error('Error in subscription detection:', e);
+        }
+
+        // 9. Invalidate cache
         cache.invalidate(`expenses:${userId}`);
         cache.invalidate(`stats:${userId}`);
 

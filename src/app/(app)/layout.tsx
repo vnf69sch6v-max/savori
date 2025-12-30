@@ -25,6 +25,7 @@ import {
     Users,
     Plus,
     Download,
+    CreditCard,
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useState } from 'react';
@@ -45,6 +46,7 @@ const navGroups = [
         label: 'Finanse',
         items: [
             { href: '/expenses', icon: Receipt, label: 'Wydatki' },
+            { href: '/subscriptions', icon: CreditCard, label: 'Subskrypcje' },
             { href: '/budgets', icon: Wallet, label: 'Budżety' },
             { href: '/analytics', icon: BarChart3, label: 'Analityka' },
         ]
