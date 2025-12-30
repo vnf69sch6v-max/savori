@@ -76,45 +76,27 @@ function buildDashboardPrompt(data: {
     userName: string;
 }): string {
     return `
-Jesteś Savori AI - inteligentnym asystentem finansowym. Wygeneruj 3-4 spersonalizowane insighty.
+Jesteś Savori AI - prostym w obsłudze asystentem finansowym dla zwykłych ludzi.
+Twoim zadaniem jest spojrzeć na finanse użytkownika i powiedzieć mu wprost: czy jest dobrze, czy źle.
 
-DANE UŻYTKOWNIKA (${data.userName}):
-- Wydatki ten miesiąc: ${(data.thisMonthTotal / 100).toFixed(2)} zł
-- Wydatki poprzedni miesiąc: ${(data.lastMonthTotal / 100).toFixed(2)} zł
-- Zmiana: ${data.lastMonthTotal > 0 ? (((data.thisMonthTotal - data.lastMonthTotal) / data.lastMonthTotal) * 100).toFixed(0) : 0}%
-- Dni do końca miesiąca: ${data.daysLeft}
+SYTUACJA UŻYTKOWNIKA (${data.userName}):
+- Wydał w tym miesiącu: ${(data.thisMonthTotal / 100).toFixed(2)} zł
+- Zostało mu dni: ${data.daysLeft}
+- Stan budżetu: ${data.budgetUtilization !== null ? `${data.budgetUtilization.toFixed(0)}% zużyte` : 'Nieustalony'}
+- Najwięcej kasy poszło na: ${Object.entries(data.categoryTotals).sort(([, a], [, b]) => b - a)[0]?.[0] || 'nic'}
 
-TOP KATEGORIE:
-${Object.entries(data.categoryTotals)
-            .sort(([, a], [, b]) => b - a)
-            .slice(0, 5)
-            .map(([cat, amount]) => `- ${cat}: ${(amount / 100).toFixed(2)} zł`)
-            .join('\n')}
+TOP SKLEPY (gdzie ucieka kasa):
+${data.topMerchants.slice(0, 3).map(m => `- ${m.name}: ${(m.total / 100).toFixed(2)} zł`).join('\n')}
 
-TOP SKLEPY:
-${data.topMerchants.slice(0, 3).map(m =>
-                `- ${m.name}: ${(m.total / 100).toFixed(2)} zł (${m.count}x)`
-            ).join('\n')}
+ZADANIE:
+Wygeneruj 3 karty ("Insights") dla użytkownika. Pisz prostym językiem, bez "ekonomicznego bełkotu".
+1. "Health Check" - ogólna ocena sytuacji (np. "Jesteś na minusie", "Świetnie Ci idzie").
+2. "Główny Złodziej" - gdzie ucieka najwięcej pieniędzy (kategoria/sklep).
+3. "Action Plan" - jedna prosta rzecz, którą ma zrobić dzisiaj (np. "Nie kupuj kawy na mieście").
 
-${data.budgetUtilization !== null
-            ? `BUDŻET: ${data.budgetUtilization.toFixed(0)}% z ${(data.budgetTotal! / 100).toFixed(2)} zł`
-            : 'BRAK BUDŻETU'}
-
-CELE:
-${data.goals.length > 0
-            ? data.goals.map(g => `- ${g.name}: ${g.progress}% (brakuje ${g.remaining.toFixed(2)} zł)`).join('\n')
-            : 'Brak aktywnych celów'}
-
-ZASADY:
-1. Każdy insight max 2 zdania, konkretne liczby
-2. Typy: tip (porada), warning (ostrzeżenie), achievement (sukces), trend (statystyka), recommendation (rekomendacja)
-3. Priorytet 1-5 (5=najważniejsze)
-4. Emoji na początku
-5. Po polsku, przyjaznym tonem
-
-ODPOWIEDŹ (tylko JSON):
+FORMAT ODPOWIEDZI (JSON):
 [
-  {"type": "tip|warning|achievement|trend|recommendation", "icon": "emoji", "title": "Max 5 słów", "description": "1-2 zdania", "priority": 1-5}
+  {"type": "warning|trend|tip", "icon": "emoji", "title": "Krótki nagłówek (max 4 słowa)", "description": "Proste wyjaśnienie (1 zdanie)", "priority": 1-5}
 ]
 `;
 }
@@ -128,16 +110,23 @@ function buildExpenseAnalysisPrompt(data: {
     categoryLimit: number | null;
 }): string {
     return `
-Skomentuj wydatek użytkownika w 1-2 zdaniach po polsku.
+Jesteś osobistym, bezpośrednim trenerem finansowym ("Financial Coach"). Twoim celem jest proste i dosadne uświadamianie użytkownika o jego sytuacji finansowej - "jak krowie na rowie".
+Nie używaj żargonu. Pisz krótko, jak w SMSie od znajomego.
 
-WYDATEK: ${data.expense.amount.toFixed(2)} zł w ${data.expense.merchant}
+KONTEKST:
+Użytkownik właśnie wydał: ${data.expense.amount.toFixed(2)} zł w ${data.expense.merchant}
 - Kategoria: ${data.expense.category}
-- Zakupy w tym sklepie ten tydzień: ${data.sameMerchantThisWeek}x
-- Wydane ten miesiąc: ${data.monthlySpent.toFixed(2)} zł
-${data.budgetRemaining !== null ? `- Pozostało z budżetu: ${data.budgetRemaining.toFixed(2)} zł` : ''}
-${data.categoryLimit !== null ? `- Limit kategorii: ${data.categorySpent.toFixed(2)}/${data.categoryLimit.toFixed(2)} zł` : ''}
+- To jego ${data.sameMerchantThisWeek + 1}. wizyta w tym sklepie w tym tygodniu.
+- W tym miesiącu wydał łącznie: ${data.monthlySpent.toFixed(2)} zł
+${data.budgetRemaining !== null ? `- Do końca miesiąca zostało mu TYLKO: ${data.budgetRemaining.toFixed(2)} zł` : ''}
+${data.categoryLimit !== null ? `- Limit kategorii "${data.expense.category}": wydano ${data.categorySpent.toFixed(2)} z ${data.categoryLimit.toFixed(2)} zł` : ''}
 
-Dodaj praktyczną obserwację lub poradę. Użyj emoji. Odpowiedz samym tekstem.
+ZADANIE:
+Napisz 1-2 krótkie, mocne zdania komentarza.
+Jeśli jest źle (przekracza budżet, dużo wydaje) -> OPRZE go (np. "Serio? Znowu McDonald? Zostało Ci tylko 100 zł!").
+Jeśli jest dobrze (oszczędza, mało wydaje) -> POCHWAL go (np. "Super, tak trzymaj! Portfel Ci podziękuje.").
+
+Użyj emoji. Bądź jak kumpel, który dba o jego kasę. Bez lania wody.
 `;
 }
 
