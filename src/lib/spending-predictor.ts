@@ -1,4 +1,4 @@
-import { collection, query, orderBy, limit, getDocs, Timestamp } from 'firebase/firestore';
+import { collection, query, orderBy, limit, getDocs, Timestamp, where } from 'firebase/firestore';
 import { db } from './firebase';
 import { Expense, Budget } from '@/types';
 import { startOfMonth, endOfMonth, subMonths, differenceInDays, format } from 'date-fns';
@@ -36,9 +36,16 @@ export async function predictMonthlySpending(userId: string): Promise<SpendingPr
     // Fetch expenses from last 3 months
     const threeMonthsAgo = startOfMonth(subMonths(now, 3));
     const expensesRef = collection(db, 'users', userId, 'expenses');
-    const q = query(expensesRef, orderBy('date', 'desc'), limit(500));
-    const snapshot = await getDocs(q);
-    const allExpenses = snapshot.docs.map(d => ({ id: d.id, ...d.data() })) as Expense[];
+    const budgetsRef = collection(db, 'users', userId, 'budgets');
+
+    // Parallelize independent queries
+    const [expensesSnap, budgetsSnap] = await Promise.all([
+        getDocs(query(expensesRef, orderBy('date', 'desc'), where('date', '>=', Timestamp.fromDate(threeMonthsAgo)), limit(1000))),
+        getDocs(budgetsRef)
+    ]);
+
+    const allExpenses = expensesSnap.docs.map(d => ({ id: d.id, ...d.data() })) as Expense[];
+    const budgets = budgetsSnap.docs.map(d => ({ id: d.id, ...d.data() })) as Budget[];
 
     // Current month expenses
     const thisMonthExpenses = allExpenses.filter(e => {
@@ -72,9 +79,6 @@ export async function predictMonthlySpending(userId: string): Promise<SpendingPr
     const predictedTotal = currentSpent + (dailyAverage * daysRemaining);
 
     // Get budget
-    const budgetsRef = collection(db, 'users', userId, 'budgets');
-    const budgetSnap = await getDocs(budgetsRef);
-    const budgets = budgetSnap.docs.map(d => ({ id: d.id, ...d.data() })) as Budget[];
     const currentBudget = budgets.find(b => b.month === format(now, 'yyyy-MM'));
     const budgetLimit = currentBudget?.totalLimit || null;
 

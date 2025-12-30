@@ -101,99 +101,127 @@ class ExpenseService {
 
         const docRef = await addDoc(this.expensesRef(userId), expenseData);
 
-        // 3. Award XP
+        // 3. Parallelize post-creation operations
+        const tasks = [];
         const actionKey = source === 'scan' ? 'scan_receipt' : 'add_expense_manual';
-        const { xp } = await engagementService.awardXP(userId, actionKey);
 
-        // 4. Emit events
-        await eventBus.emit('expense:added', {
-            expense: { id: docRef.id, amount, category: merchant.category, merchant: merchant.name },
-            userId,
-        });
-
-        await eventBus.emit('points:awarded', {
-            points: xp,
-            reason: source === 'scan' ? 'Skanowanie paragonu' : 'Dodanie wydatku',
-            userId,
-        });
-
-        if (anomaly.isAnomaly) {
-            await eventBus.emit('ai:anomaly_detected', {
-                expenseId: docRef.id,
-                severity: anomaly.severity,
-                reason: anomaly.reason,
-                userId,
-            });
-        }
-
-        // 7. Generate AI Insights & Notifications
-        try {
-            // Fetch necessary data
-            const recentExpenses = await this.getByPeriod(userId, 'month');
-            const budgetsSnap = await getDocs(collection(db, 'users', userId, 'budgets'));
-            const budgets = budgetsSnap.docs.map(d => {
-                const b = d.data() as Budget;
-                const limits = b.categoryLimits ? Object.entries(b.categoryLimits).map(([cat, l]: [string, any]) => ({
-                    category: cat as ExpenseCategory,
-                    limit: l.limit,
-                    spent: l.spent || 0
-                })) : [];
-                return limits;
-            }).flat();
-
-            const fullExpense: Expense = { ...expenseData, id: docRef.id, createdAt: Timestamp.now() } as Expense;
-
-            // Generate insights
-            const insights = insightsEngine.generateInsightsForExpense(
-                fullExpense,
-                recentExpenses,
-                null, // Profile can be null, engine handles it
-                budgets
-            );
-
-            // Send notifications for important insights
-            for (const insight of insights) {
-                if (insight.priority === 'critical' || insight.priority === 'high') {
-                    await notificationService.send(userId, {
-                        type: insight.type === 'budget_warning' ? 'budget_alert' : 'insight',
-                        title: insight.title,
-                        message: insight.message,
-                        emoji: insight.emoji,
-                        actionUrl: insight.actionUrl
+        // Task A: Award XP (Critical for engagement, but shouldn't block main flow if it fails)
+        tasks.push(
+            engagementService.awardXP(userId, actionKey)
+                .then(({ xp }) => {
+                    // Emit points awarded event
+                    eventBus.emit('points:awarded', {
+                        points: xp,
+                        reason: source === 'scan' ? 'Skanowanie paragonu' : 'Dodanie wydatku',
+                        userId,
                     });
-                }
-            }
-        } catch (e) {
-            console.error('Error in AI pipeline:', e);
-        }
+                    return xp;
+                })
+                .catch(err => console.error('Error awarding XP:', err))
+        );
 
-        // 8. Check for subscription patterns and auto-create recurring expense
-        try {
-            const subscriptionResult = await recurringExpensesService.detectAndCreate(
+        // Task B: Emit standard expense added event
+        tasks.push(
+            eventBus.emit('expense:added', {
+                expense: { id: docRef.id, amount, category: merchant.category, merchant: merchant.name },
                 userId,
-                merchant.name,
-                amount,
-                docRef.id
-            );
+            })
+        );
 
-            if (subscriptionResult?.isNew) {
-                await notificationService.send(userId, {
-                    type: 'insight',
-                    title: `${subscriptionResult.subscription.emoji} Wykryto subskrypcję`,
-                    message: `Dodano ${subscriptionResult.subscription.name} do stałych opłat`,
-                    emoji: subscriptionResult.subscription.emoji,
-                    actionUrl: '/subscriptions'
-                });
-            }
-        } catch (e) {
-            console.error('Error in subscription detection:', e);
+        // Task C: Handle Anomaly Event if detected
+        if (anomaly.isAnomaly) {
+            tasks.push(
+                eventBus.emit('ai:anomaly_detected', {
+                    expenseId: docRef.id,
+                    severity: anomaly.severity,
+                    reason: anomaly.reason,
+                    userId,
+                })
+            );
         }
 
-        // 9. Invalidate cache
+        // Task D: AI Insights & Notifications (Heavy Operation)
+        tasks.push(
+            (async () => {
+                try {
+                    const [recentExpenses, budgetsSnap] = await Promise.all([
+                        this.getByPeriod(userId, 'month'),
+                        getDocs(collection(db, 'users', userId, 'budgets'))
+                    ]);
+
+                    const budgets = budgetsSnap.docs.map(d => {
+                        const b = d.data() as Budget;
+                        const limits = b.categoryLimits ? Object.entries(b.categoryLimits).map(([cat, l]: [string, any]) => ({
+                            category: cat as ExpenseCategory,
+                            limit: l.limit,
+                            spent: l.spent || 0
+                        })) : [];
+                        return limits;
+                    }).flat();
+
+                    const fullExpense: Expense = { ...expenseData, id: docRef.id, createdAt: Timestamp.now() } as Expense;
+
+                    const insights = insightsEngine.generateInsightsForExpense(
+                        fullExpense,
+                        recentExpenses,
+                        null,
+                        budgets
+                    );
+
+                    // Send parallel notifications
+                    await Promise.all(insights.map(async insight => {
+                        if (insight.priority === 'critical' || insight.priority === 'high') {
+                            await notificationService.send(userId, {
+                                type: insight.type === 'budget_warning' ? 'budget_alert' : 'insight',
+                                title: insight.title,
+                                message: insight.message,
+                                emoji: insight.emoji,
+                                actionUrl: insight.actionUrl
+                            });
+                        }
+                    }));
+                } catch (e) {
+                    console.error('Error in AI pipeline:', e);
+                }
+            })()
+        );
+
+        // Task E: Subscription Detection
+        tasks.push(
+            (async () => {
+                try {
+                    const subscriptionResult = await recurringExpensesService.detectAndCreate(
+                        userId,
+                        merchant.name,
+                        amount,
+                        docRef.id
+                    );
+
+                    if (subscriptionResult?.isNew) {
+                        await notificationService.send(userId, {
+                            type: 'insight',
+                            title: `${subscriptionResult.subscription.emoji} Wykryto subskrypcję`,
+                            message: `Dodano ${subscriptionResult.subscription.name} do stałych opłat`,
+                            emoji: subscriptionResult.subscription.emoji,
+                            actionUrl: '/subscriptions'
+                        });
+                    }
+                } catch (e) {
+                    console.error('Error in subscription detection:', e);
+                }
+            })()
+        );
+
+        // Execute all side effects in parallel without blocking the return
+        // We don't await this promise chain to return immediately to the UI
+        Promise.allSettled(tasks);
+
+        // 4. Invalidate cache immediately
         cache.invalidate(`expenses:${userId}`);
         cache.invalidate(`stats:${userId}`);
 
-        return { expenseId: docRef.id, anomaly: anomaly.isAnomaly ? anomaly : null, xp };
+        // Return early, let the background tasks finish
+        return { expenseId: docRef.id, anomaly: anomaly.isAnomaly ? anomaly : null, xp: 0 }; // XP is 0 because it's calculated async now, UI should handle this or rely on event
     }
 
     /**

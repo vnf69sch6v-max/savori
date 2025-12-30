@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import {
     BarChart3,
     TrendingUp,
@@ -13,7 +13,6 @@ import {
     Target,
     Award,
     ChevronDown,
-    ArrowRight,
     Flame,
 } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent, Button } from '@/components/ui';
@@ -21,50 +20,12 @@ import { useAuth } from '@/contexts/AuthContext';
 import { formatMoney, CATEGORY_LABELS, CATEGORY_COLORS, CATEGORY_ICONS } from '@/lib/utils';
 import { collection, query, where, orderBy, onSnapshot, Timestamp } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
-import { Expense, ExpenseCategory } from '@/types';
+import { Expense } from '@/types';
 import AICommentary from '@/components/AICommentary';
-import {
-    BarChart,
-    Bar,
-    XAxis,
-    YAxis,
-    CartesianGrid,
-    Tooltip,
-    ResponsiveContainer,
-    PieChart as RePieChart,
-    Pie,
-    Cell,
-    AreaChart,
-    Area,
-} from 'recharts';
+import CategoryRing from '@/components/analytics/CategoryRing';
+import SpendingTrendChart from '@/components/analytics/SpendingTrendChart';
 
 type Period = 'week' | 'month' | 'quarter' | 'year';
-
-// Animated counter component
-function AnimatedNumber({ value, prefix = '', suffix = '' }: { value: number; prefix?: string; suffix?: string }) {
-    const [displayValue, setDisplayValue] = useState(0);
-
-    useEffect(() => {
-        const duration = 1000;
-        const steps = 30;
-        const stepValue = value / steps;
-        let current = 0;
-
-        const timer = setInterval(() => {
-            current += stepValue;
-            if (current >= value) {
-                setDisplayValue(value);
-                clearInterval(timer);
-            } else {
-                setDisplayValue(Math.floor(current));
-            }
-        }, duration / steps);
-
-        return () => clearInterval(timer);
-    }, [value]);
-
-    return <span>{prefix}{displayValue.toLocaleString('pl-PL')}{suffix}</span>;
-}
 
 // Interactive stat card with hover effects
 function InteractiveStat({
@@ -116,75 +77,6 @@ function InteractiveStat({
                 )}
             </div>
         </motion.div>
-    );
-}
-
-// Category breakdown with animated bars
-function CategoryRing({ data, onSelect }: { data: any[]; onSelect: (cat: string) => void }) {
-    const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
-    const total = data.reduce((sum, d) => sum + d.amount, 0);
-
-    return (
-        <div className="relative">
-            <div className="h-52">
-                <ResponsiveContainer width="100%" height="100%">
-                    <RePieChart>
-                        <Pie
-                            data={data}
-                            cx="50%"
-                            cy="50%"
-                            innerRadius={55}
-                            outerRadius={hoveredIndex !== null ? 85 : 80}
-                            paddingAngle={3}
-                            dataKey="amount"
-                            onMouseEnter={(_, index) => setHoveredIndex(index)}
-                            onMouseLeave={() => setHoveredIndex(null)}
-                            onClick={(_, index) => onSelect(data[index].category)}
-                        >
-                            {data.map((entry, index) => (
-                                <Cell
-                                    key={`cell-${index}`}
-                                    fill={entry.color}
-                                    stroke="transparent"
-                                    style={{
-                                        filter: hoveredIndex === index ? 'drop-shadow(0 0 8px rgba(255,255,255,0.3))' : 'none',
-                                        cursor: 'pointer',
-                                        transition: 'all 0.3s ease',
-                                    }}
-                                />
-                            ))}
-                        </Pie>
-                        <Tooltip
-                            contentStyle={{
-                                backgroundColor: '#0f172a',
-                                border: '1px solid #334155',
-                                borderRadius: '12px',
-                                padding: '12px',
-                            }}
-                            formatter={(value) => [formatMoney(value as number), 'Kwota']}
-                        />
-                    </RePieChart>
-                </ResponsiveContainer>
-            </div>
-
-            {/* Center stats */}
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center pointer-events-none">
-                <motion.p
-                    key={hoveredIndex}
-                    initial={{ scale: 0.8, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 1 }}
-                    className="text-2xl font-bold"
-                >
-                    {hoveredIndex !== null
-                        ? `${Math.round((data[hoveredIndex].amount / total) * 100)}%`
-                        : formatMoney(total)
-                    }
-                </motion.p>
-                <p className="text-xs text-slate-400">
-                    {hoveredIndex !== null ? data[hoveredIndex].name : 'Suma'}
-                </p>
-            </div>
-        </div>
     );
 }
 
@@ -395,8 +287,8 @@ export default function AnalyticsPage() {
                                 whileTap={{ scale: 0.95 }}
                                 onClick={() => setPeriod(p)}
                                 className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${period === p
-                                        ? 'bg-purple-500 text-white shadow-lg shadow-purple-500/25'
-                                        : 'text-slate-400 hover:text-white hover:bg-slate-700/50'
+                                    ? 'bg-purple-500 text-white shadow-lg shadow-purple-500/25'
+                                    : 'text-slate-400 hover:text-white hover:bg-slate-700/50'
                                     }`}
                             >
                                 <span className="hidden sm:inline">{periodLabels[p]}</span>
@@ -473,63 +365,7 @@ export default function AnalyticsPage() {
                             animate={{ opacity: 1, y: 0 }}
                             className="lg:col-span-2"
                         >
-                            <Card className="overflow-hidden bg-gradient-to-br from-slate-900 to-slate-900/50 border-slate-700/50">
-                                <CardHeader className="pb-2">
-                                    <CardTitle className="flex items-center gap-2 text-lg">
-                                        <TrendingUp className="w-5 h-5 text-emerald-400" />
-                                        Trend wydatków
-                                        <span className="ml-auto text-sm text-slate-400 font-normal">
-                                            Ostatnie 14 dni
-                                        </span>
-                                    </CardTitle>
-                                </CardHeader>
-                                <CardContent>
-                                    <div className="h-64">
-                                        <ResponsiveContainer width="100%" height="100%">
-                                            <AreaChart data={trendData}>
-                                                <defs>
-                                                    <linearGradient id="colorAmount" x1="0" y1="0" x2="0" y2="1">
-                                                        <stop offset="5%" stopColor="#10b981" stopOpacity={0.4} />
-                                                        <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
-                                                    </linearGradient>
-                                                </defs>
-                                                <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
-                                                <XAxis
-                                                    dataKey="date"
-                                                    stroke="#475569"
-                                                    fontSize={11}
-                                                    tickLine={false}
-                                                    axisLine={false}
-                                                />
-                                                <YAxis
-                                                    stroke="#475569"
-                                                    fontSize={11}
-                                                    tickLine={false}
-                                                    axisLine={false}
-                                                    tickFormatter={(v) => `${v}`}
-                                                />
-                                                <Tooltip
-                                                    contentStyle={{
-                                                        backgroundColor: '#0f172a',
-                                                        border: '1px solid #334155',
-                                                        borderRadius: '12px',
-                                                        boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)',
-                                                    }}
-                                                    formatter={(value) => [`${(value as number)?.toFixed(2)} zł`, 'Wydatki']}
-                                                />
-                                                <Area
-                                                    type="monotone"
-                                                    dataKey="amount"
-                                                    stroke="#10b981"
-                                                    strokeWidth={2}
-                                                    fillOpacity={1}
-                                                    fill="url(#colorAmount)"
-                                                />
-                                            </AreaChart>
-                                        </ResponsiveContainer>
-                                    </div>
-                                </CardContent>
-                            </Card>
+                            <SpendingTrendChart data={trendData} />
                         </motion.div>
 
                         {/* Category Ring */}
@@ -562,8 +398,8 @@ export default function AnalyticsPage() {
                                                 whileHover={{ x: 4 }}
                                                 onClick={() => setSelectedCategory(cat.category === selectedCategory ? null : cat.category)}
                                                 className={`flex items-center gap-2 p-2 rounded-lg cursor-pointer transition-all ${selectedCategory === cat.category
-                                                        ? 'bg-white/10'
-                                                        : 'hover:bg-white/5'
+                                                    ? 'bg-white/10'
+                                                    : 'hover:bg-white/5'
                                                     }`}
                                             >
                                                 <span className="text-lg">{cat.icon}</span>

@@ -6,6 +6,7 @@
 import { Expense, ExpenseCategory } from '@/types';
 import { collection, getDocs, query, where, orderBy, Timestamp } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
+import { jsPDF } from 'jspdf';
 
 // ============ TYPES ============
 
@@ -27,10 +28,10 @@ export interface ExportResult {
 // ============ CATEGORY LABELS ============
 
 const CATEGORY_LABELS: Record<ExpenseCategory, string> = {
-    groceries: 'Zakupy spożywcze',
+    groceries: 'Zakupy spozywcze',
     restaurants: 'Restauracje',
     transport: 'Transport',
-    utilities: 'Opłaty',
+    utilities: 'Oplaty',
     entertainment: 'Rozrywka',
     shopping: 'Zakupy',
     health: 'Zdrowie',
@@ -112,7 +113,128 @@ class ExportService {
             };
         } catch (error) {
             console.error('Export to CSV error:', error);
-            return { success: false, error: 'Błąd podczas eksportu' };
+            return { success: false, error: 'Blad podczas eksportu' };
+        }
+    }
+
+    /**
+     * Export expenses to PDF
+     */
+    async exportToPDF(options: ExportOptions): Promise<ExportResult> {
+        try {
+            const expenses = await this.fetchExpenses(options);
+
+            if (expenses.length === 0) {
+                return { success: false, error: 'Brak wydatkow w wybranym okresie' };
+            }
+
+            const doc = new jsPDF();
+            let yPos = 20;
+
+            // Title
+            doc.setFontSize(18);
+            doc.text('SAVORI - Raport Wydatkow', 105, yPos, { align: 'center' });
+            yPos += 10;
+
+            // Date range
+            doc.setFontSize(10);
+            doc.text(
+                `${this.formatDate(options.startDate)} - ${this.formatDate(options.endDate)}`,
+                105,
+                yPos,
+                { align: 'center' }
+            );
+            yPos += 15;
+
+            // Summary
+            const total = expenses.reduce((sum, e) => sum + e.amount, 0);
+            doc.setFontSize(12);
+            doc.text(`Laczne wydatki: ${this.formatAmount(total)} PLN`, 20, yPos);
+            yPos += 8;
+            doc.text(`Liczba transakcji: ${expenses.length}`, 20, yPos);
+            yPos += 15;
+
+            // Category breakdown
+            const byCategory: Record<string, number> = {};
+            expenses.forEach(e => {
+                const cat = e.merchant?.category || 'other';
+                byCategory[cat] = (byCategory[cat] || 0) + e.amount;
+            });
+
+            doc.setFontSize(14);
+            doc.text('Kategorie:', 20, yPos);
+            yPos += 8;
+
+            doc.setFontSize(10);
+            Object.entries(byCategory)
+                .sort((a, b) => b[1] - a[1])
+                .forEach(([cat, amount]) => {
+                    const label = CATEGORY_LABELS[cat as ExpenseCategory] || cat;
+                    const percent = ((amount / total) * 100).toFixed(1);
+                    doc.text(`${label}: ${this.formatAmount(amount)} PLN (${percent}%)`, 25, yPos);
+                    yPos += 6;
+                });
+
+            yPos += 10;
+
+            // Expense table
+            if (yPos > 250) {
+                doc.addPage();
+                yPos = 20;
+            }
+
+            doc.setFontSize(14);
+            doc.text('Szczegoly transakcji:', 20, yPos);
+            yPos += 8;
+
+            doc.setFontSize(9);
+            // Table header
+            doc.text('Data', 20, yPos);
+            doc.text('Sklep', 50, yPos);
+            doc.text('Kategoria', 100, yPos);
+            doc.text('Kwota', 150, yPos);
+            yPos += 5;
+
+            // Table rows
+            expenses.slice(0, 50).forEach(expense => { // Limit to 50 for PDF size
+                if (yPos > 280) {
+                    doc.addPage();
+                    yPos = 20;
+                }
+
+                const date = expense.date?.toDate?.() || new Date();
+                doc.text(this.formatDate(date), 20, yPos);
+                doc.text((expense.merchant?.name || 'Nieznany').substring(0, 20), 50, yPos);
+                doc.text(CATEGORY_LABELS[expense.merchant?.category || 'other'].substring(0, 15), 100, yPos);
+                doc.text(`${this.formatAmount(expense.amount)} PLN`, 150, yPos);
+                yPos += 5;
+            });
+
+            if (expenses.length > 50) {
+                yPos += 5;
+                doc.text(`... i ${expenses.length - 50} wiecej transakcji`, 20, yPos);
+            }
+
+            // Footer
+            doc.setFontSize(8);
+            doc.text(
+                `Wygenerowano przez Savori - ${new Date().toLocaleDateString('pl-PL')}`,
+                105,
+                285,
+                { align: 'center' }
+            );
+
+            const pdfBlob = doc.output('blob');
+            const filename = `savori_raport_${this.formatDateForFilename(options.startDate)}_${this.formatDateForFilename(options.endDate)}.pdf`;
+
+            return {
+                success: true,
+                data: pdfBlob,
+                filename
+            };
+        } catch (error) {
+            console.error('Export to PDF error:', error);
+            return { success: false, error: 'Blad podczas generowania PDF' };
         }
     }
 
@@ -181,8 +303,8 @@ class ExportService {
         const summary = await this.generateMonthlySummary(userId, month);
 
         const [year, monthNum] = month.split('-').map(Number);
-        const monthNames = ['Styczeń', 'Luty', 'Marzec', 'Kwiecień', 'Maj', 'Czerwiec',
-            'Lipiec', 'Sierpień', 'Wrzesień', 'Październik', 'Listopad', 'Grudzień'];
+        const monthNames = ['Styczen', 'Luty', 'Marzec', 'Kwiecien', 'Maj', 'Czerwiec',
+            'Lipiec', 'Sierpien', 'Wrzesien', 'Pazdziernik', 'Listopad', 'Grudzien'];
 
         let text = `
 ╔════════════════════════════════════════╗
@@ -193,9 +315,9 @@ class ExportService {
 
 📊 PODSUMOWANIE
 ───────────────────────────────────────
-Łączne wydatki:    ${this.formatAmount(summary.totalSpent)} PLN
+Laczne wydatki:    ${this.formatAmount(summary.totalSpent)} PLN
 Liczba transakcji: ${summary.expenseCount}
-Średnia dzienna:   ${this.formatAmount(summary.dailyAverage)} PLN
+Srednia dzienna:   ${this.formatAmount(summary.dailyAverage)} PLN
 
 📁 WYDATKI WG KATEGORII
 ───────────────────────────────────────
@@ -274,3 +396,4 @@ Wygenerowano przez Savori
 
 // Singleton export
 export const exportService = new ExportService();
+

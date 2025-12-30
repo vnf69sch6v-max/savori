@@ -22,6 +22,7 @@ import { collection, query, orderBy, onSnapshot, deleteDoc, doc, where, Timestam
 import { db } from '@/lib/firebase';
 import { Expense, ExpenseCategory } from '@/types';
 import AddExpenseModal from '@/components/AddExpenseModal';
+import ExpenseList from '@/components/ExpenseList';
 
 export default function ExpensesPage() {
     const { userData } = useAuth();
@@ -161,69 +162,7 @@ export default function ExpensesPage() {
                     </Link>
                 </Card>
             ) : (
-                <div className="space-y-6">
-                    {Object.entries(groupedExpenses).map(([dateStr, dayExpenses], groupIndex) => (
-                        <motion.div
-                            key={dateStr}
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: groupIndex * 0.1 }}
-                        >
-                            <div className="flex items-center justify-between mb-3">
-                                <div className="flex items-center gap-2 text-slate-400">
-                                    <Calendar className="w-4 h-4" />
-                                    <span className="text-sm font-medium">
-                                        {formatDate(new Date(dateStr), 'long')}
-                                    </span>
-                                </div>
-                                <span className="text-sm text-slate-500">
-                                    {formatMoney(dayExpenses.reduce((sum, e) => sum + (e.amount || 0), 0))}
-                                </span>
-                            </div>
-
-                            <Card className="divide-y divide-slate-700/50">
-                                {dayExpenses.map((expense, i) => (
-                                    <motion.div
-                                        key={expense.id}
-                                        initial={{ opacity: 0, x: -20 }}
-                                        animate={{ opacity: 1, x: 0 }}
-                                        transition={{ delay: i * 0.05 }}
-                                        className="flex items-center gap-4 p-4 hover:bg-slate-800/30 transition-colors group"
-                                    >
-                                        <div className="w-12 h-12 rounded-xl bg-slate-800 flex items-center justify-center text-2xl">
-                                            {CATEGORY_ICONS[expense.merchant?.category] || '📦'}
-                                        </div>
-                                        <div className="flex-1 min-w-0">
-                                            <p className="font-medium truncate">{expense.merchant?.name || 'Nieznany'}</p>
-                                            <p className="text-sm text-slate-400">
-                                                {CATEGORY_LABELS[expense.merchant?.category] || 'Inne'}
-                                                {expense.items && expense.items.length > 0 && (
-                                                    <span className="ml-2 text-slate-500">
-                                                        • {expense.items.length} produktów
-                                                    </span>
-                                                )}
-                                            </p>
-                                        </div>
-                                        <div className="text-right">
-                                            <p className="font-medium text-rose-400">
-                                                -{formatMoney(expense.amount)}
-                                            </p>
-                                            {expense.metadata?.source === 'scan' && (
-                                                <span className="text-xs text-emerald-400">AI</span>
-                                            )}
-                                        </div>
-                                        <button
-                                            onClick={() => handleDelete(expense.id)}
-                                            className="opacity-0 group-hover:opacity-100 p-2 text-slate-400 hover:text-red-400 transition-all"
-                                        >
-                                            <Trash2 className="w-4 h-4" />
-                                        </button>
-                                    </motion.div>
-                                ))}
-                            </Card>
-                        </motion.div>
-                    ))}
-                </div>
+                <ExpenseList expenses={groupedExpenses} onDelete={handleDelete} />
             )}
 
             {/* Add Expense Modal */}

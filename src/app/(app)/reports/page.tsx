@@ -26,6 +26,8 @@ import { Expense, Budget, SavingGoal } from '@/types';
 import { format, startOfMonth, endOfMonth, subMonths, addMonths } from 'date-fns';
 import { pl } from 'date-fns/locale';
 import { UserEngagement, BADGES } from '@/lib/engagement/xp-system';
+import { exportService } from '@/lib/export/export-service';
+import toast from 'react-hot-toast';
 
 interface MonthlyStats {
     totalSpent: number;
@@ -49,9 +51,65 @@ export default function ReportsPage() {
     const [loading, setLoading] = useState(true);
     const [aiSummary, setAiSummary] = useState<string>('');
     const [loadingAI, setLoadingAI] = useState(false);
+    const [exportingPDF, setExportingPDF] = useState(false);
+    const [exportingCSV, setExportingCSV] = useState(false);
 
     const monthKey = format(currentMonth, 'yyyy-MM');
     const monthLabel = format(currentMonth, 'LLLL yyyy', { locale: pl });
+
+    // Handle PDF export
+    const handleExportPDF = async () => {
+        if (!userData?.id) return;
+
+        setExportingPDF(true);
+        try {
+            const result = await exportService.exportToPDF({
+                userId: userData.id,
+                startDate: startOfMonth(currentMonth),
+                endDate: endOfMonth(currentMonth),
+                format: 'pdf',
+            });
+
+            if (result.success && result.data && result.filename) {
+                exportService.downloadFile(result.data, result.filename, 'application/pdf');
+                toast.success('📄 Raport PDF pobrany');
+            } else {
+                toast.error(result.error || 'Błąd pobierania PDF');
+            }
+        } catch (error) {
+            console.error('PDF export error:', error);
+            toast.error('Błąd generowania PDF');
+        } finally {
+            setExportingPDF(false);
+        }
+    };
+
+    // Handle CSV export
+    const handleExportCSV = async () => {
+        if (!userData?.id) return;
+
+        setExportingCSV(true);
+        try {
+            const result = await exportService.exportToCSV({
+                userId: userData.id,
+                startDate: startOfMonth(currentMonth),
+                endDate: endOfMonth(currentMonth),
+                format: 'csv',
+            });
+
+            if (result.success && result.data && result.filename) {
+                exportService.downloadFile(result.data, result.filename);
+                toast.success('📊 Dane CSV pobrane');
+            } else {
+                toast.error(result.error || 'Błąd pobierania CSV');
+            }
+        } catch (error) {
+            console.error('CSV export error:', error);
+            toast.error('Błąd generowania CSV');
+        } finally {
+            setExportingCSV(false);
+        }
+    };
 
     // Fetch monthly data
     useEffect(() => {
@@ -221,13 +279,31 @@ export default function ReportsPage() {
                     </div>
                 </div>
                 <div className="flex gap-2">
-                    <Button variant="outline" size="sm">
-                        <Download className="w-4 h-4 mr-1" />
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={handleExportPDF}
+                        disabled={exportingPDF || !stats}
+                    >
+                        {exportingPDF ? (
+                            <Loader2 className="w-4 h-4 mr-1 animate-spin" />
+                        ) : (
+                            <Download className="w-4 h-4 mr-1" />
+                        )}
                         PDF
                     </Button>
-                    <Button variant="outline" size="sm">
-                        <Share2 className="w-4 h-4 mr-1" />
-                        Udostępnij
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={handleExportCSV}
+                        disabled={exportingCSV || !stats}
+                    >
+                        {exportingCSV ? (
+                            <Loader2 className="w-4 h-4 mr-1 animate-spin" />
+                        ) : (
+                            <Download className="w-4 h-4 mr-1" />
+                        )}
+                        CSV
                     </Button>
                 </div>
             </div>

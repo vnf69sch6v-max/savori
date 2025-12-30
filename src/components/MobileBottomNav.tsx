@@ -42,7 +42,7 @@ export default function MobileBottomNav() {
                         <Link
                             key={item.href}
                             href={item.href}
-                            className="relative flex flex-col items-center justify-center py-2 px-4 min-w-[60px]"
+                            className="relative flex flex-col items-center justify-center py-3 px-4 min-w-[64px] min-h-[54px]"
                         >
                             {/* Active indicator */}
                             {isActive && (
