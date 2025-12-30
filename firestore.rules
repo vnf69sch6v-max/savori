@@ -138,6 +138,18 @@ service cloud.firestore {
         // Users can delete (abandon) challenges
         allow delete: if isOwner(userId);
       }
+      // ============ RECURRING EXPENSES SUBCOLLECTION ============
+      
+      match /recurringExpenses/{expenseId} {
+        // Users can read their own recurring expenses
+        allow read: if isOwner(userId);
+        
+        // Users can create and update their recurring expenses
+        allow create, update: if isOwner(userId);
+        
+        // Users can delete their recurring expenses
+        allow delete: if isOwner(userId);
+      }
     }
   }
 }
