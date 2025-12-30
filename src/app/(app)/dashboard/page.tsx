@@ -18,9 +18,9 @@ import {
 import { Button, Card, CardHeader, CardTitle, CardContent } from '@/components/ui';
 import { useAuth } from '@/contexts/AuthContext';
 import { formatMoney, CATEGORY_LABELS, CATEGORY_ICONS } from '@/lib/utils';
-import { collection, query, where, orderBy, limit, onSnapshot, Timestamp } from 'firebase/firestore';
+import { collection, query, where, orderBy, limit, onSnapshot, Timestamp, doc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
-import { Expense } from '@/types';
+import { Expense, Budget } from '@/types';
 import AIInsightsWidget from '@/components/AIInsightsWidget';
 import PredictiveSpendingWidget from '@/components/PredictiveSpendingWidget';
 import EmptyDashboard from '@/components/EmptyDashboard';
@@ -163,8 +163,28 @@ export default function DashboardPage() {
     const currentStreak = userData?.stats?.currentStreak ?? 0;
 
     // Budget calculations for Safe-to-Spend card
-    const monthlyBudget = (userData?.settings as any)?.monthlyBudget || 500000; // From settings or 5000 PLN default
+    // Default to settings or 5000 PLN if no budget set
+    const defaultBudget = (userData?.settings as any)?.monthlyBudget || 500000;
+    const [monthlyBudget, setMonthlyBudget] = useState(defaultBudget);
     const [plannedExpenses, setPlannedExpenses] = useState(0);
+
+    // Fetch budget for current month
+    useEffect(() => {
+        if (!userData?.id) return;
+
+        const now = new Date();
+        const monthKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+        const budgetRef = doc(db, 'users', userData.id, 'budgets', monthKey);
+
+        const unsubscribe = onSnapshot(budgetRef, (doc) => {
+            if (doc.exists()) {
+                const data = doc.data() as Budget;
+                setMonthlyBudget(data.totalLimit);
+            }
+        });
+
+        return () => unsubscribe();
+    }, [userData?.id]);
 
     // Fetch recurring expenses for planned amount
     useEffect(() => {
