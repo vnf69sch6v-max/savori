@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { TrendingUp, TrendingDown, AlertTriangle, CheckCircle, Loader2, RefreshCw, Target, Calendar } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui';
@@ -18,7 +18,7 @@ export default function PredictiveSpendingWidget({ lastUpdate }: PredictiveSpend
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
 
-    const fetchPrediction = async () => {
+    const fetchPrediction = useCallback(async () => {
         if (!userData?.id) return;
 
         try {
@@ -31,11 +31,11 @@ export default function PredictiveSpendingWidget({ lastUpdate }: PredictiveSpend
             setLoading(false);
             setRefreshing(false);
         }
-    };
+    }, [userData?.id]);
 
     useEffect(() => {
         fetchPrediction();
-    }, [userData?.id, lastUpdate]);
+    }, [fetchPrediction, lastUpdate]);
 
     if (loading) {
         return (

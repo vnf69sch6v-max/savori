@@ -157,8 +157,8 @@ export default function AnalyticsPage() {
     // Fetch expenses
     useEffect(() => {
         if (!userData?.id) {
-            setLoading(false);
-            return;
+            const timer = setTimeout(() => setLoading(false), 0);
+            return () => clearTimeout(timer);
         }
 
         const { start } = getDateRange(period);
@@ -175,7 +175,7 @@ export default function AnalyticsPage() {
                 ...doc.data()
             })) as Expense[];
             setExpenses(data);
-            setLoading(false);
+            setTimeout(() => setLoading(false), 0);
         });
 
         return () => unsubscribe();

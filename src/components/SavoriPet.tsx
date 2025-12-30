@@ -89,10 +89,19 @@ export default function SavoriPet({ level, mood, streak, onInteract }: SavoriPet
     // Random speech on mood change
     useEffect(() => {
         const speeches = SPEECH_BUBBLES[mood];
-        setSpeech(speeches[Math.floor(Math.random() * speeches.length)]);
-        setShowSpeech(true);
-        const timer = setTimeout(() => setShowSpeech(false), 4000);
-        return () => clearTimeout(timer);
+        const randomSpeech = speeches[Math.floor(Math.random() * speeches.length)];
+
+        // Wrap in setTimeout to avoid synchronous setState trigger in React 18/19 during effect body execution
+        const interactionTimer = setTimeout(() => {
+            setSpeech(randomSpeech);
+            setShowSpeech(true);
+        }, 0);
+
+        const hideTimer = setTimeout(() => setShowSpeech(false), 4000);
+        return () => {
+            clearTimeout(interactionTimer);
+            clearTimeout(hideTimer);
+        };
     }, [mood]);
 
     // Handle pet interaction
@@ -142,7 +151,7 @@ export default function SavoriPet({ level, mood, streak, onInteract }: SavoriPet
                             animate={{
                                 opacity: 0,
                                 y: -50,
-                                x: Math.random() * 40 - 20
+                                x: 0,
                             }}
                             exit={{ opacity: 0 }}
                             className="absolute top-1/2 left-1/2 text-2xl pointer-events-none"

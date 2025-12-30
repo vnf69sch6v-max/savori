@@ -13,7 +13,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui';
 import { TrendingUp } from 'lucide-react';
 
 interface SpendingTrendChartProps {
-    data: any[];
+    data: { date: string; amount: number }[];
 }
 
 export default function SpendingTrendChart({ data }: SpendingTrendChartProps) {

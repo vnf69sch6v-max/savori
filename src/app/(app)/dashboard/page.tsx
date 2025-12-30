@@ -20,7 +20,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { formatMoney, CATEGORY_LABELS, CATEGORY_ICONS } from '@/lib/utils';
 import { collection, query, where, orderBy, limit, onSnapshot, Timestamp, doc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
-import { Expense, Budget } from '@/types';
+import { Expense, Budget, SavingGoal } from '@/types';
 import AIInsightsWidget from '@/components/AIInsightsWidget';
 import PredictiveSpendingWidget from '@/components/PredictiveSpendingWidget';
 import EmptyDashboard from '@/components/EmptyDashboard';
@@ -91,7 +91,7 @@ function StatCard({ title, value, change, icon, color }: StatCardProps) {
 export default function DashboardPage() {
     const { userData } = useAuth();
     const [expenses, setExpenses] = useState<Expense[]>([]);
-    const [goals, setGoals] = useState<any[]>([]);
+    const [goals, setGoals] = useState<SavingGoal[]>([]);
     const [loading, setLoading] = useState(true);
 
     // Get greeting based on time
@@ -105,7 +105,7 @@ export default function DashboardPage() {
     // Listen for recent expenses
     useEffect(() => {
         if (!userData?.id) {
-            setLoading(false);
+            setTimeout(() => setLoading(false), 0);
             return;
         }
 
@@ -135,7 +135,7 @@ export default function DashboardPage() {
             const data = snapshot.docs.map(doc => ({
                 id: doc.id,
                 ...doc.data()
-            }));
+            })) as SavingGoal[];
             setGoals(data);
         });
 
@@ -396,7 +396,7 @@ export default function DashboardPage() {
                         </CardHeader>
                         <CardContent>
                             <div className="space-y-3">
-                                {displayExpenses.slice(0, 5).map((expense: any, i: number) => (
+                                {displayExpenses.slice(0, 5).map((expense: Expense, i: number) => (
                                     <motion.div
                                         key={expense.id}
                                         initial={{ opacity: 0, x: 20 }}
@@ -405,14 +405,14 @@ export default function DashboardPage() {
                                         className="flex items-center gap-3 p-3 rounded-xl bg-slate-800/30 hover:bg-slate-800/50 transition-colors"
                                     >
                                         <span className="text-xl">
-                                            {CATEGORY_ICONS[expense.category || expense.merchant?.category] || '📦'}
+                                            {CATEGORY_ICONS[expense.merchant?.category] || '📦'}
                                         </span>
                                         <div className="flex-1 min-w-0">
                                             <p className="font-medium truncate">
-                                                {expense.merchant?.name || expense.merchant}
+                                                {expense.merchant?.name || 'Nieznany'}
                                             </p>
                                             <p className="text-xs text-slate-400">
-                                                {CATEGORY_LABELS[expense.category || expense.merchant?.category] || 'Inne'}
+                                                {CATEGORY_LABELS[expense.merchant?.category] || 'Inne'}
                                             </p>
                                         </div>
                                         <p className="font-medium text-rose-400">

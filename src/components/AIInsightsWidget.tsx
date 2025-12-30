@@ -7,7 +7,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui';
 import { useAuth } from '@/contexts/AuthContext';
 import { collection, query, orderBy, limit, getDocs } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
-import { Expense, Budget } from '@/types';
+import { Expense, Budget, ExpenseCategory, CategoryBudget } from '@/types';
 import { insightsEngine, AIInsight } from '@/lib/ai/insights-engine';
 import InsightCard from './ai/InsightCard';
 
@@ -38,8 +38,8 @@ export default function AIInsightsWidget() {
             const currentBudget = budgets.find(b => b.month === currentMonth);
 
             const engineBudgets = currentBudget?.categoryLimits
-                ? Object.entries(currentBudget.categoryLimits).map(([cat, data]: [string, any]) => ({
-                    category: cat as any,
+                ? Object.entries(currentBudget.categoryLimits).map(([cat, data]: [string, CategoryBudget]) => ({
+                    category: cat as ExpenseCategory,
                     limit: data.limit,
                     spent: data.spent || 0
                 }))

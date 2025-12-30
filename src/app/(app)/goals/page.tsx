@@ -43,7 +43,7 @@ export default function GoalsPage() {
     // Fetch goals
     useEffect(() => {
         if (!userData?.id) {
-            setLoading(false);
+            setTimeout(() => setLoading(false), 0);
             return;
         }
 
@@ -283,8 +283,8 @@ export default function GoalsPage() {
                                             animate={{ width: `${progress}%` }}
                                             transition={{ duration: 1, delay: 0.2 }}
                                             className={`h-full rounded-full ${isCompleted
-                                                    ? 'bg-gradient-to-r from-emerald-500 to-emerald-400'
-                                                    : 'bg-gradient-to-r from-blue-500 to-blue-400'
+                                                ? 'bg-gradient-to-r from-emerald-500 to-emerald-400'
+                                                : 'bg-gradient-to-r from-blue-500 to-blue-400'
                                                 }`}
                                         />
                                     </div>

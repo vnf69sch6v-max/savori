@@ -310,7 +310,7 @@ export default function ImportPage() {
                                 <ol className="text-sm text-slate-300 space-y-1 list-decimal list-inside">
                                     <li>Zaloguj się do bankowości internetowej</li>
                                     <li>Przejdź do historii transakcji</li>
-                                    <li>Kliknij "Eksportuj" lub "Pobierz CSV"</li>
+                                    <li>Kliknij &quot;Eksportuj&quot; lub &quot;Pobierz CSV&quot;</li>
                                     <li>Wgraj pobrany plik tutaj 👇</li>
                                 </ol>
                             </div>

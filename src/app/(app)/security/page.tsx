@@ -83,8 +83,8 @@ export default function SecurityPage() {
     // Fetch security events
     useEffect(() => {
         if (!userData?.id) {
-            setLoading(false);
-            return;
+            const timer = setTimeout(() => setLoading(false), 0);
+            return () => clearTimeout(timer);
         }
 
         const eventsRef = collection(db, 'users', userData.id, 'securityEvents');
@@ -96,7 +96,7 @@ export default function SecurityPage() {
                 ...doc.data()
             })) as SecurityEvent[];
             setEvents(data);
-            setLoading(false);
+            setTimeout(() => setLoading(false), 0);
         });
 
         // Mock current session
@@ -244,8 +244,8 @@ export default function SecurityPage() {
                                     initial={{ opacity: 0, y: 10 }}
                                     animate={{ opacity: 1, y: 0 }}
                                     className={`p-4 rounded-xl ${session.current
-                                            ? 'bg-emerald-500/10 border border-emerald-500/30'
-                                            : 'bg-slate-800/30'
+                                        ? 'bg-emerald-500/10 border border-emerald-500/30'
+                                        : 'bg-slate-800/30'
                                         }`}
                                 >
                                     <div className="flex items-start justify-between">
@@ -392,8 +392,8 @@ export default function SecurityPage() {
                                         exit={{ opacity: 0, x: 10 }}
                                         transition={{ delay: i * 0.05 }}
                                         className={`flex items-center gap-4 p-3 rounded-xl transition-colors ${event.type === 'suspicious'
-                                                ? 'bg-red-500/10 border border-red-500/20'
-                                                : 'bg-slate-800/30 hover:bg-slate-800/50'
+                                            ? 'bg-red-500/10 border border-red-500/20'
+                                            : 'bg-slate-800/30 hover:bg-slate-800/50'
                                             }`}
                                     >
                                         <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${event.success ? 'bg-emerald-500/10' : 'bg-red-500/10'

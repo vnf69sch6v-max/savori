@@ -2,13 +2,15 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Bell, Check, Trash2, X } from 'lucide-react';
+import { Bell, Check, Trash2 } from 'lucide-react';
 import { useNotifications } from '@/contexts/NotificationContext';
 import { formatDistanceToNow } from 'date-fns';
 import { pl } from 'date-fns/locale';
 
 export default function NotificationCenter() {
+    const router = useRouter();
     const {
         notifications,
         unreadCount,
@@ -36,9 +38,11 @@ export default function NotificationCenter() {
             await markAsRead(id);
         }
         if (actionUrl) {
-            // Normalize URL to handle internal routing if needed, 
-            // though simple window.location is fine for now if it's external or absolute
-            window.location.href = actionUrl;
+            if (actionUrl.startsWith('http')) {
+                window.location.assign(actionUrl);
+            } else {
+                router.push(actionUrl);
+            }
         }
     };
 

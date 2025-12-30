@@ -43,7 +43,7 @@ export function Card({
     );
 }
 
-interface CardHeaderProps extends React.HTMLAttributes<HTMLDivElement> { }
+type CardHeaderProps = React.HTMLAttributes<HTMLDivElement>;
 
 export function CardHeader({ children, className, ...props }: CardHeaderProps) {
     return (
@@ -53,7 +53,7 @@ export function CardHeader({ children, className, ...props }: CardHeaderProps) {
     );
 }
 
-interface CardTitleProps extends React.HTMLAttributes<HTMLHeadingElement> { }
+type CardTitleProps = React.HTMLAttributes<HTMLHeadingElement>;
 
 export function CardTitle({ children, className, ...props }: CardTitleProps) {
     return (
@@ -66,7 +66,7 @@ export function CardTitle({ children, className, ...props }: CardTitleProps) {
     );
 }
 
-interface CardDescriptionProps extends React.HTMLAttributes<HTMLParagraphElement> { }
+type CardDescriptionProps = React.HTMLAttributes<HTMLParagraphElement>;
 
 export function CardDescription({ children, className, ...props }: CardDescriptionProps) {
     return (
@@ -76,7 +76,7 @@ export function CardDescription({ children, className, ...props }: CardDescripti
     );
 }
 
-interface CardContentProps extends React.HTMLAttributes<HTMLDivElement> { }
+type CardContentProps = React.HTMLAttributes<HTMLDivElement>;
 
 export function CardContent({ children, className, ...props }: CardContentProps) {
     return (
@@ -86,7 +86,7 @@ export function CardContent({ children, className, ...props }: CardContentProps)
     );
 }
 
-interface CardFooterProps extends React.HTMLAttributes<HTMLDivElement> { }
+type CardFooterProps = React.HTMLAttributes<HTMLDivElement>;
 
 export function CardFooter({ children, className, ...props }: CardFooterProps) {
     return (

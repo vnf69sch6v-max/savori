@@ -22,6 +22,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { updateDoc, doc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useRouter } from 'next/navigation';
+import { subscriptionService } from '@/lib/subscription-service';
 
 export default function SettingsPage() {
     const router = useRouter();
@@ -217,30 +218,24 @@ export default function SettingsPage() {
                                     onClick={async () => {
                                         if (plan.current || !userData?.id) return;
 
-                                        const confirmed = confirm(
-                                            `Czy chcesz zmienić plan na ${plan.name}?\n\n` +
-                                            (plan.price === '0'
-                                                ? 'To spowoduje utratę dostępu do funkcji premium.'
-                                                : `Cena: ${plan.price} zł/msc\n(Demo - bez płatności)`)
-                                        );
-
-                                        if (!confirmed) return;
+                                        // Simple toast confirmation instead of blocking confirm
+                                        const toastId = toast.loading('Przetwarzanie zmiany planu...');
 
                                         try {
-                                            const { subscriptionService } = await import('@/lib/subscription-service');
                                             const result = await subscriptionService.upgradeSubscription(
                                                 userData.id,
                                                 plan.id as 'free' | 'pro' | 'premium'
                                             );
 
                                             if (result.success) {
-                                                toast.success(`🎉 Plan zmieniony na ${plan.name}!`);
+                                                toast.success(`🎉 Plan zmieniony na ${plan.name}!`, { id: toastId });
+                                                // Update local state immediately if needed, though onSnapshot in AuthContext should handle it
                                             } else {
-                                                toast.error(result.error || 'Błąd zmiany planu');
+                                                toast.error(result.error || 'Błąd zmiany planu', { id: toastId });
                                             }
                                         } catch (error) {
                                             console.error(error);
-                                            toast.error('Błąd zmiany planu');
+                                            toast.error('Błąd zmiany planu', { id: toastId });
                                         }
                                     }}
                                     className={`p-4 rounded-xl text-center transition-all ${plan.current

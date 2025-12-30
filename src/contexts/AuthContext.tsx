@@ -124,6 +124,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         };
     }, []);
 
+    // Apply dark mode
+    useEffect(() => {
+        if (userData?.settings?.darkMode) {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+    }, [userData?.settings?.darkMode]);
+
     // Logowanie email/hasło
     const signIn = async (email: string, password: string) => {
         try {

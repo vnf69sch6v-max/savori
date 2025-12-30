@@ -1,12 +1,11 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import Link from 'next/link';
 import { formatMoney, CATEGORY_LABELS, CATEGORY_ICONS, CATEGORY_COLORS } from '@/lib/utils';
 import { ExpenseCategory } from '@/types';
+import { Timestamp } from 'firebase/firestore';
 
 interface EnrichedTransactionProps {
-    id: string;
     merchantName: string;
     category: ExpenseCategory;
     amount: number;
@@ -48,7 +47,6 @@ function getMerchantEmoji(merchantName: string, category: ExpenseCategory): stri
 }
 
 export default function EnrichedTransaction({
-    id,
     merchantName,
     category,
     amount,
@@ -148,7 +146,7 @@ export default function EnrichedTransaction({
 // Helper to analyze transaction context
 export function getTransactionContext(
     merchantName: string,
-    allExpenses: Array<{ merchant?: { name: string }; date: any }>
+    allExpenses: Array<{ merchant?: { name: string }; date: Timestamp | Date | string }>
 ): { frequency: number; context?: string } {
     const now = new Date();
     const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
@@ -157,18 +155,18 @@ export function getTransactionContext(
     // Count visits this week
     const weeklyVisits = allExpenses.filter(e => {
         if (e.merchant?.name !== merchantName) return false;
-        const expenseDate = typeof e.date?.toDate === 'function'
-            ? e.date.toDate()
-            : new Date(e.date);
+        const expenseDate = e.date && typeof e.date === 'object' && 'toDate' in e.date && typeof (e.date as { toDate: () => Date }).toDate === 'function'
+            ? (e.date as { toDate: () => Date }).toDate()
+            : new Date(e.date as string | number | Date);
         return expenseDate >= weekAgo;
     }).length;
 
     // Count visits this month
     const monthlyVisits = allExpenses.filter(e => {
         if (e.merchant?.name !== merchantName) return false;
-        const expenseDate = typeof e.date?.toDate === 'function'
-            ? e.date.toDate()
-            : new Date(e.date);
+        const expenseDate = e.date && typeof e.date === 'object' && 'toDate' in e.date && typeof (e.date as { toDate: () => Date }).toDate === 'function'
+            ? (e.date as { toDate: () => Date }).toDate()
+            : new Date(e.date as string | number | Date);
         return expenseDate >= monthStart;
     }).length;
 

@@ -12,7 +12,7 @@ import {
 import { formatMoney } from '@/lib/utils';
 
 interface CategoryRingProps {
-    data: any[];
+    data: { name: string; amount: number; color: string; category: string }[];
     onSelect: (cat: string) => void;
 }
 

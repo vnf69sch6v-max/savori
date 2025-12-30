@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { AlertTriangle, ShieldAlert, Info, X, Check, TrendingUp } from 'lucide-react';
 import { Button } from '@/components/ui';
 import { formatMoney } from '@/lib/utils';
-import { AnomalyResult, getSeverityColor, getSeverityIcon } from '@/lib/anomaly-detector';
+import { AnomalyResult, getSeverityColor } from '@/lib/anomaly-detector';
 
 interface AnomalyAlertModalProps {
     isOpen: boolean;

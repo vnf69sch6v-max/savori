@@ -1,11 +1,12 @@
 import type { NextConfig } from "next";
 
-const withPWA = require("@ducanh2912/next-pwa").default({
+import withPWAInit from "@ducanh2912/next-pwa";
+
+const withPWA = withPWAInit({
   dest: "public",
   cacheOnFrontEndNav: true,
   aggressiveFrontEndNavCaching: true,
   reloadOnOnline: true,
-  swcMinify: true,
   disable: false, // process.env.NODE_ENV === "development",  // Enable for testing locally if needed, usually disable in dev
   workboxOptions: {
     disableDevLogs: true,

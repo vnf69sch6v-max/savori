@@ -1,9 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Sparkles, X, TrendingUp, Wallet, Flame, Target, CheckCircle, Loader2 } from 'lucide-react';
-import { Button, Card } from '@/components/ui';
+import { Sparkles, Wallet, Flame, Target, CheckCircle, Loader2 } from 'lucide-react';
+import { Button } from '@/components/ui';
 import { formatMoney } from '@/lib/utils';
 
 interface ExpenseAnalysisProps {

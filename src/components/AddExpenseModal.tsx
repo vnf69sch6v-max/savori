@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Receipt, Store, Calendar, FileText, Loader2 } from 'lucide-react';
-import { Button, Input } from '@/components/ui';
+import { Button } from '@/components/ui';
 import { useAuth } from '@/contexts/AuthContext';
 import { CATEGORY_LABELS, CATEGORY_ICONS, parseMoneyToCents } from '@/lib/utils';
 import { logSecurityEvent, SecurityEvents } from '@/lib/security';
@@ -12,7 +12,7 @@ import { db } from '@/lib/firebase';
 import { ExpenseCategory, Budget } from '@/types';
 import { toast } from 'react-hot-toast';
 import { format, startOfMonth } from 'date-fns';
-import { engagementService, XP_ACTIONS, UserEngagement } from '@/lib/engagement/xp-system';
+import { engagementService } from '@/lib/engagement/xp-system';
 import ExpenseAnalysisCard from './ExpenseAnalysisCard';
 
 interface AddExpenseModalProps {
@@ -50,7 +50,6 @@ export default function AddExpenseModal({ isOpen, onClose, onSuccess }: AddExpen
 
     // Analysis state
     const [showAnalysis, setShowAnalysis] = useState(false);
-    const [analysisLoading, setAnalysisLoading] = useState(false);
     const [analysisData, setAnalysisData] = useState<{
         aiComment: string;
         budgetRemaining?: number;
@@ -142,7 +141,6 @@ export default function AddExpenseModal({ isOpen, onClose, onSuccess }: AddExpen
             });
             setShowAnalysis(true);
 
-            // Show achievement toasts
             // Show badge toasts
             newBadges.forEach(badge => {
                 toast.success(`🏆 Nowa odznaka: ${badge.name}!`, { duration: 5000 });
@@ -186,7 +184,7 @@ export default function AddExpenseModal({ isOpen, onClose, onSuccess }: AddExpen
                 onClose={handleCloseAnalysis}
                 expense={savedExpense}
                 analysis={analysisData || undefined}
-                loading={analysisLoading}
+                loading={false}
             />
         );
     }

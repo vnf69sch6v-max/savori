@@ -13,7 +13,12 @@ import {
     FileText,
     Sparkles,
 } from 'lucide-react';
-import { Button, Card, CardContent } from '@/components/ui';
+import {
+    CardHeader,
+    CardTitle,
+    Card,
+    Button,
+} from '@/components/ui';
 import { useAuth } from '@/contexts/AuthContext';
 import { collection, query, getDocs, limit } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
@@ -164,8 +169,8 @@ export default function EmptyDashboard({ userName }: EmptyDashboardProps) {
                                 <div className="flex items-center gap-4">
                                     {/* Step Number / Check */}
                                     <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold ${step.completed
-                                            ? 'bg-emerald-500 text-white'
-                                            : 'bg-slate-800 text-slate-400'
+                                        ? 'bg-emerald-500 text-white'
+                                        : 'bg-slate-800 text-slate-400'
                                         }`}>
                                         {step.completed ? <Check className="w-5 h-5" /> : step.id}
                                     </div>

@@ -18,7 +18,7 @@ import {
     limit as firestoreLimit
 } from 'firebase/firestore';
 import { db } from './firebase';
-import { Expense, ExpenseCategory, Merchant, ExpenseMetadata } from '@/types';
+import { Expense, ExpenseCategory, Merchant, ExpenseMetadata, Budget, CategoryBudget } from '@/types';
 import { eventBus } from './event-bus';
 import { cache, getMonthRange, getWeekRange } from './service-base';
 import { detectAnomaly, AnomalyResult } from './anomaly-detector';
@@ -26,7 +26,6 @@ import { engagementService } from '@/lib/engagement/xp-system';
 import { insightsEngine } from '@/lib/ai/insights-engine';
 import { notificationService } from '@/lib/engagement/notifications';
 import { recurringExpensesService } from '@/lib/subscriptions/recurring-service';
-import { Budget } from '@/types';
 
 export interface CreateExpenseInput {
     userId: string;
@@ -151,7 +150,7 @@ class ExpenseService {
 
                     const budgets = budgetsSnap.docs.map(d => {
                         const b = d.data() as Budget;
-                        const limits = b.categoryLimits ? Object.entries(b.categoryLimits).map(([cat, l]: [string, any]) => ({
+                        const limits = b.categoryLimits ? Object.entries(b.categoryLimits).map(([cat, l]: [string, CategoryBudget]) => ({
                             category: cat as ExpenseCategory,
                             limit: l.limit,
                             spent: l.spent || 0

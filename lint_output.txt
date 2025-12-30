@@ -1,0 +1,362 @@
+
+> savori@0.1.0 lint
+> eslint
+
+
+/Users/mikolajmarcinkowski/Documents/ksh new/Aplikacja oszczędzanie/smartsaver/public/sw.js
+  1:156  warning  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+  1:209  warning  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+  1:626  warning  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+
+/Users/mikolajmarcinkowski/Documents/ksh new/Aplikacja oszczędzanie/smartsaver/public/swe-worker-5c72df51bb1f6ee0.js
+  1:700  warning  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+
+/Users/mikolajmarcinkowski/Documents/ksh new/Aplikacja oszczędzanie/smartsaver/public/workbox-f1770938.js
+  1:49     warning  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+  1:87     warning  't' is defined but never used                                          @typescript-eslint/no-unused-vars
+  1:211    warning  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+  1:257    warning  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+  1:298    warning  't' is defined but never used                                          @typescript-eslint/no-unused-vars
+  1:381    warning  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+  1:642    warning  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+  1:813    warning  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+  1:989    warning  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+  1:1093   warning  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+  1:1738   warning  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+  1:2263   warning  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+  1:3058   warning  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+  1:3102   warning  't' is defined but never used                                          @typescript-eslint/no-unused-vars
+  1:3598   warning  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+  1:3727   warning  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+  1:7052   warning  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+  1:7234   warning  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+  1:7954   warning  'i' is defined but never used                                          @typescript-eslint/no-unused-vars
+  1:7962   warning  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+  1:8066   warning  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+  1:8368   warning  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+  1:9440   warning  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+  1:9550   warning  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+  1:9566   warning  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+  1:9627   warning  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+  1:9962   warning  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+  1:10038  warning  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+  1:10065  warning  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+  1:10081  warning  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+  1:10163  warning  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+  1:10963  warning  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+  1:11007  warning  't' is defined but never used                                          @typescript-eslint/no-unused-vars
+  1:11122  warning  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+  1:11194  warning  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+  1:11301  warning  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+  1:11382  warning  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+  1:11623  warning  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+  1:11941  warning  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+  1:12060  warning  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+  1:12464  warning  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+  1:12684  warning  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+  1:13012  warning  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+  1:13272  warning  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+  1:13319  warning  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+  1:13367  warning  't' is defined but never used                                          @typescript-eslint/no-unused-vars
+  1:14423  warning  't' is defined but never used                                          @typescript-eslint/no-unused-vars
+  1:14555  warning  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+  1:14599  warning  't' is defined but never used                                          @typescript-eslint/no-unused-vars
+  1:15097  warning  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+  1:15191  warning  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+  1:15404  warning  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+  1:15514  warning  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+  1:16025  warning  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+  1:16057  warning  't' is defined but never used                                          @typescript-eslint/no-unused-vars
+  1:16165  warning  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+  1:16591  warning  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+  1:16958  warning  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+  1:17076  warning  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+  1:17178  warning  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+  1:17458  warning  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+  1:17719  warning  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+  1:17903  warning  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+  1:19089  warning  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+  1:20040  warning  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+  1:20129  warning  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+  1:20260  warning  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+  1:20317  warning  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+  1:20514  warning  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+  1:20635  warning  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+  1:20768  warning  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+  1:20988  warning  't' is defined but never used                                          @typescript-eslint/no-unused-vars
+  1:21080  warning  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+  1:21657  warning  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+  1:21768  warning  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+  1:21988  warning  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+  1:22227  warning  'e' is defined but never used                                          @typescript-eslint/no-unused-vars
+  1:22385  warning  's' is defined but never used                                          @typescript-eslint/no-unused-vars
+  1:22450  warning  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+  1:22748  warning  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+  1:22962  warning  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+  1:23349  warning  't' is defined but never used                                          @typescript-eslint/no-unused-vars
+  1:23479  warning  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+
+/Users/mikolajmarcinkowski/Documents/ksh new/Aplikacja oszczędzanie/smartsaver/src/app/(app)/budgets/page.tsx
+    4:18  warning  'AnimatePresence' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         @typescript-eslint/no-unused-vars
+    9:5   warning  'Calendar' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                @typescript-eslint/no-unused-vars
+   10:5   warning  'TrendingUp' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              @typescript-eslint/no-unused-vars
+   11:5   warning  'TrendingDown' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            @typescript-eslint/no-unused-vars
+   20:16  warning  'CardHeader' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              @typescript-eslint/no-unused-vars
+   20:28  warning  'CardTitle' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               @typescript-eslint/no-unused-vars
+   20:60  warning  'Input' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   @typescript-eslint/no-unused-vars
+   23:27  warning  'getDoc' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  @typescript-eslint/no-unused-vars
+   23:55  warning  'query' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   @typescript-eslint/no-unused-vars
+   23:62  warning  'where' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   @typescript-eslint/no-unused-vars
+   47:13  error    Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+/Users/mikolajmarcinkowski/Documents/ksh new/Aplikacja oszczędzanie/smartsaver/src/app/(app)/budgets/page.tsx:47:13
+  45 |     useEffect(() => {
+  46 |         if (!userData?.id) {
+> 47 |             setLoading(false);
+     |             ^^^^^^^^^^ Avoid calling setState() directly within an effect
+  48 |             return;
+  49 |         }
+  50 |  react-hooks/set-state-in-effect
+  351:36  warning  '_' is assigned a value but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              @typescript-eslint/no-unused-vars
+
+/Users/mikolajmarcinkowski/Documents/ksh new/Aplikacja oszczędzanie/smartsaver/src/app/(app)/challenges/page.tsx
+   4:18  warning  'AnimatePresence' is defined but never used  @typescript-eslint/no-unused-vars
+   8:5   warning  'Target' is defined but never used           @typescript-eslint/no-unused-vars
+  11:5   warning  'XCircle' is defined but never used          @typescript-eslint/no-unused-vars
+  14:5   warning  'Sparkles' is defined but never used         @typescript-eslint/no-unused-vars
+  17:16  warning  'CardHeader' is defined but never used       @typescript-eslint/no-unused-vars
+  17:28  warning  'CardTitle' is defined but never used        @typescript-eslint/no-unused-vars
+  26:22  warning  'query' is defined but never used            @typescript-eslint/no-unused-vars
+  26:29  warning  'where' is defined but never used            @typescript-eslint/no-unused-vars
+  29:37  warning  'format' is defined but never used           @typescript-eslint/no-unused-vars
+
+/Users/mikolajmarcinkowski/Documents/ksh new/Aplikacja oszczędzanie/smartsaver/src/app/(app)/dashboard/page.tsx
+   13:5   warning  'Flame' is defined but never used                  @typescript-eslint/no-unused-vars
+   14:5   warning  'PiggyBank' is defined but never used              @typescript-eslint/no-unused-vars
+   21:29  warning  'where' is defined but never used                  @typescript-eslint/no-unused-vars
+   21:64  warning  'Timestamp' is defined but never used              @typescript-eslint/no-unused-vars
+   29:36  warning  'getMonthlyEquivalent' is defined but never used   @typescript-eslint/no-unused-vars
+   36:7   warning  'emptyStats' is assigned a value but never used    @typescript-eslint/no-unused-vars
+   52:10  warning  'StatCard' is defined but never used               @typescript-eslint/no-unused-vars
+  162:11  warning  'monthlySaved' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  167:50  error    Unexpected any. Specify a different type           @typescript-eslint/no-explicit-any
+  334:51  error    Unexpected any. Specify a different type           @typescript-eslint/no-explicit-any
+
+/Users/mikolajmarcinkowski/Documents/ksh new/Aplikacja oszczędzanie/smartsaver/src/app/(app)/expenses/page.tsx
+   5:10  warning  'motion' is defined but never used           @typescript-eslint/no-unused-vars
+  11:5   warning  'Filter' is defined but never used           @typescript-eslint/no-unused-vars
+  12:5   warning  'Calendar' is defined but never used         @typescript-eslint/no-unused-vars
+  13:5   warning  'Trash2' is defined but never used           @typescript-eslint/no-unused-vars
+  14:5   warning  'Edit3' is defined but never used            @typescript-eslint/no-unused-vars
+  15:5   warning  'ChevronDown' is defined but never used      @typescript-eslint/no-unused-vars
+  20:23  warning  'formatDate' is defined but never used       @typescript-eslint/no-unused-vars
+  21:66  warning  'where' is defined but never used            @typescript-eslint/no-unused-vars
+  21:73  warning  'Timestamp' is defined but never used        @typescript-eslint/no-unused-vars
+  23:19  warning  'ExpenseCategory' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/mikolajmarcinkowski/Documents/ksh new/Aplikacja oszczędzanie/smartsaver/src/app/(app)/goals/page.tsx
+  10:5   warning  'Edit3' is defined but never used        @typescript-eslint/no-unused-vars
+  15:5   warning  'Sparkles' is defined but never used     @typescript-eslint/no-unused-vars
+  16:5   warning  'TrendingUp' is defined but never used   @typescript-eslint/no-unused-vars
+  20:24  warning  'CardHeader' is defined but never used   @typescript-eslint/no-unused-vars
+  20:36  warning  'CardTitle' is defined but never used    @typescript-eslint/no-unused-vars
+  20:47  warning  'CardContent' is defined but never used  @typescript-eslint/no-unused-vars
+  23:22  warning  'query' is defined but never used        @typescript-eslint/no-unused-vars
+
+/Users/mikolajmarcinkowski/Documents/ksh new/Aplikacja oszczędzanie/smartsaver/src/app/(app)/import/page.tsx
+  10:5   warning  'AlertCircle' is defined but never used              @typescript-eslint/no-unused-vars
+  19:16  warning  'CardHeader' is defined but never used               @typescript-eslint/no-unused-vars
+  19:28  warning  'CardTitle' is defined but never used                @typescript-eslint/no-unused-vars
+  19:39  warning  'CardContent' is defined but never used              @typescript-eslint/no-unused-vars
+  47:12  warning  'file' is assigned a value but never used            @typescript-eslint/no-unused-vars
+  51:12  warning  'importComplete' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/Users/mikolajmarcinkowski/Documents/ksh new/Aplikacja oszczędzanie/smartsaver/src/app/(app)/layout.tsx
+  23:5  warning  'FileText' is defined but never used  @typescript-eslint/no-unused-vars
+  26:5  warning  'Plus' is defined but never used      @typescript-eslint/no-unused-vars
+
+/Users/mikolajmarcinkowski/Documents/ksh new/Aplikacja oszczędzanie/smartsaver/src/app/(app)/leaderboard/page.tsx
+   15:5   warning  'ChevronDown' is defined but never used                                                                                                                                                                                                                                                  @typescript-eslint/no-unused-vars
+   17:16  warning  'CardHeader' is defined but never used                                                                                                                                                                                                                                                   @typescript-eslint/no-unused-vars
+   17:28  warning  'CardTitle' is defined but never used                                                                                                                                                                                                                                                    @typescript-eslint/no-unused-vars
+   17:39  warning  'CardContent' is defined but never used                                                                                                                                                                                                                                                  @typescript-eslint/no-unused-vars
+   17:52  warning  'Button' is defined but never used                                                                                                                                                                                                                                                       @typescript-eslint/no-unused-vars
+  212:49  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+/Users/mikolajmarcinkowski/Documents/ksh new/Aplikacja oszczędzanie/smartsaver/src/app/(app)/reports/page.tsx
+   15:5   warning  'Share2' is defined but never used                                                                                    @typescript-eslint/no-unused-vars
+   18:5   warning  'PiggyBank' is defined but never used                                                                                 @typescript-eslint/no-unused-vars
+   25:19  warning  'Budget' is defined but never used                                                                                    @typescript-eslint/no-unused-vars
+   57:11  warning  'monthKey' is assigned a value but never used                                                                         @typescript-eslint/no-unused-vars
+  222:8   warning  React Hook useEffect has a missing dependency: 'generateAISummary'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+/Users/mikolajmarcinkowski/Documents/ksh new/Aplikacja oszczędzanie/smartsaver/src/app/(app)/scan/page.tsx
+   16:5   warning  'ArrowRight' is defined but never used                                                                                                                                                                                                                                                   @typescript-eslint/no-unused-vars
+  284:37  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+  336:41  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+/Users/mikolajmarcinkowski/Documents/ksh new/Aplikacja oszczędzanie/smartsaver/src/app/(app)/security/page.tsx
+   12:5   warning  'Eye' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          @typescript-eslint/no-unused-vars
+   13:5   warning  'EyeOff' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       @typescript-eslint/no-unused-vars
+   27:76  warning  'deleteDoc' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    @typescript-eslint/no-unused-vars
+   27:87  warning  'doc' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          @typescript-eslint/no-unused-vars
+   27:92  warning  'getDocs' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      @typescript-eslint/no-unused-vars
+   72:23  warning  'user' is assigned a value but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                @typescript-eslint/no-unused-vars
+  104:9   error    Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+/Users/mikolajmarcinkowski/Documents/ksh new/Aplikacja oszczędzanie/smartsaver/src/app/(app)/security/page.tsx:104:9
+  102 |         // Mock current session
+  103 |         const { device, browser } = getDeviceInfo();
+> 104 |         setSessions([
+      |         ^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  105 |             {
+  106 |                 id: 'current',
+  107 |                 device,  react-hooks/set-state-in-effect
+  119:11  warning  'logSecurityEvent' is assigned a value but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    @typescript-eslint/no-unused-vars
+
+/Users/mikolajmarcinkowski/Documents/ksh new/Aplikacja oszczędzanie/smartsaver/src/app/(app)/settings/export/page.tsx
+  11:5  warning  'CheckCircle' is defined but never used  @typescript-eslint/no-unused-vars
+  12:5  warning  'AlertCircle' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/mikolajmarcinkowski/Documents/ksh new/Aplikacja oszczędzanie/smartsaver/src/app/(app)/settings/page.tsx
+   4:10  warning  'motion' is defined but never used        @typescript-eslint/no-unused-vars
+  10:5   warning  'Shield' is defined but never used        @typescript-eslint/no-unused-vars
+  13:5   warning  'ChevronRight' is defined but never used  @typescript-eslint/no-unused-vars
+  15:5   warning  'Sun' is defined but never used           @typescript-eslint/no-unused-vars
+  22:10  warning  'updateDoc' is defined but never used     @typescript-eslint/no-unused-vars
+  22:21  warning  'doc' is defined but never used           @typescript-eslint/no-unused-vars
+  23:10  warning  'db' is defined but never used            @typescript-eslint/no-unused-vars
+
+/Users/mikolajmarcinkowski/Documents/ksh new/Aplikacja oszczędzanie/smartsaver/src/app/(app)/shop/page.tsx
+   4:18  warning  'AnimatePresence' is defined but never used   @typescript-eslint/no-unused-vars
+  11:5   warning  'Filter' is defined but never used            @typescript-eslint/no-unused-vars
+  14:16  warning  'CardHeader' is defined but never used        @typescript-eslint/no-unused-vars
+  14:28  warning  'CardTitle' is defined but never used         @typescript-eslint/no-unused-vars
+  32:12  warning  'loading' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/Users/mikolajmarcinkowski/Documents/ksh new/Aplikacja oszczędzanie/smartsaver/src/app/(app)/social/page.tsx
+   16:5   warning  'Search' is defined but never used                                                                                                                                                                                                                                                       @typescript-eslint/no-unused-vars
+  271:61  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+  338:61  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+/Users/mikolajmarcinkowski/Documents/ksh new/Aplikacja oszczędzanie/smartsaver/src/app/(app)/subscriptions/page.tsx
+    9:5   warning  'TrendingUp' is defined but never used            @typescript-eslint/no-unused-vars
+   11:5   warning  'MoreVertical' is defined but never used          @typescript-eslint/no-unused-vars
+   13:5   warning  'Edit3' is defined but never used                 @typescript-eslint/no-unused-vars
+   17:5   warning  'Check' is defined but never used                 @typescript-eslint/no-unused-vars
+   18:5   warning  'X' is defined but never used                     @typescript-eslint/no-unused-vars
+   23:10  warning  'Timestamp' is defined but never used             @typescript-eslint/no-unused-vars
+   31:10  warning  'KNOWN_SUBSCRIPTIONS' is defined but never used   @typescript-eslint/no-unused-vars
+  204:12  warning  'showMenu' is assigned a value but never used     @typescript-eslint/no-unused-vars
+  204:22  warning  'setShowMenu' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/Users/mikolajmarcinkowski/Documents/ksh new/Aplikacja oszczędzanie/smartsaver/src/app/page.tsx
+  197:36  warning  'smart' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/mikolajmarcinkowski/Documents/ksh new/Aplikacja oszczędzanie/smartsaver/src/components/AICommentary.tsx
+  106:8  warning  React Hook useEffect has a missing dependency: 'fetchCommentary'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+/Users/mikolajmarcinkowski/Documents/ksh new/Aplikacja oszczędzanie/smartsaver/src/components/AIInsightsWidget.tsx
+    4:10  warning  'motion' is defined but never used                                                                                @typescript-eslint/no-unused-vars
+   65:8   warning  React Hook useEffect has a missing dependency: 'fetchInsights'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+  113:40  warning  'index' is defined but never used                                                                                 @typescript-eslint/no-unused-vars
+
+/Users/mikolajmarcinkowski/Documents/ksh new/Aplikacja oszczędzanie/smartsaver/src/components/AddExpenseModal.tsx
+  6:18  warning  'Input' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/mikolajmarcinkowski/Documents/ksh new/Aplikacja oszczędzanie/smartsaver/src/components/EmptyDashboard.tsx
+  19:5  warning  'CardContent' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/mikolajmarcinkowski/Documents/ksh new/Aplikacja oszczędzanie/smartsaver/src/components/OnboardingWizard.tsx
+  8:5  warning  'Target' is defined but never used  @typescript-eslint/no-unused-vars
+  9:5  warning  'Flame' is defined but never used   @typescript-eslint/no-unused-vars
+
+/Users/mikolajmarcinkowski/Documents/ksh new/Aplikacja oszczędzanie/smartsaver/src/components/PredictiveSpendingWidget.tsx
+    5:84  warning  'Target' is defined but never used  @typescript-eslint/no-unused-vars
+  190:69  warning  'i' is defined but never used       @typescript-eslint/no-unused-vars
+
+/Users/mikolajmarcinkowski/Documents/ksh new/Aplikacja oszczędzanie/smartsaver/src/components/SafeToSpendCard.tsx
+  29:11  warning  'isDanger' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/Users/mikolajmarcinkowski/Documents/ksh new/Aplikacja oszczędzanie/smartsaver/src/components/ai/InsightCard.tsx
+  44:11  warning  'Icon' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/Users/mikolajmarcinkowski/Documents/ksh new/Aplikacja oszczędzanie/smartsaver/src/components/engagement/XPProgress.tsx
+  5:10  warning  'engagementService' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/mikolajmarcinkowski/Documents/ksh new/Aplikacja oszczędzanie/smartsaver/src/contexts/AuthContext.tsx
+  63:11  warning  'refetchUserData' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/Users/mikolajmarcinkowski/Documents/ksh new/Aplikacja oszczędzanie/smartsaver/src/contexts/NotificationContext.tsx
+  11:5  warning  'where' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/mikolajmarcinkowski/Documents/ksh new/Aplikacja oszczędzanie/smartsaver/src/lib/ai/insights-engine.ts
+    6:10  warning  'Timestamp' is defined but never used                   @typescript-eslint/no-unused-vars
+    8:10  warning  'notificationService' is defined but never used         @typescript-eslint/no-unused-vars
+   74:7   warning  'INSIGHT_TEMPLATES' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  372:9   warning  'recentExpenses' is defined but never used              @typescript-eslint/no-unused-vars
+
+/Users/mikolajmarcinkowski/Documents/ksh new/Aplikacja oszczędzanie/smartsaver/src/lib/ai/predictor.ts
+   53:9   warning  'budgets' is defined but never used             @typescript-eslint/no-unused-vars
+  241:23  warning  '_' is defined but never used                   @typescript-eslint/no-unused-vars
+  394:15  warning  'projected' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/Users/mikolajmarcinkowski/Documents/ksh new/Aplikacja oszczędzanie/smartsaver/src/lib/ai/price-compare.ts
+  347:9  warning  'difference' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/mikolajmarcinkowski/Documents/ksh new/Aplikacja oszczędzanie/smartsaver/src/lib/anomaly-detector.ts
+  1:54  warning  'Timestamp' is defined but never used     @typescript-eslint/no-unused-vars
+  4:19  warning  'startOfMonth' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/mikolajmarcinkowski/Documents/ksh new/Aplikacja oszczędzanie/smartsaver/src/lib/challenges/group-challenges.ts
+  11:5  warning  'deleteDoc' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/mikolajmarcinkowski/Documents/ksh new/Aplikacja oszczędzanie/smartsaver/src/lib/data-aggregator.ts
+   6:10  warning  'Timestamp' is defined but never used              @typescript-eslint/no-unused-vars
+  98:15  warning  'currentRange' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/Users/mikolajmarcinkowski/Documents/ksh new/Aplikacja oszczędzanie/smartsaver/src/lib/engagement/notifications.tsx
+   11:5   warning  'orderBy' is defined but never used    @typescript-eslint/no-unused-vars
+   12:5   warning  'limit' is defined but never used      @typescript-eslint/no-unused-vars
+   14:5   warning  'Timestamp' is defined but never used  @typescript-eslint/no-unused-vars
+  110:14  warning  't' is defined but never used          @typescript-eslint/no-unused-vars
+
+/Users/mikolajmarcinkowski/Documents/ksh new/Aplikacja oszczędzanie/smartsaver/src/lib/engagement/xp-system.ts
+    7:45  warning  'setDoc' is defined but never used  @typescript-eslint/no-unused-vars
+  193:57  warning  'reason' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/mikolajmarcinkowski/Documents/ksh new/Aplikacja oszczędzanie/smartsaver/src/lib/fraud-detection.ts
+  1:29  warning  'where' is defined but never used      @typescript-eslint/no-unused-vars
+  1:61  warning  'Timestamp' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/mikolajmarcinkowski/Documents/ksh new/Aplikacja oszczędzanie/smartsaver/src/lib/service-base.ts
+  16:5  warning  'where' is defined but never used         @typescript-eslint/no-unused-vars
+  17:5  warning  'orderBy' is defined but never used       @typescript-eslint/no-unused-vars
+  18:5  warning  'limit' is defined but never used         @typescript-eslint/no-unused-vars
+  21:5  warning  'DocumentData' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/mikolajmarcinkowski/Documents/ksh new/Aplikacja oszczędzanie/smartsaver/src/lib/smart-categorizer.ts
+   7:24  warning  'MerchantMapping' is defined but never used  @typescript-eslint/no-unused-vars
+  12:5   warning  'getDoc' is defined but never used           @typescript-eslint/no-unused-vars
+  17:5   warning  'where' is defined but never used            @typescript-eslint/no-unused-vars
+
+/Users/mikolajmarcinkowski/Documents/ksh new/Aplikacja oszczędzanie/smartsaver/src/lib/social/friends-service.ts
+  11:5  warning  'deleteDoc' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/mikolajmarcinkowski/Documents/ksh new/Aplikacja oszczędzanie/smartsaver/src/lib/spending-predictor.ts
+  65:11  warning  'lastMonthTotal' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+✖ 237 problems (4 errors, 233 warnings)
+

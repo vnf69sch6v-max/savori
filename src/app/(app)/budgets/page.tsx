@@ -94,8 +94,10 @@ export default function BudgetsPage() {
     const prevMonth = () => setCurrentMonth(subMonths(currentMonth, 1));
     const nextMonth = () => setCurrentMonth(addMonths(currentMonth, 1));
 
+    const [now] = useState(() => Date.now());
+
     // Days remaining in month
-    const daysRemaining = Math.ceil((endOfMonth(currentMonth).getTime() - Date.now()) / (1000 * 60 * 60 * 24));
+    const daysRemaining = Math.ceil((endOfMonth(currentMonth).getTime() - now) / (1000 * 60 * 60 * 24));
     const dailyBudget = budget && daysRemaining > 0
         ? Math.max(0, (budget.totalLimit - totalSpent) / daysRemaining)
         : 0;
@@ -470,8 +472,8 @@ function BudgetModal({ isOpen, onClose, existingBudget, monthKey }: BudgetModalP
                                     <div
                                         key={cat}
                                         className={`p-3 rounded-xl border transition-all ${isEnabled
-                                                ? 'bg-emerald-500/10 border-emerald-500/30'
-                                                : 'bg-slate-800/50 border-slate-700 hover:border-slate-600'
+                                            ? 'bg-emerald-500/10 border-emerald-500/30'
+                                            : 'bg-slate-800/50 border-slate-700 hover:border-slate-600'
                                             }`}
                                     >
                                         <div className="flex items-center gap-3">

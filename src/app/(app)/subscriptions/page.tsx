@@ -20,6 +20,7 @@ import {
 } from 'lucide-react';
 import { Button, Card, CardHeader, CardTitle, CardContent } from '@/components/ui';
 import { useAuth } from '@/contexts/AuthContext';
+import { Timestamp } from 'firebase/firestore';
 import { formatMoney } from '@/lib/utils';
 import {
     recurringExpensesService,
@@ -27,7 +28,7 @@ import {
     getFrequencyLabel,
     getMonthlyEquivalent,
 } from '@/lib/subscriptions/recurring-service';
-import { KNOWN_SUBSCRIPTIONS, searchSubscriptions } from '@/lib/subscriptions/known-services';
+import { KNOWN_SUBSCRIPTIONS, searchSubscriptions, KnownSubscription } from '@/lib/subscriptions/known-services';
 import toast from 'react-hot-toast';
 
 // Add subscription modal
@@ -41,7 +42,7 @@ function AddSubscriptionModal({
     onAdd: (name: string, amount: number, frequency: string) => void;
 }) {
     const [search, setSearch] = useState('');
-    const [selectedService, setSelectedService] = useState<any>(null);
+    const [selectedService, setSelectedService] = useState<KnownSubscription | null>(null);
     const [customName, setCustomName] = useState('');
     const [amount, setAmount] = useState('');
     const [frequency, setFrequency] = useState<'monthly' | 'yearly'>('monthly');
@@ -201,9 +202,10 @@ function SubscriptionCard({
     onToggle: () => void;
 }) {
     const [showMenu, setShowMenu] = useState(false);
+    const [now] = useState(() => Date.now());
     const monthlyAmount = getMonthlyEquivalent(expense.amount, expense.frequency);
     const daysUntilDue = Math.ceil(
-        (expense.nextDueDate.toDate().getTime() - Date.now()) / (1000 * 60 * 60 * 24)
+        (expense.nextDueDate.toDate().getTime() - now) / (1000 * 60 * 60 * 24)
     );
     const isDueSoon = daysUntilDue <= 3 && daysUntilDue >= 0;
     const isOverdue = daysUntilDue < 0;
@@ -306,13 +308,13 @@ export default function SubscriptionsPage() {
     // Subscribe to recurring expenses
     useEffect(() => {
         if (!userData?.id) {
-            setLoading(false);
+            setTimeout(() => setLoading(false), 0);
             return;
         }
 
         const unsubscribe = recurringExpensesService.subscribe(userData.id, (expenses) => {
             setSubscriptions(expenses);
-            setLoading(false);
+            setTimeout(() => setLoading(false), 0);
 
             // Calculate monthly total
             const total = expenses.reduce((sum, exp) => {
@@ -331,7 +333,7 @@ export default function SubscriptionsPage() {
             const result = await recurringExpensesService.create(userData.id, {
                 name,
                 amount,
-                frequency: frequency as any,
+                frequency: frequency as 'monthly' | 'yearly',
             });
 
             if (result.isNew) {
@@ -378,10 +380,11 @@ export default function SubscriptionsPage() {
     const inactiveSubscriptions = subscriptions.filter((s) => !s.isActive);
 
     // Get upcoming payments
+    const [now] = useState(() => Date.now());
     const upcoming = activeSubscriptions
         .filter((s) => {
             const days = Math.ceil(
-                (s.nextDueDate.toDate().getTime() - Date.now()) / (1000 * 60 * 60 * 24)
+                (s.nextDueDate.toDate().getTime() - now) / (1000 * 60 * 60 * 24)
             );
             return days <= 7 && days >= 0;
         })
@@ -453,7 +456,7 @@ export default function SubscriptionsPage() {
                         <div className="space-y-2">
                             {upcoming.map((sub) => {
                                 const days = Math.ceil(
-                                    (sub.nextDueDate.toDate().getTime() - Date.now()) / (1000 * 60 * 60 * 24)
+                                    (sub.nextDueDate.toDate().getTime() - now) / (1000 * 60 * 60 * 24)
                                 );
                                 return (
                                     <div

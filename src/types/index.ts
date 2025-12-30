@@ -290,6 +290,6 @@ export interface Notification {
     read: boolean;
     createdAt: Timestamp;
     actionUrl?: string;
-    metadata?: Record<string, any>;
+    metadata?: Record<string, unknown>;
 }
 

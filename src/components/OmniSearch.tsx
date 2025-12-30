@@ -129,7 +129,7 @@ export default function OmniSearch() {
                                 <div className="max-h-80 overflow-y-auto py-2">
                                     {results.length === 0 ? (
                                         <div className="px-4 py-6 text-center text-slate-500">
-                                            Brak wyników dla "{query}"
+                                            Brak wyników dla &quot;{query}&quot;
                                         </div>
                                     ) : (
                                         <>

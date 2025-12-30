@@ -39,7 +39,7 @@ export default function ChallengesPage() {
     // Fetch user's challenges
     useEffect(() => {
         if (!userData?.id) {
-            setLoading(false);
+            setTimeout(() => setLoading(false), 0);
             return;
         }
 

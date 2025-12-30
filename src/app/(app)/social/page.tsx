@@ -37,8 +37,8 @@ export default function SocialPage() {
     // Fetch initial data
     useEffect(() => {
         if (!userData?.id) {
-            setLoading(false);
-            return;
+            const timer = setTimeout(() => setLoading(false), 0);
+            return () => clearTimeout(timer);
         }
 
         const unsubFriends = friendsService.subscribeFriends(userData.id, setFriends);
@@ -47,7 +47,7 @@ export default function SocialPage() {
         // Fetch friends leaderboard
         leaderboardService.getFriendsLeaderboard(userData.id).then(setLeaderboard);
 
-        setLoading(false);
+        setTimeout(() => setLoading(false), 0);
 
         return () => {
             unsubFriends();
