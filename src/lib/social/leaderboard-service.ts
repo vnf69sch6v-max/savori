@@ -22,12 +22,13 @@ export interface LeaderboardEntry {
     displayName: string;
     photoURL?: string;
     xp: number;
+    weeklyXP: number; // Added
     level: number;
     streak: number;
     rank?: number;
 }
 
-export type LeaderboardType = 'xp' | 'streak' | 'level';
+export type LeaderboardType = 'xp' | 'weekly_xp' | 'streak' | 'level'; // Added weekly_xp
 
 // ============ LEADERBOARD SERVICE ============
 
@@ -40,10 +41,15 @@ class LeaderboardService {
         try {
             const usersRef = collection(db, 'users');
 
-            // Query users with gamification data, sorted by XP
+            // Determine sort field
+            let orderByField = `gamification.${type}`;
+            if (type === 'streak') orderByField = 'gamification.currentStreak';
+            if (type === 'weekly_xp') orderByField = 'gamification.weeklyXP';
+
+            // Query users with gamification data, sorted by field
             const q = query(
                 usersRef,
-                orderBy(`gamification.${type === 'streak' ? 'currentStreak' : type}`, 'desc'),
+                orderBy(orderByField, 'desc'),
                 firestoreLimit(limitCount)
             );
 
@@ -58,6 +64,7 @@ class LeaderboardService {
                     displayName: data.displayName || 'Użytkownik',
                     photoURL: data.photoURL || null,
                     xp: gamification.xp || 0,
+                    weeklyXP: gamification.weeklyXP || 0,
                     level: gamification.level || 1,
                     streak: gamification.currentStreak || 0,
                     rank: index + 1,
@@ -99,6 +106,7 @@ class LeaderboardService {
                         displayName: data.displayName || 'Użytkownik',
                         photoURL: data.photoURL || null,
                         xp: gamification.xp || 0,
+                        weeklyXP: gamification.weeklyXP || 0,
                         level: gamification.level || 1,
                         streak: gamification.currentStreak || 0,
                     });
@@ -106,7 +114,7 @@ class LeaderboardService {
             }
 
             // Sort by selected type
-            const sortKey = type === 'streak' ? 'streak' : type;
+            const sortKey = type === 'streak' ? 'streak' : type === 'weekly_xp' ? 'weeklyXP' : type;
             entries.sort((a, b) => (b[sortKey] as number) - (a[sortKey] as number));
 
             // Add ranks
@@ -126,20 +134,26 @@ class LeaderboardService {
      */
     async getUserRank(userId: string, type: LeaderboardType = 'xp'): Promise<number | null> {
         try {
-            // Get user's XP
+            // Determine sort field
+            let orderByField = `gamification.${type}`;
+            if (type === 'streak') orderByField = 'gamification.currentStreak';
+            if (type === 'weekly_xp') orderByField = 'gamification.weeklyXP';
+
+            // Get user's value
             const userDoc = await getDoc(doc(db, 'users', userId));
             if (!userDoc.exists()) return null;
 
             const userData = userDoc.data();
-            const userValue = type === 'streak'
-                ? userData.gamification?.currentStreak || 0
-                : userData.gamification?.[type] || 0;
+            let userValue;
+            if (type === 'streak') userValue = userData.gamification?.currentStreak || 0;
+            else if (type === 'weekly_xp') userValue = userData.gamification?.weeklyXP || 0;
+            else userValue = userData.gamification?.[type] || 0;
 
-            // Count users with higher XP
+            // Count users with higher value
             const usersRef = collection(db, 'users');
             const q = query(
                 usersRef,
-                where(`gamification.${type === 'streak' ? 'currentStreak' : type}`, '>', userValue)
+                where(orderByField, '>', userValue)
             );
 
             const snapshot = await getDocs(q);

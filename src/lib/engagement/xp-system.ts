@@ -6,6 +6,7 @@
 import { db } from '@/lib/firebase';
 import { doc, updateDoc, increment, getDoc, setDoc, Timestamp } from 'firebase/firestore';
 import { notificationService } from '@/lib/engagement/notifications';
+import { startOfWeek, format } from 'date-fns';
 
 // ============ TYPES ============
 
@@ -18,6 +19,8 @@ export interface XPAction {
 
 export interface UserEngagement {
     xp: number;
+    weeklyXP: number;
+    lastWeeklyReset: string; // YYYY-MM-DD
     level: number;
     points: number;
     currentStreak: number;
@@ -117,6 +120,25 @@ export const BADGES: Badge[] = [
 export class EngagementService {
 
     /**
+     * Check if weekly XP needs reset
+     */
+    private async checkWeeklyReset(userId: string, engagement: UserEngagement): Promise<void> {
+        const now = new Date();
+        const startOfThisWeek = format(startOfWeek(now, { weekStartsOn: 1 }), 'yyyy-MM-dd'); // Monday start
+
+        if (engagement.lastWeeklyReset !== startOfThisWeek) {
+            // New week started, reset weekly XP
+            await updateDoc(doc(db, 'users', userId), {
+                'gamification.weeklyXP': 0,
+                'gamification.lastWeeklyReset': startOfThisWeek
+            });
+            // Update local object to reflect change for subsequent calculations
+            engagement.weeklyXP = 0;
+            engagement.lastWeeklyReset = startOfThisWeek;
+        }
+    }
+
+    /**
      * Award XP for an action
      */
     async awardXP(userId: string, actionKey: string): Promise<{ xp: number; levelUp: boolean; newLevel?: LevelInfo; newBadges: Badge[] }> {
@@ -126,8 +148,10 @@ export class EngagementService {
         // Get current engagement
         const engagement = await this.getEngagement(userId);
 
-        // Check cooldown
-        // TODO: Implement cooldown check
+        // Check weekly reset before awarding
+        await this.checkWeeklyReset(userId, engagement);
+
+        // Check cooldown (skipped implementation for now)
 
         // Calculate new XP
         const newXP = engagement.xp + action.xp;
@@ -138,6 +162,7 @@ export class EngagementService {
         // Update in Firestore
         await updateDoc(doc(db, 'users', userId), {
             'gamification.xp': increment(action.xp),
+            'gamification.weeklyXP': increment(action.xp),
             'gamification.points': increment(action.xp),
             'gamification.level': newLevel.level,
         });
@@ -169,6 +194,9 @@ export class EngagementService {
         // Get current engagement
         const engagement = await this.getEngagement(userId);
 
+        // Check weekly reset
+        await this.checkWeeklyReset(userId, engagement);
+
         // Calculate new XP
         const newXP = engagement.xp + amount;
         const currentLevel = this.getLevelForXP(engagement.xp);
@@ -178,6 +206,7 @@ export class EngagementService {
         // Update in Firestore
         await updateDoc(doc(db, 'users', userId), {
             'gamification.xp': increment(amount),
+            'gamification.weeklyXP': increment(amount),
             'gamification.level': newLevel.level,
             // Also add points if we want to track them separately (legacy or currency)
             'gamification.points': increment(amount),
@@ -245,11 +274,11 @@ export class EngagementService {
             'engagement.lastActive': Timestamp.now(),
         });
 
-        // Award streak bonus XP
+        // Award streak bonus XP if any (handled separately to avoid double reset check, but awardXP handles it)
         if (bonus > 0) {
-            await updateDoc(doc(db, 'users', userId), {
-                'gamification.xp': increment(bonus),
-            });
+            // Direct update to avoid circular dependency or double check if we called awardCustomXP
+            // But awardCustomXP is safe.
+            await this.awardCustomXP(userId, bonus, 'streak_bonus');
         }
 
         // Award daily login XP
@@ -270,6 +299,8 @@ export class EngagementService {
 
         return {
             xp: gamification.xp || 0,
+            weeklyXP: gamification.weeklyXP || 0,
+            lastWeeklyReset: gamification.lastWeeklyReset || '',
             level: gamification.level || 1,
             points: gamification.points || 0,
             currentStreak: gamification.currentStreak || 0,

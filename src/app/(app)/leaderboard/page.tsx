@@ -97,14 +97,14 @@ export default function LeaderboardPage() {
             </div>
 
             {/* Tabs & Filters */}
-            <div className="flex flex-wrap gap-2 mb-6">
-                {/* Leaderboard type */}
-                <div className="flex gap-2">
+            <div className="flex flex-col sm:flex-row gap-4 mb-6">
+                {/* Global / Friends Toggle */}
+                <div className="bg-slate-800/50 p-1 rounded-xl flex self-start">
                     <button
                         onClick={() => setTab('global')}
-                        className={`px-4 py-2 rounded-xl text-sm font-medium transition-colors flex items-center gap-2 ${tab === 'global'
-                                ? 'bg-amber-500 text-white'
-                                : 'bg-slate-800 text-slate-400 hover:bg-slate-700'
+                        className={`px-4 py-2 rounded-lg text-sm font-medium transition-all flex items-center gap-2 ${tab === 'global'
+                            ? 'bg-amber-500 text-white shadow-lg shadow-amber-500/20'
+                            : 'text-slate-400 hover:text-white'
                             }`}
                     >
                         <Globe className="w-4 h-4" />
@@ -112,9 +112,9 @@ export default function LeaderboardPage() {
                     </button>
                     <button
                         onClick={() => setTab('friends')}
-                        className={`px-4 py-2 rounded-xl text-sm font-medium transition-colors flex items-center gap-2 ${tab === 'friends'
-                                ? 'bg-amber-500 text-white'
-                                : 'bg-slate-800 text-slate-400 hover:bg-slate-700'
+                        className={`px-4 py-2 rounded-lg text-sm font-medium transition-all flex items-center gap-2 ${tab === 'friends'
+                            ? 'bg-amber-500 text-white shadow-lg shadow-amber-500/20'
+                            : 'text-slate-400 hover:text-white'
                             }`}
                     >
                         <Users className="w-4 h-4" />
@@ -122,23 +122,53 @@ export default function LeaderboardPage() {
                     </button>
                 </div>
 
-                {/* Sort by */}
-                <div className="flex gap-2 ml-auto">
-                    {(['xp', 'level', 'streak'] as LeaderboardType[]).map((type) => (
+                <div className="flex flex-wrap gap-2 sm:ml-auto">
+                    {/* Time Range Toggle */}
+                    <div className="bg-slate-800/50 p-1 rounded-xl flex">
                         <button
-                            key={type}
-                            onClick={() => setSortBy(type)}
-                            className={`px-3 py-2 rounded-lg text-xs font-medium transition-colors ${sortBy === type
-                                    ? 'bg-slate-700 text-white'
-                                    : 'bg-slate-800/50 text-slate-500 hover:bg-slate-700'
+                            onClick={() => {
+                                setSortBy('weekly_xp');
+                            }}
+                            className={`px-3 py-2 rounded-lg text-xs font-medium transition-all ${sortBy === 'weekly_xp'
+                                ? 'bg-slate-700 text-white'
+                                : 'text-slate-400 hover:text-white'
                                 }`}
                         >
-                            {type === 'xp' && <Star className="w-3 h-3 inline mr-1" />}
-                            {type === 'level' && <ChevronUp className="w-3 h-3 inline mr-1" />}
-                            {type === 'streak' && <Flame className="w-3 h-3 inline mr-1" />}
-                            {type === 'xp' ? 'XP' : type === 'level' ? 'Poziom' : 'Streak'}
+                            Ten tydzień
                         </button>
-                    ))}
+                        <button
+                            onClick={() => {
+                                if (sortBy === 'weekly_xp') setSortBy('xp');
+                            }}
+                            className={`px-3 py-2 rounded-lg text-xs font-medium transition-all ${sortBy !== 'weekly_xp'
+                                ? 'bg-slate-700 text-white'
+                                : 'text-slate-400 hover:text-white'
+                                }`}
+                        >
+                            Cały czas
+                        </button>
+                    </div>
+
+                    {/* Metric Select (only visible if All Time) */}
+                    {sortBy !== 'weekly_xp' && (
+                        <div className="flex bg-slate-800/50 p-1 rounded-xl">
+                            {(['xp', 'level', 'streak'] as LeaderboardType[]).map((type) => (
+                                <button
+                                    key={type}
+                                    onClick={() => setSortBy(type)}
+                                    className={`px-3 py-2 rounded-lg text-xs font-medium transition-all ${sortBy === type
+                                        ? 'bg-slate-700 text-white'
+                                        : 'text-slate-400 hover:text-white'
+                                        }`}
+                                >
+                                    {type === 'xp' && <Star className="w-3 h-3 inline mr-1" />}
+                                    {type === 'level' && <ChevronUp className="w-3 h-3 inline mr-1" />}
+                                    {type === 'streak' && <Flame className="w-3 h-3 inline mr-1" />}
+                                    {type === 'xp' ? 'XP' : type === 'level' ? 'Lvl' : 'Streak'}
+                                </button>
+                            ))}
+                        </div>
+                    )}
                 </div>
             </div>
 
@@ -211,11 +241,13 @@ export default function LeaderboardPage() {
                                         <div className="text-right">
                                             <p className="text-xl font-bold text-amber-400">
                                                 {sortBy === 'xp' && entry.xp.toLocaleString()}
+                                                {sortBy === 'weekly_xp' && (entry.weeklyXP || 0).toLocaleString()}
                                                 {sortBy === 'level' && entry.level}
                                                 {sortBy === 'streak' && entry.streak}
                                             </p>
                                             <p className="text-xs text-slate-500">
-                                                {sortBy === 'xp' && 'XP'}
+                                                {sortBy === 'xp' && 'Całkowite XP'}
+                                                {sortBy === 'weekly_xp' && 'XP w tym tyg.'}
                                                 {sortBy === 'level' && 'poziom'}
                                                 {sortBy === 'streak' && 'dni'}
                                             </p>

@@ -14,7 +14,8 @@ import {
     Flame,
     Star,
     Search,
-    Send
+    Send,
+    Share2
 } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent, Button } from '@/components/ui';
 import { useAuth } from '@/contexts/AuthContext';
@@ -127,41 +128,89 @@ export default function SocialPage() {
                 </Link>
             </div>
 
-            {/* Add Friend Form */}
-            <Card className="mb-6">
-                <CardContent className="pt-6">
-                    <form onSubmit={handleSendRequest} className="flex gap-3">
-                        <div className="flex-1 relative">
-                            <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                            <input
-                                type="email"
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)}
-                                placeholder="Wpisz email znajomego..."
-                                className="w-full pl-10 pr-4 py-3 bg-slate-800 border border-slate-700 rounded-xl text-white placeholder:text-slate-500 focus:outline-none focus:border-blue-500 transition-colors"
-                            />
+            {/* Add Friend & Invite Grid */}
+            <div className="grid md:grid-cols-2 gap-6 mb-6">
+                {/* Add Friend Form */}
+                <Card>
+                    <CardHeader className="pb-3">
+                        <CardTitle className="text-lg flex items-center gap-2">
+                            <UserPlus className="w-5 h-5 text-blue-400" />
+                            Dodaj znajomego
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <form onSubmit={handleSendRequest} className="flex flex-col gap-3">
+                            <div className="relative">
+                                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                                <input
+                                    type="email"
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
+                                    placeholder="Wpisz email..."
+                                    className="w-full pl-10 pr-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-sm text-white placeholder:text-slate-500 focus:outline-none focus:border-blue-500 transition-colors"
+                                />
+                            </div>
+                            <Button type="submit" disabled={sending || !email.trim()} className="w-full">
+                                {sending ? (
+                                    <Loader2 className="w-4 h-4 animate-spin" />
+                                ) : (
+                                    <>
+                                        <Send className="w-4 h-4 mr-2" />
+                                        Wyślij zaproszenie
+                                    </>
+                                )}
+                            </Button>
+                        </form>
+                    </CardContent>
+                </Card>
+
+                {/* Invite System */}
+                <Card className="bg-gradient-to-br from-indigo-900/20 to-purple-900/20 border-indigo-500/20">
+                    <CardHeader className="pb-3">
+                        <CardTitle className="text-lg flex items-center gap-2">
+                            <Star className="w-5 h-5 text-indigo-400" />
+                            Zaproś znajomych
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <p className="text-sm text-slate-400 mb-4">
+                            Zaproś znajomych do Savori i rywalizujcie o lepsze wyniki finansowe!
+                        </p>
+                        <div className="flex gap-2">
+                            <div className="flex-1 bg-slate-900/50 border border-slate-700/50 rounded-lg px-3 py-2 text-sm font-mono text-slate-300 truncate">
+                                {userData?.id || '...'}
+                            </div>
+                            <Button
+                                variant="secondary"
+                                onClick={() => {
+                                    const text = `Dołącz do mnie w Savori! Mój kod: ${userData?.id}`;
+                                    if (navigator.share) {
+                                        navigator.share({
+                                            title: 'Savori - Dołącz do mnie!',
+                                            text: text,
+                                            url: window.location.origin
+                                        }).catch(console.error);
+                                    } else {
+                                        navigator.clipboard.writeText(text);
+                                        toast.success('Skopiowano kod do schowka!');
+                                    }
+                                }}
+                            >
+                                <span className="hidden sm:inline">Udostępnij</span>
+                                <Share2 className="w-4 h-4 sm:hidden" />
+                            </Button>
                         </div>
-                        <Button type="submit" disabled={sending || !email.trim()}>
-                            {sending ? (
-                                <Loader2 className="w-4 h-4 animate-spin" />
-                            ) : (
-                                <>
-                                    <Send className="w-4 h-4 mr-2" />
-                                    Wyślij
-                                </>
-                            )}
-                        </Button>
-                    </form>
-                </CardContent>
-            </Card>
+                    </CardContent>
+                </Card>
+            </div>
 
             {/* Tabs */}
             <div className="flex gap-2 mb-4">
                 <button
                     onClick={() => setTab('friends')}
                     className={`px-4 py-2 rounded-xl text-sm font-medium transition-colors ${tab === 'friends'
-                            ? 'bg-blue-500 text-white'
-                            : 'bg-slate-800 text-slate-400 hover:bg-slate-700'
+                        ? 'bg-blue-500 text-white'
+                        : 'bg-slate-800 text-slate-400 hover:bg-slate-700'
                         }`}
                 >
                     <Users className="w-4 h-4 inline mr-2" />
@@ -170,8 +219,8 @@ export default function SocialPage() {
                 <button
                     onClick={() => setTab('requests')}
                     className={`px-4 py-2 rounded-xl text-sm font-medium transition-colors ${tab === 'requests'
-                            ? 'bg-blue-500 text-white'
-                            : 'bg-slate-800 text-slate-400 hover:bg-slate-700'
+                        ? 'bg-blue-500 text-white'
+                        : 'bg-slate-800 text-slate-400 hover:bg-slate-700'
                         }`}
                 >
                     <UserPlus className="w-4 h-4 inline mr-2" />
@@ -349,9 +398,9 @@ export default function SocialPage() {
                                             }`}
                                     >
                                         <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${index === 0 ? 'bg-amber-500 text-white' :
-                                                index === 1 ? 'bg-slate-400 text-white' :
-                                                    index === 2 ? 'bg-amber-700 text-white' :
-                                                        'bg-slate-700 text-slate-300'
+                                            index === 1 ? 'bg-slate-400 text-white' :
+                                                index === 2 ? 'bg-amber-700 text-white' :
+                                                    'bg-slate-700 text-slate-300'
                                             }`}>
                                             {index + 1}
                                         </span>
