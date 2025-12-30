@@ -8,7 +8,11 @@ import { useAuth } from '@/contexts/AuthContext';
 import { formatMoney, CATEGORY_LABELS, CATEGORY_ICONS } from '@/lib/utils';
 import { predictMonthlySpending, SpendingPrediction, getPredictionStatus } from '@/lib/spending-predictor';
 
-export default function PredictiveSpendingWidget() {
+interface PredictiveSpendingWidgetProps {
+    lastUpdate?: number;
+}
+
+export default function PredictiveSpendingWidget({ lastUpdate }: PredictiveSpendingWidgetProps) {
     const { userData } = useAuth();
     const [prediction, setPrediction] = useState<SpendingPrediction | null>(null);
     const [loading, setLoading] = useState(true);
@@ -31,7 +35,7 @@ export default function PredictiveSpendingWidget() {
 
     useEffect(() => {
         fetchPrediction();
-    }, [userData?.id]);
+    }, [userData?.id, lastUpdate]);
 
     if (loading) {
         return (
@@ -144,10 +148,10 @@ export default function PredictiveSpendingWidget() {
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     className={`p-3 rounded-xl border ${status.status === 'danger'
-                            ? 'bg-red-500/10 border-red-500/30'
-                            : status.status === 'warning'
-                                ? 'bg-amber-500/10 border-amber-500/30'
-                                : 'bg-emerald-500/10 border-emerald-500/30'
+                        ? 'bg-red-500/10 border-red-500/30'
+                        : status.status === 'warning'
+                            ? 'bg-amber-500/10 border-amber-500/30'
+                            : 'bg-emerald-500/10 border-emerald-500/30'
                         }`}
                 >
                     <div className="flex items-center gap-2">

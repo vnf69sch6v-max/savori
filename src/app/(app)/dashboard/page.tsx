@@ -242,7 +242,7 @@ export default function DashboardPage() {
                 {/* Predictive Spending Widget - show only if enough data */}
                 <div className="lg:col-span-2">
                     {showPredictions ? (
-                        <PredictiveSpendingWidget />
+                        <PredictiveSpendingWidget lastUpdate={expenses.length + monthlyExpenses} />
                     ) : (
                         <Card className="p-6">
                             <div className="flex items-center gap-3 mb-4">
