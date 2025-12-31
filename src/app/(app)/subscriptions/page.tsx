@@ -406,125 +406,166 @@ export default function SubscriptionsPage() {
                 </Button>
             </div>
 
-            {/* Summary Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-                <Card className="bg-gradient-to-br from-blue-500/10 to-cyan-500/10 border-blue-500/20">
-                    <div className="p-4">
-                        <p className="text-sm text-slate-400 mb-1">Rocznie</p>
-                        <p className="text-2xl font-bold text-blue-400">
-                            {formatMoney(totalMonthly * 12)}
-                        </p>
-                    </div>
-                </Card>
-                <Card className="bg-gradient-to-br from-emerald-500/10 to-teal-500/10 border-emerald-500/20">
-                    <div className="p-4">
-                        <p className="text-sm text-slate-400 mb-1">Aktywnych</p>
-                        <p className="text-2xl font-bold text-emerald-400">
-                            {activeSubscriptions.length}
-                        </p>
-                    </div>
-                </Card>
-                <Card className="bg-gradient-to-br from-amber-500/10 to-orange-500/10 border-amber-500/20">
-                    <div className="p-4">
-                        <p className="text-sm text-slate-400 mb-1">Nadchodzi (7 dni)</p>
-                        <p className="text-2xl font-bold text-amber-400">
-                            {upcomingSubscriptions.length}
-                        </p>
+            {/* Reframing Summary - Daily Cost View */}
+            <div className="mb-8">
+                <Card className="bg-gradient-to-br from-purple-500/10 via-slate-800/50 to-indigo-500/10 border-purple-500/20 overflow-hidden">
+                    <div className="p-5">
+                        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+                            {/* Daily cost - psychological reframing */}
+                            <div className="flex-1">
+                                <div className="flex items-center gap-2 mb-2">
+                                    <Sparkles className="w-5 h-5 text-purple-400" />
+                                    <span className="text-sm text-slate-400">Twój dzienny koszt subskrypcji</span>
+                                </div>
+                                <div className="flex items-baseline gap-2">
+                                    <span className="text-4xl font-bold text-white">
+                                        {formatMoney(Math.round(totalMonthly / 30))}
+                                    </span>
+                                    <span className="text-slate-400">/dzień</span>
+                                </div>
+                                <p className="text-xs text-slate-500 mt-1">
+                                    Mniej niż kawa ☕ → {formatMoney(totalMonthly)}/miesiąc
+                                </p>
+                            </div>
+
+                            {/* Monthly progress */}
+                            <div className="flex-1">
+                                <div className="flex items-center justify-between text-sm mb-2">
+                                    <span className="text-slate-400">Postęp miesiąca</span>
+                                    <span className="text-emerald-400 font-medium">
+                                        {Math.round((now.getDate() / new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate()) * 100)}% za Tobą!
+                                    </span>
+                                </div>
+                                <div className="h-3 bg-slate-700/50 rounded-full overflow-hidden">
+                                    <motion.div
+                                        initial={{ width: 0 }}
+                                        animate={{
+                                            width: `${(now.getDate() / new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate()) * 100}%`
+                                        }}
+                                        transition={{ duration: 1, ease: "easeOut" }}
+                                        className="h-full bg-gradient-to-r from-emerald-500 to-teal-400 rounded-full"
+                                    />
+                                </div>
+                                <p className="text-xs text-slate-500 mt-1 text-right">
+                                    Dzień {now.getDate()} z {new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate()}
+                                </p>
+                            </div>
+                        </div>
                     </div>
                 </Card>
             </div>
 
-            {/* Upcoming payments */}
-            {upcomingSubscriptions.length > 0 && (
-                <Card className="mb-6 bg-gradient-to-br from-amber-500/5 to-orange-500/5 border-amber-500/20">
-                    <CardHeader className="pb-2">
-                        <CardTitle className="text-base flex items-center gap-2">
-                            <Bell className="w-4 h-4 text-amber-400" />
-                            Nadchodzące płatności
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="space-y-2">
-                            {upcomingSubscriptions.map((sub) => {
-                                const days = Math.ceil(
-                                    (sub.nextDueDate.toDate().getTime() - now.getTime()) / (1000 * 60 * 60 * 24)
-                                );
-                                return (
-                                    <div
-                                        key={sub.id}
-                                        className="flex items-center justify-between p-3 bg-slate-800/50 rounded-xl"
-                                    >
-                                        <div className="flex items-center gap-3">
-                                            <span className="text-xl">{sub.emoji}</span>
-                                            <div>
-                                                <p className="font-medium">{sub.name}</p>
-                                                <p className="text-xs text-slate-400">
-                                                    {days <= 0 ? 'Dzisiaj' : `Za ${days} dni`}
-                                                </p>
-                                            </div>
-                                        </div>
-                                        <p className="font-bold text-amber-400">{formatMoney(sub.amount)}</p>
-                                    </div>
-                                );
-                            })}
-                        </div>
-                    </CardContent>
+            {/* Quick Stats */}
+            <div className="grid grid-cols-3 gap-4 mb-8">
+                <Card className="p-4 text-center">
+                    <p className="text-sm text-slate-400 mb-1">Miesięcznie</p>
+                    <p className="text-xl font-bold text-emerald-400">{formatMoney(totalMonthly)}</p>
                 </Card>
-            )}
+                <Card className="p-4 text-center">
+                    <p className="text-sm text-slate-400 mb-1">Rocznie</p>
+                    <p className="text-xl font-bold text-blue-400">{formatMoney(totalMonthly * 12)}</p>
+                </Card>
+                <Card className="p-4 text-center">
+                    <p className="text-sm text-slate-400 mb-1">Nadchodzi (7 dni)</p>
+                    <p className="text-xl font-bold text-amber-400">{upcomingSubscriptions.length}</p>
+                </Card>
+            </div>
+
+            {/* Upcoming payments */}
+            {
+                upcomingSubscriptions.length > 0 && (
+                    <Card className="mb-6 bg-gradient-to-br from-amber-500/5 to-orange-500/5 border-amber-500/20">
+                        <CardHeader className="pb-2">
+                            <CardTitle className="text-base flex items-center gap-2">
+                                <Bell className="w-4 h-4 text-amber-400" />
+                                Nadchodzące płatności
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="space-y-2">
+                                {upcomingSubscriptions.map((sub) => {
+                                    const days = Math.ceil(
+                                        (sub.nextDueDate.toDate().getTime() - now.getTime()) / (1000 * 60 * 60 * 24)
+                                    );
+                                    return (
+                                        <div
+                                            key={sub.id}
+                                            className="flex items-center justify-between p-3 bg-slate-800/50 rounded-xl"
+                                        >
+                                            <div className="flex items-center gap-3">
+                                                <span className="text-xl">{sub.emoji}</span>
+                                                <div>
+                                                    <p className="font-medium">{sub.name}</p>
+                                                    <p className="text-xs text-slate-400">
+                                                        {days <= 0 ? 'Dzisiaj' : `Za ${days} dni`}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                            <p className="font-bold text-amber-400">{formatMoney(sub.amount)}</p>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </CardContent>
+                    </Card>
+                )
+            }
 
             {/* Main content */}
-            {loading ? (
-                <div className="grid md:grid-cols-2 gap-4">
-                    {[1, 2, 3, 4].map((i) => (
-                        <div key={i} className="h-32 rounded-xl bg-slate-800/50 animate-pulse" />
-                    ))}
-                </div>
-            ) : activeSubscriptions.length === 0 && inactiveSubscriptions.length === 0 ? (
-                <Card className="p-12 text-center">
-                    <Sparkles className="w-16 h-16 text-slate-600 mx-auto mb-4" />
-                    <h3 className="text-xl font-medium mb-2">Brak subskrypcji</h3>
-                    <p className="text-slate-400 mb-6">
-                        Dodaj swoje stałe opłaty lub zeskanuj paragon - wykryjemy subskrypcje automatycznie!
-                    </p>
-                    <Button onClick={() => setShowAddModal(true)}>
-                        <Plus className="w-5 h-5 mr-2" />
-                        Dodaj pierwszą subskrypcję
-                    </Button>
-                </Card>
-            ) : (
-                <>
-                    {/* Active subscriptions */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                        {activeSubscriptions.map((sub) => (
-                            <SubscriptionCard
-                                key={sub.id}
-                                expense={sub}
-                                onDelete={() => handleDelete(sub.id)}
-                                onToggle={() => handleToggle(sub)}
-                            />
+            {
+                loading ? (
+                    <div className="grid md:grid-cols-2 gap-4">
+                        {[1, 2, 3, 4].map((i) => (
+                            <div key={i} className="h-32 rounded-xl bg-slate-800/50 animate-pulse" />
                         ))}
                     </div>
-
-                    {/* Inactive subscriptions */}
-                    {inactiveSubscriptions.length > 0 && (
-                        <div>
-                            <h3 className="text-sm text-slate-500 uppercase tracking-wider mb-3">
-                                Wstrzymane ({inactiveSubscriptions.length})
-                            </h3>
-                            <div className="grid md:grid-cols-2 gap-4">
-                                {inactiveSubscriptions.map((sub) => (
-                                    <SubscriptionCard
-                                        key={sub.id}
-                                        expense={sub}
-                                        onDelete={() => handleDelete(sub.id)}
-                                        onToggle={() => handleToggle(sub)}
-                                    />
-                                ))}
-                            </div>
+                ) : activeSubscriptions.length === 0 && inactiveSubscriptions.length === 0 ? (
+                    <Card className="p-12 text-center">
+                        <Sparkles className="w-16 h-16 text-slate-600 mx-auto mb-4" />
+                        <h3 className="text-xl font-medium mb-2">Brak subskrypcji</h3>
+                        <p className="text-slate-400 mb-6">
+                            Dodaj swoje stałe opłaty lub zeskanuj paragon - wykryjemy subskrypcje automatycznie!
+                        </p>
+                        <Button onClick={() => setShowAddModal(true)}>
+                            <Plus className="w-5 h-5 mr-2" />
+                            Dodaj pierwszą subskrypcję
+                        </Button>
+                    </Card>
+                ) : (
+                    <>
+                        {/* Active subscriptions */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                            {activeSubscriptions.map((sub) => (
+                                <SubscriptionCard
+                                    key={sub.id}
+                                    expense={sub}
+                                    onDelete={() => handleDelete(sub.id)}
+                                    onToggle={() => handleToggle(sub)}
+                                />
+                            ))}
                         </div>
-                    )}
-                </>
-            )}
+
+                        {/* Inactive subscriptions */}
+                        {inactiveSubscriptions.length > 0 && (
+                            <div>
+                                <h3 className="text-sm text-slate-500 uppercase tracking-wider mb-3">
+                                    Wstrzymane ({inactiveSubscriptions.length})
+                                </h3>
+                                <div className="grid md:grid-cols-2 gap-4">
+                                    {inactiveSubscriptions.map((sub) => (
+                                        <SubscriptionCard
+                                            key={sub.id}
+                                            expense={sub}
+                                            onDelete={() => handleDelete(sub.id)}
+                                            onToggle={() => handleToggle(sub)}
+                                        />
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+                    </>
+                )
+            }
 
             {/* Add Modal */}
             <AnimatePresence>
@@ -536,6 +577,6 @@ export default function SubscriptionsPage() {
                     />
                 )}
             </AnimatePresence>
-        </div>
+        </div >
     );
 }

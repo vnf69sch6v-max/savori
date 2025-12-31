@@ -42,20 +42,52 @@ const plans = [
   {
     name: 'Free',
     price: '0',
-    features: ['1 cel oszczędnościowy', '10 skanów/miesiąc', 'Podstawowe statystyki'],
+    period: '/zawsze',
+    description: 'Idealny na start',
+    features: [
+      '1 cel oszczędnościowy',
+      '10 skanów/miesiąc',
+      'Podstawowe statystyki',
+      'Śledzenie wydatków',
+    ],
+    cta: 'Zacznij za darmo',
   },
   {
     name: 'Pro',
-    price: '19.99',
-    popular: true,
-    features: ['Nieograniczone cele', '100 skanów/miesiąc', 'Automatyczne reguły', 'Weekly reports'],
+    price: '25',
+    period: '/miesiąc',
+    description: 'Dla regularnych oszczędzaczy',
+    decoy: true, // This is the decoy option
+    features: [
+      'Wszystko z Free',
+      '5 celów oszczędnościowych',
+      '50 skanów/miesiąc',
+      'Automatyczne reguły',
+      'Tygodniowe raporty',
+    ],
+    cta: 'Wybierz Pro',
   },
   {
-    name: 'Premium',
-    price: '39.99',
-    features: ['Wszystko z Pro', 'Nieograniczone skany', 'AI Insights', 'Priority support'],
+    name: 'Ultimate',
+    price: '30',
+    period: '/miesiąc',
+    description: 'Pełna kontrola finansów',
+    bestValue: true,
+    popular: true,
+    savings: 'Tylko 5 zł więcej!',
+    features: [
+      'Wszystko z Pro',
+      'Nieograniczone cele',
+      'Nieograniczone skany',
+      'AI Financial Coach',
+      'Predykcje wydatków',
+      'Eksport danych',
+      'Priority support',
+    ],
+    cta: 'Wybierz Ultimate',
   },
 ];
+
 
 export default function HomePage() {
   return (
@@ -272,7 +304,7 @@ export default function HomePage() {
             </p>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+          <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto items-start">
             {plans.map((plan, i) => (
               <motion.div
                 key={plan.name}
@@ -280,42 +312,66 @@ export default function HomePage() {
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.1 }}
                 viewport={{ once: true }}
-                className={`relative p-6 rounded-2xl border ${plan.popular
-                  ? 'bg-gradient-to-b from-emerald-500/10 to-transparent border-emerald-500/50'
-                  : 'bg-slate-800/50 border-slate-700/50'
+                className={`relative p-6 rounded-2xl border transition-all duration-300 ${plan.bestValue
+                    ? 'bg-gradient-to-b from-emerald-500/20 via-emerald-500/5 to-transparent border-emerald-500 shadow-lg shadow-emerald-500/20 scale-105 md:-mt-4'
+                    : plan.decoy
+                      ? 'bg-slate-800/30 border-slate-700/50 opacity-90'
+                      : 'bg-slate-800/50 border-slate-700/50'
                   }`}
               >
-                {plan.popular && (
-                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full bg-emerald-500 text-xs font-medium">
-                    Najpopularniejszy
+                {/* Best Value Badge */}
+                {plan.bestValue && (
+                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-4 py-1.5 rounded-full bg-gradient-to-r from-emerald-500 to-emerald-400 text-xs font-bold shadow-lg">
+                    ⭐ NAJLEPSZA WARTOŚĆ
                   </div>
                 )}
+
+                {/* Savings callout */}
+                {plan.savings && (
+                  <div className="absolute -top-2 right-3 px-2 py-0.5 rounded-full bg-amber-500 text-[10px] font-bold text-black">
+                    {plan.savings}
+                  </div>
+                )}
+
                 <div className="text-center mb-6">
-                  <h3 className="font-semibold text-lg mb-2">{plan.name}</h3>
-                  <div className="text-4xl font-bold">
-                    {plan.price}
-                    <span className="text-lg text-slate-400 font-normal"> zł/msc</span>
+                  <h3 className={`font-semibold text-lg mb-1 ${plan.bestValue ? 'text-emerald-400' : ''}`}>
+                    {plan.name}
+                  </h3>
+                  <p className="text-sm text-slate-500 mb-3">{plan.description}</p>
+                  <div className="flex items-baseline justify-center gap-1">
+                    <span className={`text-4xl font-bold ${plan.bestValue ? 'text-white' : ''}`}>
+                      {plan.price}
+                    </span>
+                    <span className="text-lg text-slate-400 font-normal">zł</span>
+                    <span className="text-sm text-slate-500">{plan.period}</span>
                   </div>
                 </div>
+
                 <ul className="space-y-3 mb-6">
                   {plan.features.map((feature) => (
                     <li key={feature} className="flex items-center gap-2 text-sm">
-                      <Check className="w-4 h-4 text-emerald-400 flex-shrink-0" />
-                      <span className="text-slate-300">{feature}</span>
+                      <Check className={`w-4 h-4 flex-shrink-0 ${plan.bestValue ? 'text-emerald-400' : 'text-slate-400'}`} />
+                      <span className={plan.bestValue ? 'text-white' : 'text-slate-300'}>{feature}</span>
                     </li>
                   ))}
                 </ul>
+
                 <Link href="/register">
                   <Button
-                    variant={plan.popular ? 'primary' : 'outline'}
-                    className="w-full"
+                    variant={plan.bestValue ? 'primary' : 'outline'}
+                    className={`w-full ${plan.bestValue ? 'shadow-lg shadow-emerald-500/25' : ''}`}
                   >
-                    {plan.price === '0' ? 'Zacznij za darmo' : 'Wybierz plan'}
+                    {plan.cta}
                   </Button>
                 </Link>
               </motion.div>
             ))}
           </div>
+
+          {/* Trust indicator */}
+          <p className="text-center text-slate-500 text-sm mt-8">
+            💳 Bez karty kredytowej • Anuluj w każdej chwili
+          </p>
         </div>
       </section>
 
