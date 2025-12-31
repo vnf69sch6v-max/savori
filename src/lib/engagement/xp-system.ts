@@ -30,6 +30,10 @@ export interface UserEngagement {
     totalExpenses: number;
     badges: string[];
     achievementsUnlocked: string[];
+    // No-Spend tracking
+    noSpendStreak: number;
+    longestNoSpendStreak: number;
+    totalNoSpendDays: number;
 }
 
 export interface LevelInfo {
@@ -74,6 +78,11 @@ export const XP_ACTIONS: Record<string, XPAction> = {
     add_budget: { action: 'add_budget', xp: 20, description: 'Ustaw budżet' },
     buy_kitchen_item: { action: 'buy_kitchen_item', xp: 10, description: 'Kup przedmiot do kuchni' },
     view_insights: { action: 'view_insights', xp: 5, description: 'Sprawdź AI Insights', cooldown: 60 },
+
+    // No-Spend bonuses
+    no_spend_day: { action: 'no_spend_day', xp: 15, description: 'Dzień bez wydatków' },
+    no_spend_3: { action: 'no_spend_3', xp: 30, description: '3 dni bez wydatków z rzędu' },
+    no_spend_7: { action: 'no_spend_7', xp: 75, description: 'Tydzień bez wydatków' },
 };
 
 // ============ LEVELS ============
@@ -113,6 +122,12 @@ export const BADGES: Badge[] = [
     // Special badges
     { id: 'early_adopter', name: 'Early Adopter', emoji: '🚀', description: 'Jeden z pierwszych użytkowników', rarity: 'epic', requirement: () => true }, // Manual grant
     { id: 'feedback_hero', name: 'Bohater Feedbacku', emoji: '💬', description: 'Pomógł ulepszyć aplikację', rarity: 'rare', requirement: () => false }, // Manual grant
+
+    // No-Spend badges
+    { id: 'no_spend_3', name: 'Oszczędny', emoji: '💪', description: '3 dni bez wydatków z rzędu', rarity: 'common', requirement: (e) => e.longestNoSpendStreak >= 3 },
+    { id: 'no_spend_7', name: 'Tydzień Ciszy', emoji: '🧘', description: '7 dni bez wydatków z rzędu', rarity: 'rare', requirement: (e) => e.longestNoSpendStreak >= 7 },
+    { id: 'no_spend_14', name: 'Finansowy Ninja', emoji: '🥷', description: '14 dni bez wydatków', rarity: 'epic', requirement: (e) => e.longestNoSpendStreak >= 14 },
+    { id: 'no_spend_30', name: 'Mistrz Minimalizmu', emoji: '🏆', description: 'Miesiąc bez wydatków', rarity: 'legendary', requirement: (e) => e.longestNoSpendStreak >= 30 },
 ];
 
 // ============ ENGAGEMENT SERVICE ============
@@ -312,6 +327,10 @@ export class EngagementService {
             totalExpenses: gamification.totalExpenses || 0,
             badges: gamification.badges || [],
             achievementsUnlocked: gamification.achievementsUnlocked || [],
+            // No-Spend tracking
+            noSpendStreak: gamification.noSpendStreak || 0,
+            longestNoSpendStreak: gamification.longestNoSpendStreak || 0,
+            totalNoSpendDays: gamification.totalNoSpendDays || 0,
         };
     }
 
@@ -375,6 +394,58 @@ export class EngagementService {
     }
 
     /**
+     * Record a no-spend day (call at end of day if no expenses were added)
+     */
+    async recordNoSpendDay(userId: string): Promise<{ streak: number; bonus?: number; newBadges: Badge[] }> {
+        const engagement = await this.getEngagement(userId);
+
+        // Increment no-spend streak
+        const newStreak = engagement.noSpendStreak + 1;
+        const longestNoSpendStreak = Math.max(newStreak, engagement.longestNoSpendStreak);
+        const totalNoSpendDays = engagement.totalNoSpendDays + 1;
+
+        // Check for milestone bonuses
+        let bonus = 0;
+        if (newStreak === 3) bonus = XP_ACTIONS.no_spend_3.xp;
+        else if (newStreak === 7) bonus = XP_ACTIONS.no_spend_7.xp;
+
+        // Update in Firestore
+        await updateDoc(doc(db, 'users', userId), {
+            'gamification.noSpendStreak': newStreak,
+            'gamification.longestNoSpendStreak': longestNoSpendStreak,
+            'gamification.totalNoSpendDays': totalNoSpendDays,
+        });
+
+        // Award base XP for no-spend day
+        await this.awardXP(userId, 'no_spend_day');
+
+        // Award bonus XP if hit milestone
+        if (bonus > 0) {
+            await this.awardCustomXP(userId, bonus, 'no_spend_streak_bonus');
+        }
+
+        // Check for new badges with updated streak
+        const updatedEngagement = {
+            ...engagement,
+            noSpendStreak: newStreak,
+            longestNoSpendStreak,
+            totalNoSpendDays,
+        };
+        const newBadges = await this.checkNewBadges(userId, updatedEngagement);
+
+        return { streak: newStreak, bonus: bonus > 0 ? bonus : undefined, newBadges };
+    }
+
+    /**
+     * Reset no-spend streak (call when expense is added)
+     */
+    async resetNoSpendStreak(userId: string): Promise<void> {
+        await updateDoc(doc(db, 'users', userId), {
+            'gamification.noSpendStreak': 0,
+        });
+    }
+
+    /**
      * Helper: Get date string YYYY-MM-DD
      */
     private getDateString(date: Date): string {
@@ -384,3 +455,4 @@ export class EngagementService {
 
 // Singleton export
 export const engagementService = new EngagementService();
+
