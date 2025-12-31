@@ -23,6 +23,7 @@ import { formatMoney, parseMoneyToCents } from '@/lib/utils';
 import { collection, query, onSnapshot, addDoc, updateDoc, deleteDoc, doc, Timestamp } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { SavingGoal } from '@/types';
+import { fireGoalConfetti } from '@/hooks/useConfetti';
 
 const GOAL_EMOJIS = ['🏠', '🚗', '✈️', '💻', '📱', '🎓', '💍', '🎯', '🎁', '🏝️', '🎸', '🐶'];
 
@@ -117,6 +118,8 @@ export default function GoalsPage() {
 
             if (isCompleted) {
                 toast.success('Gratulacje! Cel osiągnięty! 🎉');
+                // Fire confetti celebration!
+                setTimeout(() => fireGoalConfetti(), 300);
             } else {
                 toast.success('Wpłata dodana!');
             }

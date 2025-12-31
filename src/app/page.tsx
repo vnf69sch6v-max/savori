@@ -136,6 +136,46 @@ export default function HomePage() {
               Zobacz demo
             </Button>
           </motion.div>
+
+          {/* Social Proof */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.5 }}
+            className="mt-12 flex flex-col items-center gap-4"
+          >
+            <div className="flex items-center gap-3">
+              {/* Avatars */}
+              <div className="flex -space-x-3">
+                {['🧑', '👩', '👨', '👩‍🦰', '🧔'].map((emoji, i) => (
+                  <div
+                    key={i}
+                    className="w-10 h-10 rounded-full bg-gradient-to-br from-slate-700 to-slate-800 border-2 border-slate-900 flex items-center justify-center text-lg"
+                  >
+                    {emoji}
+                  </div>
+                ))}
+              </div>
+              <div className="text-left">
+                <p className="font-bold text-lg">
+                  <span className="text-emerald-400">10 000+</span> użytkowników
+                </p>
+                <p className="text-sm text-slate-400">oszczędza z Savori</p>
+              </div>
+            </div>
+
+            {/* Trust Badges */}
+            <div className="flex items-center gap-6 text-slate-500 text-sm">
+              <div className="flex items-center gap-1.5">
+                <Shield className="w-4 h-4 text-emerald-500" />
+                <span>Zgodność z RODO</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <Zap className="w-4 h-4 text-amber-500" />
+                <span>Darmowy start</span>
+              </div>
+            </div>
+          </motion.div>
         </div>
       </section>
 

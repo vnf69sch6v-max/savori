@@ -14,6 +14,7 @@ import { toast } from 'react-hot-toast';
 import { format, startOfMonth } from 'date-fns';
 import { engagementService } from '@/lib/engagement/xp-system';
 import ExpenseAnalysisCard from './ExpenseAnalysisCard';
+import { fireMilestoneConfetti } from '@/hooks/useConfetti';
 
 interface AddExpenseModalProps {
     isOpen: boolean;
@@ -141,9 +142,12 @@ export default function AddExpenseModal({ isOpen, onClose, onSuccess }: AddExpen
             });
             setShowAnalysis(true);
 
-            // Show badge toasts
-            newBadges.forEach(badge => {
-                toast.success(`🏆 Nowa odznaka: ${badge.name}!`, { duration: 5000 });
+            // Show badge toasts and celebration
+            newBadges.forEach((badge, i) => {
+                setTimeout(() => {
+                    toast.success(`🏆 Nowa odznaka: ${badge.name}!`, { duration: 5000 });
+                    fireMilestoneConfetti();
+                }, i * 500);
             });
 
             // Reset form
