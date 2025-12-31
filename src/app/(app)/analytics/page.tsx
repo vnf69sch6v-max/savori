@@ -22,6 +22,7 @@ import { collection, query, where, orderBy, onSnapshot, Timestamp } from 'fireba
 import { db } from '@/lib/firebase';
 import { Expense } from '@/types';
 import AICommentary from '@/components/AICommentary';
+import AnalystWidget from '@/components/analytics/AnalystWidget';
 import CategoryRing from '@/components/analytics/CategoryRing';
 import SpendingTrendChart from '@/components/analytics/SpendingTrendChart';
 
@@ -130,6 +131,26 @@ export default function AnalyticsPage() {
     const [period, setPeriod] = useState<Period>('month');
     const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
     const [showAllCategories, setShowAllCategories] = useState(false);
+    const [forecastData, setForecastData] = useState<{ date: string; amount: number }[] | undefined>(undefined);
+
+    const handleRequestForecast = async () => {
+        try {
+            const response = await fetch('/api/ai-analyze', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    type: 'forecast',
+                    data: { expenses: expenses.slice(0, 50) } // Send recent expenses
+                })
+            });
+            const res = await response.json();
+            if (res.success) {
+                setForecastData(res.data);
+            }
+        } catch (error) {
+            console.error('Forecast failed', error);
+        }
+    };
 
     // Get date range
     const getDateRange = (p: Period) => {
@@ -180,6 +201,11 @@ export default function AnalyticsPage() {
 
         return () => unsubscribe();
     }, [userData?.id, period]);
+
+    // Clear forecast on period change
+    useEffect(() => {
+        setForecastData(undefined);
+    }, [period]);
 
     // Calculate stats
     const totalExpenses = expenses.reduce((sum, e) => sum + (e.amount || 0), 0);
@@ -318,15 +344,20 @@ export default function AnalyticsPage() {
                 </motion.div>
             ) : (
                 <>
-                    {/* AI Commentary - at top */}
-                    <div className="mb-6">
-                        <AICommentary
-                            categoryData={categoryData}
-                            totalExpenses={totalExpenses}
-                            avgDaily={avgDaily}
-                            period={period}
-                            merchantData={merchantData}
-                        />
+                    {/* AI Analyst Widget */}
+                    <div className="mb-6 grid lg:grid-cols-3 gap-6">
+                        <div className="lg:col-span-2">
+                            <AICommentary
+                                categoryData={categoryData}
+                                totalExpenses={totalExpenses}
+                                avgDaily={avgDaily}
+                                period={period}
+                                merchantData={merchantData}
+                            />
+                        </div>
+                        <div className="lg:col-span-1">
+                            <AnalystWidget expenses={expenses} onRequestForecast={handleRequestForecast} />
+                        </div>
                     </div>
 
                     {/* Quick Stats Row */}
@@ -365,7 +396,7 @@ export default function AnalyticsPage() {
                             animate={{ opacity: 1, y: 0 }}
                             className="lg:col-span-2"
                         >
-                            <SpendingTrendChart data={trendData} />
+                            <SpendingTrendChart data={trendData} forecastData={forecastData} />
                         </motion.div>
 
                         {/* Category Ring */}

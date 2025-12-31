@@ -144,7 +144,7 @@ class RecurringExpensesService {
             emoji: input.emoji || detected?.emoji || '💳',
             color: input.color || detected?.color,
             linkedExpenseIds: [],
-            notes: input.notes,
+            notes: input.notes || '',
             createdAt: Timestamp.now(),
             updatedAt: Timestamp.now(),
         };
