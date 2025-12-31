@@ -1,6 +1,6 @@
-import { GoogleGenerativeAI } from '@google/generative-ai';
+import { getAIModel } from '@/lib/firebase';
 import { Expense, ExpenseCategory } from '@/types';
-import { formatMoney } from '@/lib/utils'; // Assuming this exists, need to verify import path or inline it if it's client side only. It is in utils but might be using client specific Intl. Server side safe? Yes usually.
+// Note: formatMoney import removed as it's not used in this server-side module
 
 // We need a robust prompt builder
 class PromptBuilder {
@@ -91,12 +91,11 @@ Odpowiedz WYŁĄCZNIE poprawnym formatem JSON:
 }
 
 export class DataAnalysisAgent {
-    private genAI: GoogleGenerativeAI;
     private model: any;
 
-    constructor(apiKey: string) {
-        this.genAI = new GoogleGenerativeAI(apiKey);
-        this.model = this.genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+    constructor() {
+        // Uses Firebase AI Logic (Vertex AI) via centralized helper
+        this.model = getAIModel('gemini-2.0-flash');
     }
 
     async generateMonthlyReport(expenses: Expense[], budget: number | null): Promise<string> {

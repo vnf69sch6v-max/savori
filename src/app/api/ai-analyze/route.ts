@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { GoogleGenerativeAI } from '@google/generative-ai';
 import { DataAnalysisAgent } from '@/lib/ai/data-analysis-agent';
-
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
+import { getAIModel } from '@/lib/firebase';
 
 export async function POST(request: NextRequest) {
     try {
@@ -16,7 +14,7 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        const agent = new DataAnalysisAgent(process.env.GEMINI_API_KEY || '');
+        const agent = new DataAnalysisAgent();
         let resultData = '';
 
         switch (type) {
@@ -57,22 +55,22 @@ export async function POST(request: NextRequest) {
         // Re-implementing the switch to include both legacy and new
         if (type === 'dashboard_insights') {
             const prompt = buildDashboardPrompt(data);
-            const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+            const model = getAIModel('gemini-2.0-flash');
             const res = await model.generateContent(prompt);
             resultData = res.response.text();
         } else if (type === 'expense_analysis') {
             const prompt = buildExpenseAnalysisPrompt(data);
-            const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+            const model = getAIModel('gemini-2.0-flash');
             const res = await model.generateContent(prompt);
             resultData = res.response.text();
         } else if (type === 'chart_commentary') {
             const prompt = buildChartCommentaryPrompt(data);
-            const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+            const model = getAIModel('gemini-2.0-flash');
             const res = await model.generateContent(prompt);
             resultData = res.response.text();
         } else if (type === 'goal_advice') {
             const prompt = buildGoalAdvicePrompt(data);
-            const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+            const model = getAIModel('gemini-2.0-flash');
             const res = await model.generateContent(prompt);
             resultData = res.response.text();
         }

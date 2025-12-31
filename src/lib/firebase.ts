@@ -3,6 +3,7 @@ import { getAuth } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
 import { getStorage } from 'firebase/storage';
 import { getAnalytics, isSupported } from 'firebase/analytics';
+import { getAI, getGenerativeModel } from 'firebase/ai';
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -26,6 +27,14 @@ export const db = getFirestore(app);
 // Storage
 export const storage = getStorage(app);
 
+// Firebase AI (Gemini via Firebase)
+export const firebaseAI = getAI(app);
+
+// Helper to get AI model
+export const getAIModel = (modelName: string = 'gemini-2.0-flash') => {
+  return getGenerativeModel(firebaseAI, { model: modelName });
+};
+
 // Analytics (client-side only)
 export const initAnalytics = async () => {
   if (typeof window !== 'undefined' && await isSupported()) {
@@ -35,3 +44,4 @@ export const initAnalytics = async () => {
 };
 
 export default app;
+
