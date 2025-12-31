@@ -191,16 +191,27 @@ class RecurringExpensesService {
 
     /**
      * Subscribe to recurring expenses (real-time)
+     * @param activeOnly - If true, only return active subscriptions. If false, return all.
      */
     subscribe(
         userId: string,
-        callback: (expenses: RecurringExpense[]) => void
+        callback: (expenses: RecurringExpense[]) => void,
+        activeOnly: boolean = true
     ): () => void {
-        const q = query(
-            this.getCollection(userId),
-            where('isActive', '==', true),
-            orderBy('createdAt', 'desc')
-        );
+        let q;
+        if (activeOnly) {
+            q = query(
+                this.getCollection(userId),
+                where('isActive', '==', true),
+                orderBy('createdAt', 'desc')
+            );
+        } else {
+            // For subscriptions page - get all, sort by createdAt
+            q = query(
+                this.getCollection(userId),
+                orderBy('createdAt', 'desc')
+            );
+        }
 
         return onSnapshot(q, (snapshot) => {
             const expenses = snapshot.docs.map(doc => ({

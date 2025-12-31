@@ -331,7 +331,7 @@ export default function SubscriptionsPage() {
         const unsubscribe = recurringExpensesService.subscribe(userData.id, (expenses) => {
             setSubscriptions(expenses);
             setTimeout(() => setLoading(false), 0);
-        });
+        }, false); // false = get ALL subscriptions, not just active
 
         return () => unsubscribe();
     }, [userData?.id]);
