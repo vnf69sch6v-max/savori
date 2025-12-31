@@ -186,13 +186,18 @@ export default function DashboardPage() {
         return () => unsubscribe();
     }, [userData?.id]);
 
-    // Fetch recurring expenses for planned amount
+    // Fetch recurring expenses for planned amount (real-time sync)
     useEffect(() => {
         if (!userData?.id) return;
 
-        recurringExpensesService.getMonthlyTotal(userData.id)
-            .then(total => setPlannedExpenses(Math.round(total)))
-            .catch(console.error);
+        const unsubscribe = recurringExpensesService.subscribe(userData.id, (expenses) => {
+            const total = expenses.reduce((sum, exp) => {
+                return sum + getMonthlyEquivalent(exp.amount, exp.frequency);
+            }, 0);
+            setPlannedExpenses(Math.round(total));
+        });
+
+        return () => unsubscribe();
     }, [userData?.id]);
 
     // Check if user has enough data
