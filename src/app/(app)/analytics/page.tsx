@@ -28,12 +28,35 @@ import SpendingTrendChart from '@/components/analytics/SpendingTrendChart';
 
 type Period = 'week' | 'month' | 'quarter' | 'year';
 
-// Interactive stat card with hover effects
+// Stagger animation container
+const statsContainerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+        opacity: 1,
+        transition: {
+            staggerChildren: 0.1,
+            delayChildren: 0.1,
+        },
+    },
+};
+
+const statsItemVariants = {
+    hidden: { opacity: 0, y: 20, scale: 0.95 },
+    visible: {
+        opacity: 1,
+        y: 0,
+        scale: 1,
+        transition: { type: 'spring' as const, damping: 20, stiffness: 200 },
+    },
+};
+
+// Interactive stat card with hover effects and neon glow
 function InteractiveStat({
     label,
     value,
     icon,
     color,
+    glowColor,
     trend,
     onClick
 }: {
@@ -41,36 +64,43 @@ function InteractiveStat({
     value: string;
     icon: React.ReactNode;
     color: string;
+    glowColor?: string;
     trend?: { value: number; isPositive: boolean };
     onClick?: () => void;
 }) {
     return (
         <motion.div
-            whileHover={{ scale: 1.02, y: -2 }}
+            variants={statsItemVariants}
+            whileHover={{
+                scale: 1.03,
+                y: -4,
+                boxShadow: glowColor || '0 20px 40px -15px rgba(139, 92, 246, 0.3)'
+            }}
             whileTap={{ scale: 0.98 }}
             onClick={onClick}
-            className={`relative overflow-hidden cursor-pointer rounded-2xl p-5 bg-gradient-to-br ${color} border border-white/10 group`}
+            className={`relative overflow-hidden cursor-pointer rounded-2xl p-5 bg-gradient-to-br ${color} border border-white/10 group backdrop-blur-sm`}
         >
             {/* Animated background glow */}
             <div className="absolute inset-0 bg-white/0 group-hover:bg-white/5 transition-all duration-300" />
-            <div className="absolute -top-10 -right-10 w-24 h-24 bg-white/5 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-500" />
+            <div className="absolute -top-10 -right-10 w-28 h-28 bg-white/5 rounded-full blur-2xl group-hover:scale-150 group-hover:bg-white/10 transition-all duration-500" />
+            <div className="absolute -bottom-10 -left-10 w-20 h-20 bg-white/3 rounded-full blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
 
             <div className="relative">
                 <div className="flex items-center justify-between mb-3">
-                    <span className="text-sm text-white/70">{label}</span>
+                    <span className="text-sm text-white/70 font-medium">{label}</span>
                     <motion.div
-                        whileHover={{ rotate: 15 }}
-                        className="text-white/80"
+                        whileHover={{ rotate: 15, scale: 1.1 }}
+                        className="text-white/80 p-1.5 rounded-lg bg-white/5"
                     >
                         {icon}
                     </motion.div>
                 </div>
-                <p className="text-2xl font-bold text-white mb-1">{value}</p>
+                <p className="text-2xl font-bold text-white mb-1 tracking-tight">{value}</p>
                 {trend && (
                     <motion.div
                         initial={{ opacity: 0, x: -10 }}
                         animate={{ opacity: 1, x: 0 }}
-                        className={`flex items-center gap-1 text-sm ${trend.isPositive ? 'text-emerald-400' : 'text-rose-400'}`}
+                        className={`flex items-center gap-1 text-sm font-medium ${trend.isPositive ? 'text-emerald-400' : 'text-rose-400'}`}
                     >
                         {trend.isPositive ? <TrendingDown className="w-4 h-4" /> : <TrendingUp className="w-4 h-4" />}
                         <span>{Math.abs(trend.value)}% vs ostatni okres</span>
@@ -360,33 +390,42 @@ export default function AnalyticsPage() {
                         </div>
                     </div>
 
-                    {/* Quick Stats Row */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                    {/* Quick Stats Row with Stagger Animation */}
+                    <motion.div
+                        variants={statsContainerVariants}
+                        initial="hidden"
+                        animate="visible"
+                        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6"
+                    >
                         <InteractiveStat
                             label="Suma wydatków"
                             value={formatMoney(totalExpenses)}
                             icon={<Flame className="w-5 h-5" />}
                             color="from-rose-500/20 to-pink-500/20"
+                            glowColor="0 20px 40px -15px rgba(244, 63, 94, 0.4)"
                         />
                         <InteractiveStat
                             label="Średnio dziennie"
                             value={formatMoney(avgDaily)}
                             icon={<Calendar className="w-5 h-5" />}
                             color="from-blue-500/20 to-cyan-500/20"
+                            glowColor="0 20px 40px -15px rgba(59, 130, 246, 0.4)"
                         />
                         <InteractiveStat
                             label="Transakcji"
                             value={transactionCount.toString()}
                             icon={<BarChart3 className="w-5 h-5" />}
                             color="from-purple-500/20 to-violet-500/20"
+                            glowColor="0 20px 40px -15px rgba(139, 92, 246, 0.4)"
                         />
                         <InteractiveStat
                             label="Śr. wartość"
                             value={formatMoney(avgTransaction)}
                             icon={<Target className="w-5 h-5" />}
                             color="from-emerald-500/20 to-teal-500/20"
+                            glowColor="0 20px 40px -15px rgba(16, 185, 129, 0.4)"
                         />
-                    </div>
+                    </motion.div>
 
                     {/* Main Grid */}
                     <div className="grid lg:grid-cols-3 gap-6 mb-6">
