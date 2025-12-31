@@ -37,12 +37,12 @@ export default function AnalystWidget({ expenses, onRequestForecast }: AnalystWi
         try {
             const contextData = {
                 userName: userData?.displayName || 'User',
-                totalExpenses: expenses.reduce((sum, e) => sum + (e.amount || 0), 0),
+                totalExpenses: expenses.reduce((sum, e) => sum + (e.amount || 0), 0) / 100, // Convert grosze to złoty
                 expenseCount: expenses.length,
                 expensesSummary: expenses.slice(0, 10).map(e => ({
                     date: e.date?.toDate?.()?.toISOString().split('T')[0],
                     merchant: e.merchant?.name,
-                    amount: e.amount,
+                    amount: (e.amount || 0) / 100, // Convert grosze to złoty
                     category: e.merchant?.category
                 }))
             };
@@ -132,16 +132,16 @@ export default function AnalystWidget({ expenses, onRequestForecast }: AnalystWi
                                 >
                                     {/* Avatar */}
                                     <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 shadow-lg ${msg.role === 'agent'
-                                            ? 'bg-gradient-to-br from-violet-500/30 to-indigo-500/30 text-violet-300 border border-violet-500/20'
-                                            : 'bg-gradient-to-br from-emerald-500/30 to-teal-500/30 text-emerald-300 border border-emerald-500/20'
+                                        ? 'bg-gradient-to-br from-violet-500/30 to-indigo-500/30 text-violet-300 border border-violet-500/20'
+                                        : 'bg-gradient-to-br from-emerald-500/30 to-teal-500/30 text-emerald-300 border border-emerald-500/20'
                                         }`}>
                                         {msg.role === 'agent' ? <Bot className="w-4 h-4" /> : <User className="w-4 h-4" />}
                                     </div>
 
                                     {/* Message Bubble */}
                                     <div className={`rounded-2xl p-3 max-w-[85%] text-sm shadow-lg backdrop-blur-sm ${msg.role === 'agent'
-                                            ? 'bg-white/5 text-slate-200 rounded-tl-sm border border-white/5'
-                                            : 'bg-gradient-to-br from-indigo-600 to-violet-600 text-white rounded-tr-sm shadow-indigo-500/20'
+                                        ? 'bg-white/5 text-slate-200 rounded-tl-sm border border-white/5'
+                                        : 'bg-gradient-to-br from-indigo-600 to-violet-600 text-white rounded-tr-sm shadow-indigo-500/20'
                                         }`}>
                                         <p className="leading-relaxed">{msg.content}</p>
                                     </div>
