@@ -90,11 +90,11 @@ class ExpenseService {
             date: Timestamp.fromDate(date || new Date()),
             items: items || [],
             tags: tags || [],
-            notes,
+            ...(notes !== undefined && { notes }),
             metadata: {
                 source,
                 verified: source === 'manual',
-                aiConfidence: source === 'scan' ? 0.9 : undefined,
+                ...(source === 'scan' && { aiConfidence: 0.9 }),
             } as ExpenseMetadata,
             createdAt: Timestamp.now(),
         };
