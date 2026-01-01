@@ -264,55 +264,92 @@ export default function VoiceExpenseModal({ isOpen, onClose }: VoiceExpenseModal
                             {/* Idle & Recording State */}
                             {(state === 'idle' || state === 'recording') && (
                                 <div className="text-center py-8">
-                                    {/* Microphone Button */}
+                                    {/* Microphone Button with AI Wave */}
                                     <div className="relative inline-block mb-6">
+                                        {/* AI Glow Effect */}
                                         {isRecording && (
-                                            <>
-                                                <motion.div
-                                                    animate={{ scale: [1, 1.5], opacity: [0.5, 0] }}
-                                                    transition={{ duration: 1.5, repeat: Infinity }}
-                                                    className="absolute inset-0 rounded-full bg-red-500/30"
-                                                />
-                                                <motion.div
-                                                    animate={{ scale: [1, 1.8], opacity: [0.3, 0] }}
-                                                    transition={{ duration: 1.5, repeat: Infinity, delay: 0.3 }}
-                                                    className="absolute inset-0 rounded-full bg-red-500/20"
-                                                />
-                                            </>
+                                            <motion.div
+                                                animate={{
+                                                    boxShadow: [
+                                                        "0 0 20px 0px rgba(16, 185, 129, 0.3)",
+                                                        "0 0 50px 10px rgba(16, 185, 129, 0.5)",
+                                                        "0 0 20px 0px rgba(16, 185, 129, 0.3)"
+                                                    ]
+                                                }}
+                                                transition={{ duration: 2, repeat: Infinity }}
+                                                className="absolute inset-0 rounded-full"
+                                            />
                                         )}
 
                                         <motion.button
                                             whileTap={{ scale: 0.95 }}
                                             onClick={isRecording ? handleStopRecording : handleStartRecording}
-                                            className={`relative w-24 h-24 rounded-full flex items-center justify-center transition-all ${isRecording
-                                                ? 'bg-gradient-to-br from-red-500 to-orange-500 shadow-lg shadow-red-500/40'
-                                                : 'bg-gradient-to-br from-emerald-500 to-cyan-500 shadow-lg shadow-emerald-500/40 hover:shadow-emerald-500/60'
+                                            className={`relative w-28 h-28 rounded-full flex items-center justify-center transition-all bg-gradient-to-br from-[#1a1f2e] to-[#0f1219] border border-white/10 ${isRecording ? 'border-emerald-500/50' : 'hover:border-white/20'
                                                 }`}
                                         >
-                                            {isRecording ? (
-                                                <MicOff className="w-10 h-10 text-white" />
-                                            ) : (
-                                                <Mic className="w-10 h-10 text-white" />
-                                            )}
+                                            <AnimatePresence mode="wait">
+                                                {isRecording ? (
+                                                    <motion.div
+                                                        key="wave"
+                                                        initial={{ opacity: 0 }}
+                                                        animate={{ opacity: 1 }}
+                                                        exit={{ opacity: 0 }}
+                                                        className="flex items-center gap-1 h-12"
+                                                    >
+                                                        {/* Simulated Voice Waveform */}
+                                                        {[...Array(5)].map((_, i) => (
+                                                            <motion.div
+                                                                key={i}
+                                                                animate={{
+                                                                    height: [16, Math.random() * 32 + 16, 16],
+                                                                    backgroundColor: ["#34d399", "#10b981", "#34d399"]
+                                                                }}
+                                                                transition={{
+                                                                    duration: 0.5,
+                                                                    repeat: Infinity,
+                                                                    delay: i * 0.1,
+                                                                    repeatType: "reverse"
+                                                                }}
+                                                                className="w-1.5 rounded-full bg-emerald-400"
+                                                            />
+                                                        ))}
+                                                    </motion.div>
+                                                ) : (
+                                                    <motion.div
+                                                        key="mic"
+                                                        initial={{ scale: 0.5, opacity: 0 }}
+                                                        animate={{ scale: 1, opacity: 1 }}
+                                                        exit={{ scale: 0.5, opacity: 0 }}
+                                                    >
+                                                        <Mic className="w-10 h-10 text-emerald-400" />
+                                                    </motion.div>
+                                                )}
+                                            </AnimatePresence>
                                         </motion.button>
                                     </div>
 
-                                    {/* Status */}
+                                    {/* Status Text & Timer */}
                                     <div className="min-h-[60px] mb-4">
                                         {isRecording ? (
-                                            <div>
-                                                <p className="text-white text-lg font-medium">Mów teraz...</p>
-                                                <p className="text-red-400 text-2xl font-mono mt-2">
+                                            <motion.div
+                                                initial={{ opacity: 0, y: 10 }}
+                                                animate={{ opacity: 1, y: 0 }}
+                                                className="space-y-2"
+                                            >
+                                                <p className="text-emerald-400 font-medium tracking-wide uppercase text-xs">Słucham...</p>
+                                                <p className="text-white text-2xl font-light font-mono">
                                                     {Math.floor(duration / 60).toString().padStart(2, '0')}:
                                                     {(duration % 60).toString().padStart(2, '0')}
                                                 </p>
-                                                <p className="text-slate-500 text-sm mt-2">Kliknij ponownie aby zakończyć</p>
-                                            </div>
+                                            </motion.div>
                                         ) : (
-                                            <div>
-                                                <p className="text-slate-400">Naciśnij i powiedz np.</p>
-                                                <p className="text-white mt-1">"Wydałem 50 zł w Żabce"</p>
-                                            </div>
+                                            <motion.div
+                                                initial={{ opacity: 0 }}
+                                                animate={{ opacity: 1 }}
+                                            >
+                                                <p className="text-slate-400 text-sm">Naciśnij, aby dodać wydatek</p>
+                                                <p className="text-slate-300 font-medium mt-1">"50 zł w Żabce"</p>
+                                            </motion.div>
                                         )}
                                     </div>
 
@@ -320,9 +357,9 @@ export default function VoiceExpenseModal({ isOpen, onClose }: VoiceExpenseModal
                                     {!isRecording && (
                                         <button
                                             onClick={switchToTextInput}
-                                            className="text-slate-500 hover:text-white text-sm flex items-center justify-center gap-2 mx-auto transition-colors"
+                                            className="text-slate-500 hover:text-white text-xs flex items-center justify-center gap-2 mx-auto transition-colors mt-2"
                                         >
-                                            <Keyboard className="w-4 h-4" />
+                                            <Keyboard className="w-3.5 h-3.5" />
                                             Wpisz ręcznie
                                         </button>
                                     )}
