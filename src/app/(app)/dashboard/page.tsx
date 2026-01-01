@@ -49,6 +49,7 @@ export default function DashboardPage() {
     const [isChatOpen, setIsChatOpen] = useState(false);
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
     const [isImpulseModalOpen, setIsImpulseModalOpen] = useState(false);
+    const [monthlySpent, setMonthlySpent] = useState(0);
 
     const getGreeting = () => {
         const hour = new Date().getHours();
@@ -106,7 +107,7 @@ export default function DashboardPage() {
         })
         .reduce((sum, e) => sum + (e.amount || 0), 0);
 
-    const monthlyExpenses = monthlyExpensesTotal;
+    const monthlyExpenses = monthlySpent || monthlyExpensesTotal;
     const currentStreak = userData?.stats?.currentStreak ?? 0;
     const defaultBudget = (userData?.settings as any)?.monthlyBudget || 500000;
     const [monthlyBudget, setMonthlyBudget] = useState(defaultBudget);
@@ -115,6 +116,8 @@ export default function DashboardPage() {
         prediction: 'low',
         ai: 'low'
     });
+
+
 
     useEffect(() => {
         if (!userData?.id) return;
@@ -126,6 +129,7 @@ export default function DashboardPage() {
             if (doc.exists()) {
                 const data = doc.data() as Budget;
                 setMonthlyBudget(data.totalLimit);
+                setMonthlySpent(data.totalSpent || 0);
             }
         });
         return () => unsubscribe();
