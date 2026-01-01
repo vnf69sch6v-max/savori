@@ -405,8 +405,8 @@ export default function DashboardPage() {
                                         return (
                                             <motion.div
                                                 key={goal.id}
-                                                initial={{ opacity: 0, x: -20 }}
-                                                animate={{ opacity: 1, x: 0 }}
+                                                initial={{ opacity: 0, y: 10 }}
+                                                animate={{ opacity: 1, y: 0 }}
                                                 transition={{ delay: i * 0.1 }}
                                                 className="p-4 rounded-xl bg-slate-800/30 border border-slate-700/30"
                                             >
@@ -468,9 +468,9 @@ export default function DashboardPage() {
                                     {displayExpenses.slice(0, 5).map((expense: Expense, i: number) => (
                                         <motion.div
                                             key={expense.id}
-                                            initial={{ opacity: 0, x: 20 }}
-                                            animate={{ opacity: 1, x: 0 }}
-                                            transition={{ delay: i * 0.1 }}
+                                            initial={{ opacity: 0, y: 10 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            transition={{ delay: i * 0.05 }}
                                             className="flex items-center gap-3 p-3 rounded-xl bg-slate-800/30 hover:bg-slate-800/50 transition-colors"
                                         >
                                             <span className="text-xl">
