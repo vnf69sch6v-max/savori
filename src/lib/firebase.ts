@@ -24,6 +24,19 @@ export const auth = getAuth(app);
 // Firestore
 export const db = getFirestore(app);
 
+// Enable offline persistence (client-side only)
+if (typeof window !== 'undefined') {
+  import('firebase/firestore').then(({ enableIndexedDbPersistence }) => {
+    enableIndexedDbPersistence(db).catch((err) => {
+      if (err.code === 'failed-precondition') {
+        console.warn('Firestore persistence enabled in another tab');
+      } else if (err.code === 'unimplemented') {
+        console.warn('Firestore persistence not supported');
+      }
+    });
+  });
+}
+
 // Storage
 export const storage = getStorage(app);
 

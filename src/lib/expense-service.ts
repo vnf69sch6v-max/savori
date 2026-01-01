@@ -15,7 +15,10 @@ import {
     orderBy,
     Timestamp,
     onSnapshot,
-    limit as firestoreLimit
+    limit as firestoreLimit,
+    increment,
+    setDoc,
+    getDoc
 } from 'firebase/firestore';
 import { db } from './firebase';
 import { Expense, ExpenseCategory, Merchant, ExpenseMetadata, Budget, CategoryBudget } from '@/types';
@@ -222,6 +225,21 @@ class ExpenseService {
             })
         );
 
+        // Task G: Atomic Budget Aggregation (CRITICAL FOR READ OPTIMIZATION)
+        tasks.push(
+            (async () => {
+                const dateObj = date || new Date();
+                const monthKey = `${dateObj.getFullYear()}-${String(dateObj.getMonth() + 1).padStart(2, '0')}`;
+                const budgetRef = doc(db, 'users', userId, 'budgets', monthKey);
+
+                // Ensure budget doc exists (upsert)
+                await setDoc(budgetRef, {
+                    totalSpent: increment(amount),
+                    updatedAt: Timestamp.now()
+                }, { merge: true });
+            })()
+        );
+
         // Execute all side effects and await them to ensure they complete in Serverless env
         // (Previously we didn't await, which caused Vercel to kill the process before completion)
         await Promise.allSettled(tasks);
@@ -333,7 +351,7 @@ class ExpenseService {
     subscribe(
         userId: string,
         callback: (expenses: Expense[]) => void,
-        limitCount = 50
+        limitCount = 20
     ): () => void {
         const q = query(
             this.expensesRef(userId),
@@ -354,10 +372,32 @@ class ExpenseService {
      * Delete an expense
      */
     async delete(userId: string, expenseId: string): Promise<void> {
+        // Get expense first to know amount and date for budget adjustment
+        const expenseRef = doc(db, 'users', userId, 'expenses', expenseId);
+        const expenseSnap = await getDoc(expenseRef);
+
+        if (!expenseSnap.exists()) return;
+
+        const expenseData = expenseSnap.data() as Expense;
+
         // Audit FIRST
         await AuditService.logAction(userId, 'EXPENSE_DELETE', 'expense', expenseId);
 
-        await deleteDoc(doc(db, 'users', userId, 'expenses', expenseId));
+        await deleteDoc(expenseRef);
+
+        // Adjust Budget Aggregation
+        try {
+            const dateObj = expenseData.date.toDate();
+            const monthKey = `${dateObj.getFullYear()}-${String(dateObj.getMonth() + 1).padStart(2, '0')}`;
+            const budgetRef = doc(db, 'users', userId, 'budgets', monthKey);
+
+            await updateDoc(budgetRef, {
+                totalSpent: increment(-expenseData.amount),
+                updatedAt: Timestamp.now()
+            });
+        } catch (error) {
+            console.error('Failed to update budget aggregation on delete', error);
+        }
 
         await eventBus.emit('expense:deleted', { expenseId, userId });
         cache.invalidate(`expenses:${userId}`);
@@ -372,6 +412,40 @@ class ExpenseService {
         await AuditService.logAction(userId, 'EXPENSE_UPDATE', 'expense', expenseId, changes);
 
         const ref = doc(db, 'users', userId, 'expenses', expenseId);
+
+        // Budget Aggregation Update
+        if (changes.amount !== undefined || changes.date !== undefined) {
+            try {
+                const snapshot = await getDoc(ref);
+                if (snapshot.exists()) {
+                    const oldData = snapshot.data() as Expense;
+
+                    // 1. Revert old amount
+                    const oldDate = oldData.date.toDate();
+                    const oldMonthKey = `${oldDate.getFullYear()}-${String(oldDate.getMonth() + 1).padStart(2, '0')}`;
+                    const oldBudgetRef = doc(db, 'users', userId, 'budgets', oldMonthKey);
+
+                    await updateDoc(oldBudgetRef, {
+                        totalSpent: increment(-oldData.amount),
+                        updatedAt: Timestamp.now()
+                    });
+
+                    // 2. Add new amount (or old amount if not changed) to new date (or old date)
+                    const newAmount = changes.amount !== undefined ? changes.amount : oldData.amount;
+                    const newDate = changes.date ? (changes.date as Timestamp).toDate() : oldDate;
+                    const newMonthKey = `${newDate.getFullYear()}-${String(newDate.getMonth() + 1).padStart(2, '0')}`;
+                    const newBudgetRef = doc(db, 'users', userId, 'budgets', newMonthKey);
+
+                    // Use setDoc with merge to ensure doc exists if moving to a new month not yet created
+                    await setDoc(newBudgetRef, {
+                        totalSpent: increment(newAmount),
+                        updatedAt: Timestamp.now()
+                    }, { merge: true });
+                }
+            } catch (error) {
+                console.error('Failed to update budget aggregation on update', error);
+            }
+        }
 
         await updateDoc(ref, {
             ...changes,

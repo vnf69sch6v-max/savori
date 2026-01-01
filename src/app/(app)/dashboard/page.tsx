@@ -98,16 +98,9 @@ export default function DashboardPage() {
 
     const displayExpenses = expenses;
     const now = new Date();
-    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-    const monthlyExpensesTotal = expenses
-        .filter(e => {
-            if (!e.date) return true;
-            const expenseDate = typeof e.date.toDate === 'function' ? e.date.toDate() : new Date(e.date as unknown as string);
-            return expenseDate >= startOfMonth;
-        })
-        .reduce((sum, e) => sum + (e.amount || 0), 0);
 
-    const monthlyExpenses = monthlySpent || monthlyExpensesTotal;
+    // We use the aggregated value from the budget document now
+    const monthlyExpenses = monthlySpent;
     const currentStreak = userData?.stats?.currentStreak ?? 0;
     const defaultBudget = (userData?.settings as any)?.monthlyBudget || 500000;
     const [monthlyBudget, setMonthlyBudget] = useState(defaultBudget);

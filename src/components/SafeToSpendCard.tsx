@@ -20,37 +20,19 @@ export default function SafeToSpendCard() {
         const now = new Date();
         const monthKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
 
-        // 1. Subscribe to Budget Limit
+        // 1. Subscribe to Budget Limit & Spent
         const budgetRef = doc(db, 'users', user.uid, 'budgets', monthKey);
         const unsubscribeBudget = onSnapshot(budgetRef, (doc) => {
             if (doc.exists()) {
                 const data = doc.data();
                 if (data.totalLimit) setLimit(data.totalLimit);
+                setSpent(data.totalSpent || 0); // Use aggregated value
             }
-        });
-
-        // 2. Subscribe to Expenses
-        const start = startOfMonth(now);
-        const end = endOfMonth(now);
-        const expensesRef = collection(db, 'users', user.uid, 'expenses');
-        const q = query(
-            expensesRef,
-            where('date', '>=', start),
-            where('date', '<=', end)
-        );
-
-        const unsubscribeExpenses = onSnapshot(q, (snapshot) => {
-            let total = 0;
-            snapshot.docs.forEach(doc => {
-                total += doc.data().amount || 0;
-            });
-            setSpent(total);
             setLoading(false);
         });
 
         return () => {
             unsubscribeBudget();
-            unsubscribeExpenses();
         };
     }, [user]);
 
