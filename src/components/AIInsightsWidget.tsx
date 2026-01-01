@@ -56,9 +56,9 @@ export default function AIInsightsWidget({ onPriorityChange }: AIInsightsWidgetP
             const expensesSnap = await getDocs(query(expensesRef, orderBy('date', 'desc'), limit(50)));
             const expenses = expensesSnap.docs.map(d => ({ id: d.id, ...d.data() })) as Expense[];
 
-            // Fetch budgets
+            // Fetch budgets - only need current month
             const budgetsRef = collection(db, 'users', userData.id, 'budgets');
-            const budgetSnap = await getDocs(budgetsRef);
+            const budgetSnap = await getDocs(query(budgetsRef, limit(3)));
             const budgets = budgetSnap.docs.map(d => ({ id: d.id, ...d.data() })) as Budget[];
 
             // Transform budgets for engine

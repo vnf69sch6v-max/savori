@@ -19,7 +19,7 @@ import {
 import { Button, Card, Input } from '@/components/ui';
 import { useAuth } from '@/contexts/AuthContext';
 import { formatMoney, formatDate, CATEGORY_LABELS, CATEGORY_ICONS } from '@/lib/utils';
-import { collection, query, orderBy, onSnapshot, deleteDoc, doc, where, Timestamp } from 'firebase/firestore';
+import { collection, query, orderBy, onSnapshot, deleteDoc, doc, where, Timestamp, limit } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Expense, ExpenseCategory } from '@/types';
 import AddExpenseModal from '@/components/AddExpenseModal';
@@ -45,9 +45,8 @@ export default function ExpensesPage() {
         }
 
         const expensesRef = collection(db, 'users', userData.id, 'expenses');
-        // We fetch all for now and filter client-side for smooth transitions
-        // In a real huge app, we'd query by date range
-        const q = query(expensesRef, orderBy('createdAt', 'desc'));
+        // Limit to prevent excessive reads - most users won't have 300+ expenses in view
+        const q = query(expensesRef, orderBy('createdAt', 'desc'), limit(300));
 
         const unsubscribe = onSnapshot(q, (snapshot) => {
             const data = snapshot.docs.map(doc => ({
