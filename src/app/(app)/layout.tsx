@@ -119,7 +119,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     const shouldShowOnboarding = showOnboarding && userData && !userData.onboardingComplete;
 
     return (
-        <div className="min-h-screen flex">
+        <div className="min-h-screen flex overflow-x-hidden w-full">
             {/* Onboarding Wizard */}
             {shouldShowOnboarding && (
                 <OnboardingWizard onComplete={() => setShowOnboarding(false)} />
