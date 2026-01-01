@@ -308,9 +308,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                 <div className="p-4 lg:p-8">{children}</div>
             </main>
 
-            <PWAInstallPrompt />
+            {/* <PWAInstallPrompt /> */}
         </div >
     );
 }
-
-
