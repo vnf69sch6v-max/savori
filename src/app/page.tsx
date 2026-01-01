@@ -6,7 +6,7 @@ import { useRef, useEffect, useState } from 'react';
 import { Button } from '@/components/ui';
 import {
   Sparkles,
-  Camera,
+  Mic,
   Target,
   LineChart,
   Shield,
@@ -146,9 +146,9 @@ function FeatureCard({ icon: Icon, title, description, delay }: {
 
 const features = [
   {
-    icon: Camera,
-    title: 'Skanowanie AI',
-    description: 'Zrób zdjęcie paragonu - AI wyciągnie wszystkie dane w sekundę.',
+    icon: Mic,
+    title: 'Głosowe Dodawanie',
+    description: 'Powiedz "Wydałem 50 zł w Żabce" - AI doda wydatek automatycznie.',
   },
   {
     icon: Target,
@@ -460,7 +460,7 @@ export default function HomePage() {
             {[
               { value: 10000, suffix: '+', label: 'Użytkowników', icon: Star },
               { value: 2500000, suffix: ' zł', label: 'Oszczędności', icon: TrendingUp },
-              { value: 150000, suffix: '+', label: 'Paragonów', icon: Camera },
+              { value: 150000, suffix: '+', label: 'Wydatków', icon: Mic },
               { value: 99, suffix: '%', label: 'Bezpieczeństwa', icon: Shield },
             ].map((stat, i) => (
               <motion.div
