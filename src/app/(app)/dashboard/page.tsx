@@ -159,6 +159,10 @@ export default function DashboardPage() {
                 // Given time constraints, I'll rely on its internal logic as written in step 1802.
                 />
 
+                {/* AI Coach for Mobile */}
+                {showPredictions && <PredictiveSpendingWidget lastUpdate={expenses.length + monthlyExpenses} />}
+                {showAI && <AIInsightsWidget />}
+
                 <HookChallengeWidget />
 
                 <ActionGrid

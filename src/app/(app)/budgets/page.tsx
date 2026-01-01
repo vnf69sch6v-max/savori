@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'react-hot-toast';
 import {
@@ -87,14 +87,18 @@ export default function BudgetsPage() {
         };
     }, [userData?.id, monthKey, currentMonth]);
 
-    // Calculate spent per category
-    const spentByCategory = expenses.reduce((acc, expense) => {
-        const category = expense.merchant?.category || 'other';
-        acc[category] = (acc[category] || 0) + expense.amount;
-        return acc;
-    }, {} as Record<string, number>);
+    // Calculate spent per category - Memoized
+    const spentByCategory = useMemo(() => {
+        return expenses.reduce((acc, expense) => {
+            const category = expense.merchant?.category || 'other';
+            acc[category] = (acc[category] || 0) + expense.amount;
+            return acc;
+        }, {} as Record<string, number>);
+    }, [expenses]);
 
-    const totalSpent = Object.values(spentByCategory).reduce((sum, v) => sum + v, 0);
+    const totalSpent = useMemo(() =>
+        Object.values(spentByCategory).reduce((sum, v) => sum + v, 0),
+        [spentByCategory]);
 
     // Navigation
     const prevMonth = () => setCurrentMonth(subMonths(currentMonth, 1));

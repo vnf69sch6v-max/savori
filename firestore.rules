@@ -264,9 +264,9 @@ service cloud.firestore {
       // ============ TRANSACTION EVENTS SUBCOLLECTION (IMMUTABLE LOG) ============
       
       match /transaction_events/{eventId} {
-        allow read: if isOwner(userId);
-        // Only allow creation, no updates or deletes (append-only log)
-        allow create: if isOwner(userId);
+        allow read: if isAuthenticated() && resource.data.userId == request.auth.uid;
+        // Only allow creation if the user claims the event belongs to them
+        allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
         allow update, delete: if false;
       }
   }
