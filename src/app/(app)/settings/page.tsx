@@ -12,13 +12,18 @@ import {
     Globe,
     Coins,
     Check,
+    X,
+    Sparkles,
+    Zap,
+    Crown,
 } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent, Button, Input } from '@/components/ui';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useRouter } from 'next/navigation';
-import { subscriptionService } from '@/lib/subscription-service';
+import { subscriptionService, SUBSCRIPTION_PLANS, PlanFeatures } from '@/lib/subscription-service';
 import { formatMoney } from '@/lib/utils';
+import { motion, AnimatePresence } from 'framer-motion';
 
 export default function SettingsPage() {
     const router = useRouter();
@@ -68,11 +73,9 @@ export default function SettingsPage() {
         router.push('/');
     };
 
-    const plans = [
-        { id: 'free', name: 'Free', price: '0', current: userData?.subscription?.plan === 'free' },
-        { id: 'pro', name: 'Pro', price: '19.99', current: userData?.subscription?.plan === 'pro' },
-        { id: 'premium', name: 'Premium', price: '39.99', current: userData?.subscription?.plan === 'premium' },
-    ];
+    const [selectedPlan, setSelectedPlan] = useState<PlanFeatures | null>(null);
+
+    const currentPlan = userData?.subscription?.plan || 'free';
 
     const notifications = userData?.settings?.notifications || { daily: true, weekly: true, goals: true };
 
@@ -221,41 +224,121 @@ export default function SettingsPage() {
                     </div>
 
                     <div className="grid grid-cols-3 gap-3">
-                        {plans.map((plan) => (
-                            <button
-                                key={plan.id}
-                                onClick={async () => {
-                                    if (plan.current || !userData?.id) return;
-                                    const toastId = toast.loading('Working...');
-                                    try {
-                                        const result = await subscriptionService.upgradeSubscription(
-                                            userData.id,
-                                            plan.id as 'free' | 'pro' | 'premium'
-                                        );
-                                        if (result.success) {
-                                            toast.success('Plan updated!', { id: toastId });
-                                        } else {
-                                            toast.error(result.error || 'Error', { id: toastId });
-                                        }
-                                    } catch (e) {
-                                        toast.error('Error', { id: toastId });
-                                    }
-                                }}
-                                className={`p-4 rounded-xl text-center transition-all ${plan.current
-                                    ? 'bg-emerald-500/10 border-2 border-emerald-500'
-                                    : 'bg-slate-900/50 border border-slate-700 hover:border-emerald-500/50 cursor-pointer hover:bg-slate-800'
-                                    }`}
-                            >
-                                <p className="font-semibold mb-1 text-slate-200">{plan.name}</p>
-                                <p className="text-sm text-slate-400">{plan.price} zł</p>
-                                {plan.current && (
-                                    <div className="flex items-center justify-center gap-1 mt-2 text-xs text-emerald-400 font-medium">
-                                        <Check className="w-3 h-3" /> Aktywny
-                                    </div>
-                                )}
-                            </button>
-                        ))}
+                        {SUBSCRIPTION_PLANS.map((plan) => {
+                            const isCurrent = currentPlan === plan.id;
+                            const PlanIcon = plan.id === 'free' ? Sparkles : plan.id === 'pro' ? Zap : Crown;
+                            return (
+                                <button
+                                    key={plan.id}
+                                    onClick={() => setSelectedPlan(plan)}
+                                    className={`p-4 rounded-xl text-center transition-all ${isCurrent
+                                        ? 'bg-emerald-500/10 border-2 border-emerald-500'
+                                        : plan.isHighlighted
+                                            ? 'bg-emerald-500/5 border-2 border-emerald-500/50 hover:border-emerald-500'
+                                            : 'bg-slate-900/50 border border-slate-700 hover:border-emerald-500/50 cursor-pointer hover:bg-slate-800'
+                                        }`}
+                                >
+                                    <PlanIcon className={`w-5 h-5 mx-auto mb-2 ${isCurrent ? 'text-emerald-400' : plan.isHighlighted ? 'text-emerald-400' : 'text-slate-400'}`} />
+                                    <p className="font-semibold mb-1 text-slate-200">{plan.name}</p>
+                                    <p className="text-sm text-slate-400">{plan.price} zł</p>
+                                    {isCurrent && (
+                                        <div className="flex items-center justify-center gap-1 mt-2 text-xs text-emerald-400 font-medium">
+                                            <Check className="w-3 h-3" /> Aktywny
+                                        </div>
+                                    )}
+                                    {plan.isHighlighted && !isCurrent && (
+                                        <div className="mt-2 text-xs text-emerald-400 font-medium">
+                                            {plan.highlightBadge}
+                                        </div>
+                                    )}
+                                </button>
+                            );
+                        })}
                     </div>
+
+                    {/* Plan Preview Modal */}
+                    <AnimatePresence>
+                        {selectedPlan && (
+                            <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+                                <motion.div
+                                    initial={{ opacity: 0 }}
+                                    animate={{ opacity: 1 }}
+                                    exit={{ opacity: 0 }}
+                                    className="absolute inset-0 bg-black/70 backdrop-blur-sm"
+                                    onClick={() => setSelectedPlan(null)}
+                                />
+                                <motion.div
+                                    initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                                    exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                                    className="relative w-full max-w-md bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl p-6"
+                                >
+                                    <button
+                                        onClick={() => setSelectedPlan(null)}
+                                        className="absolute right-4 top-4 p-2 text-slate-400 hover:text-white rounded-lg"
+                                    >
+                                        <X className="w-5 h-5" />
+                                    </button>
+
+                                    <div className="text-center mb-6">
+                                        <div className={`w-16 h-16 rounded-2xl ${selectedPlan.isHighlighted ? 'bg-emerald-500/20' : 'bg-slate-800'} flex items-center justify-center mx-auto mb-4`}>
+                                            {selectedPlan.id === 'free' ? <Sparkles className="w-8 h-8 text-slate-400" /> :
+                                                selectedPlan.id === 'pro' ? <Zap className="w-8 h-8 text-blue-400" /> :
+                                                    <Crown className="w-8 h-8 text-emerald-400" />}
+                                        </div>
+                                        <h3 className="text-2xl font-bold">{selectedPlan.name}</h3>
+                                        <p className="text-slate-400">{selectedPlan.subtitle}</p>
+                                        <div className="mt-4">
+                                            <span className="text-4xl font-bold">{selectedPlan.price}</span>
+                                            <span className="text-slate-400"> zł/mies</span>
+                                        </div>
+                                    </div>
+
+                                    <ul className="space-y-3 mb-6">
+                                        {selectedPlan.features.map((feature, i) => (
+                                            <li key={i} className="flex items-center gap-3">
+                                                <Check className={`w-5 h-5 flex-shrink-0 ${selectedPlan.isHighlighted ? 'text-emerald-400' : 'text-slate-500'}`} />
+                                                <span className="text-slate-200">{feature}</span>
+                                            </li>
+                                        ))}
+                                    </ul>
+
+                                    {currentPlan === selectedPlan.id ? (
+                                        <div className="text-center py-3 bg-emerald-500/10 rounded-xl border border-emerald-500/30">
+                                            <span className="text-emerald-400 font-medium flex items-center justify-center gap-2">
+                                                <Check className="w-5 h-5" /> Aktualny plan
+                                            </span>
+                                        </div>
+                                    ) : (
+                                        <Button
+                                            className="w-full"
+                                            onClick={async () => {
+                                                if (!userData?.id) return;
+                                                const toastId = toast.loading('Aktualizacja...');
+                                                try {
+                                                    const result = await subscriptionService.upgradeSubscription(
+                                                        userData.id,
+                                                        selectedPlan.id
+                                                    );
+                                                    if (result.success) {
+                                                        toast.success('Plan zaktualizowany!', { id: toastId });
+                                                        setSelectedPlan(null);
+                                                        window.location.reload();
+                                                    } else {
+                                                        toast.error(result.error || 'Błąd', { id: toastId });
+                                                    }
+                                                } catch (e) {
+                                                    toast.error('Błąd połączenia', { id: toastId });
+                                                }
+                                            }}
+                                        >
+                                            {selectedPlan.price === 0 ? 'Przejdź na Free' : `Wybierz ${selectedPlan.name}`}
+                                        </Button>
+                                    )}
+                                </motion.div>
+                            </div>
+                        )}
+                    </AnimatePresence>
                 </div>
 
                 {/* Sign Out */}
