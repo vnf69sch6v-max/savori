@@ -2,8 +2,10 @@
 
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Sparkles, RefreshCw, Loader2 } from 'lucide-react';
+import { Sparkles, RefreshCw, Loader2, Lock, Zap } from 'lucide-react';
 import { formatMoney } from '@/lib/utils';
+import { useSubscription } from '@/hooks/useSubscription';
+import { Button } from '@/components/ui';
 
 interface AICommentaryProps {
     categoryData: { category: string; name: string; amount: number }[];
@@ -20,6 +22,8 @@ export default function AICommentary({
     period,
     merchantData,
 }: AICommentaryProps) {
+    const { canUse, openUpgrade, showUpgradeModal } = useSubscription();
+    const hasAiAccess = canUse('aiInsights');
     const [commentary, setCommentary] = useState<string>('');
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
@@ -102,8 +106,43 @@ export default function AICommentary({
     };
 
     useEffect(() => {
-        fetchCommentary();
-    }, [categoryData, totalExpenses, period]);
+        if (hasAiAccess) {
+            fetchCommentary();
+        } else {
+            setLoading(false);
+        }
+    }, [categoryData, totalExpenses, period, hasAiAccess]);
+
+    // Show upgrade CTA for free users
+    if (!hasAiAccess) {
+        return (
+            <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="p-4 rounded-xl bg-gradient-to-r from-slate-800/50 to-slate-700/50 border border-slate-600/30"
+            >
+                <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-lg bg-amber-500/20 flex items-center justify-center">
+                            <Lock className="w-4 h-4 text-amber-400" />
+                        </div>
+                        <div>
+                            <p className="text-sm font-medium">AI Analiza</p>
+                            <p className="text-xs text-slate-400">Dostępna w planie Pro</p>
+                        </div>
+                    </div>
+                    <Button
+                        size="sm"
+                        onClick={() => openUpgrade('Odblokuj AI Analizę wydatków!')}
+                        className="flex items-center gap-1"
+                    >
+                        <Zap className="w-3 h-3" />
+                        Pro
+                    </Button>
+                </div>
+            </motion.div>
+        );
+    }
 
     return (
         <motion.div

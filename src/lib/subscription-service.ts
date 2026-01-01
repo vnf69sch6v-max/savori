@@ -1,44 +1,71 @@
 /**
  * Savori Subscription Service
- * Manage user subscription plans
+ * Manage user subscription plans and feature gating
  */
 
-import { doc, updateDoc, Timestamp } from 'firebase/firestore';
+import { doc, updateDoc, Timestamp, increment, getDoc, setDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Subscription } from '@/types';
 
-// ============ PLAN FEATURES ============
+// ============ FEATURE DEFINITIONS ============
+
+export type FeatureId =
+    | 'scan'
+    | 'voice'
+    | 'aiInsights'
+    | 'exportPdf'
+    | 'exportCsv'
+    | 'social'
+    | 'challenges'
+    | 'groupChallenges'
+    | 'prioritySupport'
+    | 'unlimitedBudgets'
+    | 'unlimitedGoals';
 
 export interface PlanFeatures {
     id: 'free' | 'pro' | 'premium';
     name: string;
-    price: number; // PLN per month
+    price: number;
+    yearlyPrice: number;
     features: string[];
     limits: {
         monthlyScans: number;
+        budgets: number;
+        goals: number;
+        voice: boolean;
         aiInsights: boolean;
-        exportFormats: ('csv' | 'pdf')[];
-        socialFeatures: boolean;
+        exportPdf: boolean;
+        social: boolean;
+        groupChallenges: boolean;
         prioritySupport: boolean;
     };
 }
+
+// ============ PLAN DEFINITIONS ============
 
 export const SUBSCRIPTION_PLANS: PlanFeatures[] = [
     {
         id: 'free',
         name: 'Free',
         price: 0,
+        yearlyPrice: 0,
         features: [
-            'Do 10 skanów miesięcznie',
-            'Podstawowe statystyki',
+            '10 skanów miesięcznie',
+            'Głosowe dodawanie wydatków',
+            '3 budżety',
+            '3 cele oszczędnościowe',
+            'Statystyki podstawowe',
             'Eksport CSV',
-            'Wyzwania solo',
         ],
         limits: {
             monthlyScans: 10,
+            budgets: 3,
+            goals: 3,
+            voice: true,           // Voice is FREE!
             aiInsights: false,
-            exportFormats: ['csv'],
-            socialFeatures: false,
+            exportPdf: false,
+            social: false,
+            groupChallenges: false,
             prioritySupport: false,
         },
     },
@@ -46,18 +73,24 @@ export const SUBSCRIPTION_PLANS: PlanFeatures[] = [
         id: 'pro',
         name: 'Pro',
         price: 19.99,
+        yearlyPrice: 149.99,  // ~12.50/mies
         features: [
             'Nielimitowane skany',
-            'AI Insights',
-            'Eksport CSV & PDF',
-            'Znajomi & ranking',
+            'AI Komentarze',
+            'Nielimitowane budżety i cele',
+            'Eksport PDF',
+            'Znajomi & Ranking',
             'Wszystkie wyzwania',
         ],
         limits: {
             monthlyScans: Infinity,
+            budgets: Infinity,
+            goals: Infinity,
+            voice: true,
             aiInsights: true,
-            exportFormats: ['csv', 'pdf'],
-            socialFeatures: true,
+            exportPdf: true,
+            social: true,
+            groupChallenges: false,
             prioritySupport: false,
         },
     },
@@ -65,18 +98,23 @@ export const SUBSCRIPTION_PLANS: PlanFeatures[] = [
         id: 'premium',
         name: 'Premium',
         price: 39.99,
+        yearlyPrice: 299.99,  // ~25/mies
         features: [
             'Wszystko z Pro',
+            'Group Challenges',
             'Priorytetowe wsparcie',
-            'Wczesny dostęp do nowości',
             'Ekskluzywne odznaki',
-            'Group challenges',
+            'Wczesny dostęp do nowości',
         ],
         limits: {
             monthlyScans: Infinity,
+            budgets: Infinity,
+            goals: Infinity,
+            voice: true,
             aiInsights: true,
-            exportFormats: ['csv', 'pdf'],
-            socialFeatures: true,
+            exportPdf: true,
+            social: true,
+            groupChallenges: true,
             prioritySupport: true,
         },
     },
@@ -85,18 +123,17 @@ export const SUBSCRIPTION_PLANS: PlanFeatures[] = [
 // ============ SUBSCRIPTION SERVICE ============
 
 class SubscriptionService {
-
     /**
-     * Get plan features
+     * Get plan by ID
      */
     getPlan(planId: 'free' | 'pro' | 'premium'): PlanFeatures | undefined {
         return SUBSCRIPTION_PLANS.find(p => p.id === planId);
     }
 
     /**
-     * Check if user has access to a feature
+     * Check if user can use a specific feature
      */
-    hasFeature(
+    canUseFeature(
         subscription: Subscription | undefined,
         feature: keyof PlanFeatures['limits']
     ): boolean {
@@ -107,39 +144,93 @@ class SubscriptionService {
         const value = plan.limits[feature];
         if (typeof value === 'boolean') return value;
         if (typeof value === 'number') return value > 0;
-        if (Array.isArray(value)) return value.length > 0;
         return false;
     }
 
     /**
-     * Check monthly scan limit
+     * Get limit for a numeric feature
      */
-    canScanMore(subscription: Subscription | undefined, currentScans: number): boolean {
+    getLimit(
+        subscription: Subscription | undefined,
+        feature: 'monthlyScans' | 'budgets' | 'goals'
+    ): number {
         const planId = subscription?.plan || 'free';
         const plan = this.getPlan(planId);
-        if (!plan) return false;
-        return currentScans < plan.limits.monthlyScans;
+        return plan?.limits[feature] || 0;
     }
 
     /**
-     * Upgrade subscription (test mode - no payment)
+     * Check if user can scan more receipts this month
+     */
+    async canScanMore(userId: string, subscription: Subscription | undefined): Promise<boolean> {
+        const limit = this.getLimit(subscription, 'monthlyScans');
+        if (limit === Infinity) return true;
+
+        const usage = await this.getMonthlyUsage(userId);
+        return usage.scans < limit;
+    }
+
+    /**
+     * Get monthly usage for a user
+     */
+    async getMonthlyUsage(userId: string): Promise<{ scans: number; month: string }> {
+        const monthKey = new Date().toISOString().slice(0, 7); // YYYY-MM
+        const usageRef = doc(db, 'users', userId, 'usage', monthKey);
+
+        try {
+            const snap = await getDoc(usageRef);
+            if (snap.exists()) {
+                return { scans: snap.data().scans || 0, month: monthKey };
+            }
+        } catch (e) {
+            console.error('Error getting usage:', e);
+        }
+
+        return { scans: 0, month: monthKey };
+    }
+
+    /**
+     * Increment scan count for current month
+     */
+    async incrementScanCount(userId: string): Promise<void> {
+        const monthKey = new Date().toISOString().slice(0, 7);
+        const usageRef = doc(db, 'users', userId, 'usage', monthKey);
+
+        await setDoc(usageRef, {
+            scans: increment(1),
+            updatedAt: Timestamp.now(),
+        }, { merge: true });
+    }
+
+    /**
+     * Get remaining scans for free users
+     */
+    async getRemainingScans(userId: string, subscription: Subscription | undefined): Promise<number> {
+        const limit = this.getLimit(subscription, 'monthlyScans');
+        if (limit === Infinity) return Infinity;
+
+        const usage = await this.getMonthlyUsage(userId);
+        return Math.max(0, limit - usage.scans);
+    }
+
+    /**
+     * Upgrade subscription
      */
     async upgradeSubscription(
         userId: string,
-        newPlan: 'free' | 'pro' | 'premium'
+        newPlan: 'free' | 'pro' | 'premium',
+        yearly: boolean = false
     ): Promise<{ success: boolean; error?: string }> {
         try {
             const userRef = doc(db, 'users', userId);
-
-            // In production, this would integrate with Stripe
-            // For now, we simulate an upgrade
             const validUntil = new Date();
-            validUntil.setMonth(validUntil.getMonth() + 1);
+            validUntil.setMonth(validUntil.getMonth() + (yearly ? 12 : 1));
 
             await updateDoc(userRef, {
                 'subscription.plan': newPlan,
                 'subscription.validUntil': Timestamp.fromDate(validUntil),
-                'subscription.stripeCustomerId': `test_customer_${userId.substring(0, 8)}`,
+                'subscription.yearly': yearly,
+                'subscription.stripeCustomerId': `test_${userId.substring(0, 8)}`,
             });
 
             return { success: true };
@@ -150,26 +241,7 @@ class SubscriptionService {
     }
 
     /**
-     * Downgrade to free
-     */
-    async downgradeToFree(userId: string): Promise<boolean> {
-        try {
-            const userRef = doc(db, 'users', userId);
-
-            await updateDoc(userRef, {
-                'subscription.plan': 'free',
-                'subscription.validUntil': null,
-            });
-
-            return true;
-        } catch (error) {
-            console.error('Downgrade error:', error);
-            return false;
-        }
-    }
-
-    /**
-     * Check if subscription is still valid
+     * Check if subscription is valid
      */
     isSubscriptionValid(subscription: Subscription | undefined): boolean {
         if (!subscription) return false;
@@ -178,6 +250,15 @@ class SubscriptionService {
 
         const validUntil = subscription.validUntil.toDate();
         return validUntil > new Date();
+    }
+
+    /**
+     * Get effective plan (considering expiry)
+     */
+    getEffectivePlan(subscription: Subscription | undefined): 'free' | 'pro' | 'premium' {
+        if (!subscription) return 'free';
+        if (!this.isSubscriptionValid(subscription)) return 'free';
+        return subscription.plan;
     }
 }
 

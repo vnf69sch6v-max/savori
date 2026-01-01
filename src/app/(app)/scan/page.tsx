@@ -15,6 +15,7 @@ import {
     Edit3,
     ArrowRight,
     AlertTriangle,
+    Lock,
 } from 'lucide-react';
 import { Button, Card, Input } from '@/components/ui';
 import { useAuth } from '@/contexts/AuthContext';
@@ -25,12 +26,15 @@ import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { db, storage } from '@/lib/firebase';
 import { checkForDuplicate, FraudCheckResult } from '@/lib/fraud-detection';
 import { logSecurityEvent, SecurityEvents } from '@/lib/security';
+import { useSubscription } from '@/hooks/useSubscription';
+import UpgradeModal from '@/components/UpgradeModal';
 
 type Step = 'capture' | 'processing' | 'review' | 'saving';
 
 export default function ScanPage() {
     const router = useRouter();
     const { userData } = useAuth();
+    const { remainingScans, checkCanScan, incrementScan, isFree, openUpgrade, showUpgradeModal, closeUpgrade, upgradeReason } = useSubscription();
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     const [step, setStep] = useState<Step>('capture');
@@ -47,9 +51,18 @@ export default function ScanPage() {
     const [fraudWarning, setFraudWarning] = useState<FraudCheckResult | null>(null);
 
     // Handle file selection
-    const handleFileSelect = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleFileSelect = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (!file) return;
+
+        // Check scan limit for free users
+        if (isFree) {
+            const canScan = await checkCanScan();
+            if (!canScan) {
+                openUpgrade(`Wykorzystałeś limit ${remainingScans} skanów w tym miesiącu. Przejdź na Pro po nielimitowane skany!`);
+                return;
+            }
+        }
 
         if (!file.type.startsWith('image/')) {
             toast.error('Wybierz plik obrazu');
@@ -73,7 +86,7 @@ export default function ScanPage() {
 
         // Start processing
         processReceipt(file);
-    }, []);
+    }, [isFree, checkCanScan, remainingScans, openUpgrade]);
 
     // Process receipt with AI
     const processReceipt = async (file: File) => {
@@ -184,6 +197,9 @@ export default function ScanPage() {
             const expensesRef = collection(db, 'users', userData.id, 'expenses');
             await addDoc(expensesRef, expenseData);
 
+            // Increment scan counter for free users
+            await incrementScan();
+
             // Log security event
             await logSecurityEvent(userData.id, SecurityEvents.receiptScan(editedData.merchant, expenseData.amount));
 
@@ -211,6 +227,19 @@ export default function ScanPage() {
 
     return (
         <div className="max-w-2xl mx-auto">
+            {/* Upgrade Modal */}
+            <UpgradeModal isOpen={showUpgradeModal} onClose={closeUpgrade} reason={upgradeReason} />
+
+            {/* Remaining scans for free users */}
+            {isFree && (
+                <div className="flex justify-center mb-4">
+                    <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-400 text-sm">
+                        <Lock className="w-3 h-3" />
+                        Pozostało {remainingScans} skanów w tym miesiącu
+                    </div>
+                </div>
+            )}
+
             {/* Header */}
             <div className="text-center mb-8">
                 <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-sm mb-4">
