@@ -77,54 +77,59 @@ export default function SettingsPage() {
     const notifications = userData?.settings?.notifications || { daily: true, weekly: true, goals: true };
 
     return (
-        <div className="max-w-2xl mx-auto pb-20">
-            <h1 className="text-2xl md:text-3xl font-bold mb-6">{t('settings.title')}</h1>
+        <div className="max-w-2xl mx-auto pb-24 lg:pb-0">
+            <h1 className="text-2xl md:text-3xl font-bold mb-6 text-white">{t('settings.title')}</h1>
 
             <div className="space-y-6">
-                {/* Profile */}
-                <Card>
-                    <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
+                {/* Profile - Deep Blue Theme */}
+                <div className="rounded-2xl bg-[#0F172A] border border-slate-800 p-6">
+                    <div className="flex items-center gap-3 mb-6">
+                        <div className="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center border border-emerald-500/20">
                             <User className="w-5 h-5 text-emerald-400" />
-                            {t('settings.profile')}
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
+                        </div>
+                        <h2 className="text-xl font-semibold text-slate-100">{t('settings.profile')}</h2>
+                    </div>
+
+                    <div className="space-y-4">
                         <Input
                             label="Imię i nazwisko"
                             value={displayName}
                             onChange={(e) => setDisplayName(e.target.value)}
+                        // Assuming Input component handles styling, if not we might need to adjust props or component
                         />
                         <div>
-                            <label className="block text-sm font-medium text-slate-300 mb-1.5">
+                            <label className="block text-sm font-medium text-slate-400 mb-2">
                                 Email
                             </label>
-                            <p className="text-slate-400">{user?.email}</p>
+                            <div className="px-4 py-3 bg-slate-900/50 rounded-xl border border-slate-800 text-slate-400">
+                                {user?.email}
+                            </div>
                         </div>
                         <Button
                             onClick={handleSaveProfile}
                             loading={savingProfile}
-                            className="w-full"
+                            className="w-full bg-emerald-500 hover:bg-emerald-600 text-white"
                         >
                             {t('common.save')}
                         </Button>
-                    </CardContent>
-                </Card>
+                    </div>
+                </div>
 
                 {/* Preferences */}
-                <Card>
-                    <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
+                <div className="rounded-2xl bg-[#0F172A] border border-slate-800 p-6">
+                    <div className="flex items-center gap-3 mb-6">
+                        <div className="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center border border-blue-500/20">
                             <Palette className="w-5 h-5 text-blue-400" />
-                            {t('settings.preferences')}
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
+                        </div>
+                        <h2 className="text-xl font-semibold text-slate-100">{t('settings.preferences')}</h2>
+                    </div>
+
+                    <div className="space-y-6">
                         {/* Dark Mode */}
-                        <div className="flex items-center justify-between">
+                        <div className="flex items-center justify-between p-3 bg-slate-900/40 rounded-xl">
                             <div className="flex items-center gap-3">
                                 <Moon className="w-5 h-5 text-slate-400" />
-                                <span>{t('settings.darkMode')}</span>
+                                <span className="text-slate-200">{t('settings.darkMode')}</span>
                             </div>
                             <button
                                 onClick={() => updatePreference('darkMode', !userData?.settings?.darkMode)}
@@ -135,15 +140,15 @@ export default function SettingsPage() {
                         </div>
 
                         {/* Language */}
-                        <div className="flex items-center justify-between">
+                        <div className="flex items-center justify-between p-3 bg-slate-900/40 rounded-xl">
                             <div className="flex items-center gap-3">
                                 <Globe className="w-5 h-5 text-slate-400" />
-                                <span>{t('settings.language')}</span>
+                                <span className="text-slate-200">{t('settings.language')}</span>
                             </div>
                             <select
                                 value={language}
                                 onChange={(e) => setLanguage(e.target.value as any)}
-                                className="px-3 py-1.5 bg-slate-800 border border-slate-700 rounded-lg text-sm appearance-none cursor-pointer hover:border-slate-500 transition-colors"
+                                className="px-3 py-1.5 bg-slate-800 border border-slate-700 rounded-lg text-sm appearance-none cursor-pointer hover:border-emerald-500/50 transition-colors text-slate-200 focus:outline-none focus:ring-1 focus:ring-emerald-500"
                             >
                                 <option value="pl">Polski 🇵🇱</option>
                                 <option value="en">English 🇬🇧</option>
@@ -151,40 +156,41 @@ export default function SettingsPage() {
                         </div>
 
                         {/* Currency */}
-                        <div className="flex items-center justify-between">
+                        <div className="flex items-center justify-between p-3 bg-slate-900/40 rounded-xl">
                             <div className="flex items-center gap-3">
                                 <Coins className="w-5 h-5 text-slate-400" />
-                                <span>{t('settings.currency')}</span>
+                                <span className="text-slate-200">{t('settings.currency')}</span>
                             </div>
                             <select
                                 value={userData?.settings?.currency || 'PLN'}
                                 onChange={(e) => updatePreference('currency', e.target.value)}
-                                className="px-3 py-1.5 bg-slate-800 border border-slate-700 rounded-lg text-sm appearance-none cursor-pointer hover:border-slate-500 transition-colors"
+                                className="px-3 py-1.5 bg-slate-800 border border-slate-700 rounded-lg text-sm appearance-none cursor-pointer hover:border-emerald-500/50 transition-colors text-slate-200 focus:outline-none focus:ring-1 focus:ring-emerald-500"
                             >
                                 <option value="PLN">PLN (zł)</option>
                                 <option value="EUR">EUR (€)</option>
                                 <option value="USD">USD ($)</option>
                             </select>
                         </div>
-                    </CardContent>
-                </Card>
+                    </div>
+                </div>
 
                 {/* Notifications */}
-                <Card>
-                    <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
+                <div className="rounded-2xl bg-[#0F172A] border border-slate-800 p-6">
+                    <div className="flex items-center gap-3 mb-6">
+                        <div className="w-10 h-10 rounded-xl bg-amber-500/10 flex items-center justify-center border border-amber-500/20">
                             <Bell className="w-5 h-5 text-amber-400" />
-                            {t('settings.notifications')}
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
+                        </div>
+                        <h2 className="text-xl font-semibold text-slate-100">{t('settings.notifications')}</h2>
+                    </div>
+
+                    <div className="space-y-4">
                         {[
                             { key: 'daily', label: 'Codzienne podsumowanie' },
                             { key: 'weekly', label: 'Raport tygodniowy' },
                             { key: 'goals', label: 'Postęp celów' },
                         ].map(({ key, label }) => (
-                            <div key={key} className="flex items-center justify-between">
-                                <span>{label}</span>
+                            <div key={key} className="flex items-center justify-between p-3 bg-slate-900/40 rounded-xl">
+                                <span className="text-slate-200">{label}</span>
                                 <button
                                     onClick={() => updatePreference('notifications', {
                                         ...notifications,
@@ -202,61 +208,60 @@ export default function SettingsPage() {
                                 </button>
                             </div>
                         ))}
-                    </CardContent>
-                </Card>
+                    </div>
+                </div>
 
                 {/* Subscription */}
-                <Card>
-                    <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
+                <div className="rounded-2xl bg-[#0F172A] border border-slate-800 p-6">
+                    <div className="flex items-center gap-3 mb-6">
+                        <div className="w-10 h-10 rounded-xl bg-purple-500/10 flex items-center justify-center border border-purple-500/20">
                             <CreditCard className="w-5 h-5 text-purple-400" />
-                            {t('settings.subscription')}
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="grid grid-cols-3 gap-3">
-                            {plans.map((plan) => (
-                                <button
-                                    key={plan.id}
-                                    onClick={async () => {
-                                        if (plan.current || !userData?.id) return;
-                                        const toastId = toast.loading('Working...');
-                                        try {
-                                            const result = await subscriptionService.upgradeSubscription(
-                                                userData.id,
-                                                plan.id as 'free' | 'pro' | 'premium'
-                                            );
-                                            if (result.success) {
-                                                toast.success('Plan updated!', { id: toastId });
-                                            } else {
-                                                toast.error(result.error || 'Error', { id: toastId });
-                                            }
-                                        } catch (e) {
-                                            toast.error('Error', { id: toastId });
-                                        }
-                                    }}
-                                    className={`p-4 rounded-xl text-center transition-all ${plan.current
-                                        ? 'bg-emerald-500/10 border-2 border-emerald-500'
-                                        : 'bg-slate-800/50 border border-slate-700 hover:border-emerald-500/50 cursor-pointer'
-                                        }`}
-                                >
-                                    <p className="font-semibold mb-1">{plan.name}</p>
-                                    <p className="text-sm text-slate-400">{plan.price} zł</p>
-                                    {plan.current && (
-                                        <div className="flex items-center justify-center gap-1 mt-2 text-xs text-emerald-400">
-                                            <Check className="w-3 h-3" />
-                                        </div>
-                                    )}
-                                </button>
-                            ))}
                         </div>
-                    </CardContent>
-                </Card>
+                        <h2 className="text-xl font-semibold text-slate-100">{t('settings.subscription')}</h2>
+                    </div>
+
+                    <div className="grid grid-cols-3 gap-3">
+                        {plans.map((plan) => (
+                            <button
+                                key={plan.id}
+                                onClick={async () => {
+                                    if (plan.current || !userData?.id) return;
+                                    const toastId = toast.loading('Working...');
+                                    try {
+                                        const result = await subscriptionService.upgradeSubscription(
+                                            userData.id,
+                                            plan.id as 'free' | 'pro' | 'premium'
+                                        );
+                                        if (result.success) {
+                                            toast.success('Plan updated!', { id: toastId });
+                                        } else {
+                                            toast.error(result.error || 'Error', { id: toastId });
+                                        }
+                                    } catch (e) {
+                                        toast.error('Error', { id: toastId });
+                                    }
+                                }}
+                                className={`p-4 rounded-xl text-center transition-all ${plan.current
+                                    ? 'bg-emerald-500/10 border-2 border-emerald-500'
+                                    : 'bg-slate-900/50 border border-slate-700 hover:border-emerald-500/50 cursor-pointer hover:bg-slate-800'
+                                    }`}
+                            >
+                                <p className="font-semibold mb-1 text-slate-200">{plan.name}</p>
+                                <p className="text-sm text-slate-400">{plan.price} zł</p>
+                                {plan.current && (
+                                    <div className="flex items-center justify-center gap-1 mt-2 text-xs text-emerald-400 font-medium">
+                                        <Check className="w-3 h-3" /> Aktywny
+                                    </div>
+                                )}
+                            </button>
+                        ))}
+                    </div>
+                </div>
 
                 {/* Sign Out */}
                 <Button
                     variant="outline"
-                    className="w-full text-red-400 border-red-500/30 hover:bg-red-500/10"
+                    className="w-full text-red-400 border-red-500/30 hover:bg-red-500/10 hover:border-red-500/50"
                     onClick={handleSignOut}
                     icon={<LogOut className="w-5 h-5" />}
                 >

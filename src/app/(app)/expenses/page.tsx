@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'react-hot-toast';
 import {
     Plus,
@@ -14,6 +14,7 @@ import {
     Edit3,
     ChevronDown,
     Receipt,
+    ArrowLeft
 } from 'lucide-react';
 import { Button, Card, Input } from '@/components/ui';
 import { useAuth } from '@/contexts/AuthContext';
@@ -22,7 +23,8 @@ import { collection, query, orderBy, onSnapshot, deleteDoc, doc, where, Timestam
 import { db } from '@/lib/firebase';
 import { Expense, ExpenseCategory } from '@/types';
 import AddExpenseModal from '@/components/AddExpenseModal';
-import ExpenseList from '@/components/ExpenseList';
+// Using GradientExpenseCard for consistency with Dashboard
+import GradientExpenseCard from '@/components/GradientExpenseCard';
 
 export default function ExpensesPage() {
     const { userData } = useAuth();
@@ -40,7 +42,7 @@ export default function ExpensesPage() {
         }
 
         const expensesRef = collection(db, 'users', userData.id, 'expenses');
-        const q = query(expensesRef, orderBy('date', 'desc'));
+        const q = query(expensesRef, orderBy('createdAt', 'desc')); // Updated to createdAt for better sorting
 
         const unsubscribe = onSnapshot(q, (snapshot) => {
             const data = snapshot.docs.map(doc => ({
@@ -64,19 +66,35 @@ export default function ExpensesPage() {
         return matchesSearch && matchesCategory;
     });
 
-    // Group by date
-    const groupedExpenses = filteredExpenses.reduce((groups, expense) => {
-        const date = expense.date?.toDate?.() || new Date();
-        const dateStr = date.toISOString().split('T')[0];
-        if (!groups[dateStr]) {
-            groups[dateStr] = [];
-        }
-        groups[dateStr].push(expense);
-        return groups;
-    }, {} as Record<string, Expense[]>);
-
     // Calculate total
     const totalAmount = filteredExpenses.reduce((sum, e) => sum + (e.amount || 0), 0);
+
+    // Group by date (Today, Yesterday, etc.)
+    const groupedExpenses = filteredExpenses.reduce((groups, expense) => {
+        // Handle Firestore Timestamp or Date
+        let dateObj: Date;
+        if (expense.date && typeof (expense.date as any).toDate === 'function') {
+            dateObj = (expense.date as any).toDate();
+        } else if (expense.date) {
+            dateObj = new Date(expense.date as any);
+        } else {
+            dateObj = new Date();
+        }
+
+        const today = new Date();
+        const yesterday = new Date(today);
+        yesterday.setDate(yesterday.getDate() - 1);
+
+        let dateLabel = formatDate(dateObj);
+        if (dateObj.toDateString() === today.toDateString()) dateLabel = 'Dzisiaj';
+        else if (dateObj.toDateString() === yesterday.toDateString()) dateLabel = 'Wczoraj';
+
+        if (!groups[dateLabel]) {
+            groups[dateLabel] = [];
+        }
+        groups[dateLabel].push(expense);
+        return groups;
+    }, {} as Record<string, Expense[]>);
 
     // Delete expense
     const handleDelete = async (expenseId: string) => {
@@ -92,77 +110,107 @@ export default function ExpensesPage() {
     };
 
     return (
-        <div className="max-w-4xl mx-auto">
+        <div className="max-w-4xl mx-auto pb-24 lg:pb-0">
             {/* Header */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
-                <div>
-                    <h1 className="text-2xl md:text-3xl font-bold">Wydatki</h1>
-                    <p className="text-slate-400 mt-1">
-                        Suma: <span className="text-rose-400 font-medium">{formatMoney(totalAmount)}</span>
-                    </p>
+                <div className="flex items-center gap-3">
+                    {/* Back button for mobile mainly, but good for navigation */}
+                    <Link href="/dashboard" className="lg:hidden p-2 -ml-2 hover:bg-slate-800 rounded-full transition-colors">
+                        <ArrowLeft className="w-6 h-6" />
+                    </Link>
+                    <div>
+                        <h1 className="text-2xl md:text-3xl font-bold">Twoje Wydatki</h1>
+                        <p className="text-slate-400 mt-1">
+                            Suma widoczna: <span className="text-white font-medium">{formatMoney(totalAmount)}</span>
+                        </p>
+                    </div>
                 </div>
                 <div className="flex gap-3">
                     <Link href="/scan">
-                        <Button icon={<Camera className="w-5 h-5" />}>
+                        <Button variant="outline" icon={<Camera className="w-5 h-5" />}>
                             Skanuj
                         </Button>
                     </Link>
-                    <Button variant="outline" icon={<Plus className="w-5 h-5" />} onClick={() => setShowAddModal(true)}>
-                        Dodaj ręcznie
+                    <Button icon={<Plus className="w-5 h-5" />} onClick={() => setShowAddModal(true)}>
+                        Dodaj
                     </Button>
                 </div>
             </div>
 
-            {/* Filters */}
-            <Card className="p-4 mb-6">
+            {/* Filters - Glassmorphism */}
+            <div className="p-4 mb-6 bg-slate-900/50 backdrop-blur-md border border-slate-800/50 rounded-2xl sticky top-20 z-10 lg:static">
                 <div className="flex flex-col md:flex-row gap-4">
-                    <div className="flex-1">
-                        <Input
+                    <div className="flex-1 relative">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                        <input
+                            type="text"
                             placeholder="Szukaj wydatków..."
-                            icon={<Search className="w-5 h-5" />}
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
+                            className="w-full pl-10 pr-4 py-2.5 bg-slate-800/50 border border-slate-700/50 rounded-xl text-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 placeholder:text-slate-500"
                         />
                     </div>
-                    <select
-                        value={selectedCategory}
-                        onChange={(e) => setSelectedCategory(e.target.value)}
-                        className="px-4 py-2.5 bg-slate-800/50 border border-slate-700/50 rounded-xl text-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
-                    >
-                        <option value="all">Wszystkie kategorie</option>
-                        {Object.entries(CATEGORY_LABELS).map(([key, label]) => (
-                            <option key={key} value={key}>
-                                {CATEGORY_ICONS[key]} {label}
-                            </option>
-                        ))}
-                    </select>
+                    <div className="relative">
+                        <Filter className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                        <select
+                            value={selectedCategory}
+                            onChange={(e) => setSelectedCategory(e.target.value)}
+                            className="w-full md:w-auto pl-10 pr-10 py-2.5 bg-slate-800/50 border border-slate-700/50 rounded-xl text-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 appearance-none cursor-pointer"
+                        >
+                            <option value="all">Wszystkie kategorie</option>
+                            {Object.entries(CATEGORY_LABELS).map(([key, label]) => (
+                                <option key={key} value={key}>
+                                    {label}
+                                </option>
+                            ))}
+                        </select>
+                        <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+                    </div>
                 </div>
-            </Card>
+            </div>
 
             {/* Expenses List */}
             {loading ? (
                 <div className="space-y-4">
                     {[1, 2, 3].map(i => (
-                        <div key={i} className="skeleton h-20 rounded-xl" />
+                        <div key={i} className="skeleton h-24 rounded-2xl bg-slate-800/50" />
                     ))}
                 </div>
             ) : filteredExpenses.length === 0 ? (
-                <Card className="p-12 text-center">
-                    <Receipt className="w-16 h-16 text-slate-600 mx-auto mb-4" />
-                    <h3 className="text-lg font-medium mb-2">Brak wydatków</h3>
-                    <p className="text-slate-400 mb-6">
+                <div className="py-12 text-center bg-slate-900/30 rounded-3xl border border-slate-800/50 border-dashed">
+                    <Receipt className="w-16 h-16 text-slate-600 mx-auto mb-4 opacity-50" />
+                    <h3 className="text-xl font-semibold mb-2 text-white">Brak wydatków</h3>
+                    <p className="text-slate-400 mb-6 max-w-sm mx-auto">
                         {searchQuery || selectedCategory !== 'all'
                             ? 'Nie znaleziono wydatków pasujących do filtrów'
-                            : 'Dodaj swój pierwszy wydatek, skanując paragon lub ręcznie'}
+                            : 'Twoja historia wydatków jest pusta. Dodaj pierwszy wydatek!'}
                     </p>
-                    <Link href="/scan">
-                        <Button icon={<Camera className="w-5 h-5" />}>
-                            Skanuj paragon
+                    <div className="flex justify-center gap-3">
+                        <Link href="/scan">
+                            <Button variant="outline" icon={<Camera className="w-5 h-5" />}>
+                                Skanuj
+                            </Button>
+                        </Link>
+                        <Button icon={<Plus className="w-5 h-5" />} onClick={() => setShowAddModal(true)}>
+                            Dodaj ręcznie
                         </Button>
-                    </Link>
-                </Card>
+                    </div>
+                </div>
             ) : (
-                <ExpenseList expenses={groupedExpenses} onDelete={handleDelete} />
+                <div className="space-y-6">
+                    {Object.entries(groupedExpenses).map(([date, expenses]) => (
+                        <div key={date} className="space-y-3">
+                            <h3 className="text-sm font-medium text-slate-400 pl-1 sticky top-[150px] lg:static z-0 backdrop-blur-sm lg:backdrop-blur-none py-1">{date}</h3>
+                            {expenses.map((expense) => (
+                                <GradientExpenseCard
+                                    key={expense.id}
+                                    expense={expense}
+                                    onDelete={handleDelete}
+                                />
+                            ))}
+                        </div>
+                    ))}
+                </div>
             )}
 
             {/* Add Expense Modal */}

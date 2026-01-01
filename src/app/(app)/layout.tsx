@@ -7,22 +7,26 @@ import { usePathname } from 'next/navigation';
 import { motion } from 'framer-motion';
 import {
     LayoutDashboard,
+    CreditCard,
     Receipt,
-    Camera,
-    Target,
+    Wallet,
     BarChart3,
-    Settings,
+    Trophy,
+    User,
     LogOut,
-    PiggyBank,
     Menu,
     X,
-    Shield,
-    Wallet,
-    Trophy,
+    Settings,
+    Bell,
+    Sparkles,
+    Target,
     Flame,
-    ShoppingBag,
     Users,
+    ShoppingBag,
+    Shield,
+    Camera,
     Download,
+    PiggyBank
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import OnboardingWizard from '@/components/OnboardingWizard';

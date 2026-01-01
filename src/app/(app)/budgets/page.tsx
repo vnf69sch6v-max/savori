@@ -68,7 +68,13 @@ export default function BudgetsPage() {
             const data = snapshot.docs
                 .map(doc => ({ id: doc.id, ...doc.data() }) as Expense)
                 .filter(expense => {
-                    const expenseDate = expense.date?.toDate?.();
+                    // Check local date conversion
+                    let expenseDate: Date | null = null;
+                    if (expense.date && typeof (expense.date as any).toDate === 'function') {
+                        expenseDate = (expense.date as any).toDate();
+                    } else if (expense.date) {
+                        expenseDate = new Date(expense.date as any);
+                    }
                     return expenseDate && expenseDate >= start && expenseDate <= end;
                 });
             setExpenses(data);
@@ -105,33 +111,33 @@ export default function BudgetsPage() {
     const utilizationPercent = budget ? Math.min(100, (totalSpent / budget.totalLimit) * 100) : 0;
 
     return (
-        <div className="max-w-4xl mx-auto">
+        <div className="max-w-4xl mx-auto pb-24 lg:pb-0">
             {/* Header */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
                 <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 rounded-xl bg-amber-500/10 flex items-center justify-center">
+                    <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-amber-500/20 to-amber-600/10 border border-amber-500/30 flex items-center justify-center">
                         <Wallet className="w-6 h-6 text-amber-400" />
                     </div>
                     <div>
-                        <h1 className="text-2xl md:text-3xl font-bold">Budżety</h1>
-                        <p className="text-slate-400">Kontroluj swoje wydatki</p>
+                        <h1 className="text-2xl md:text-3xl font-bold">Twoje Budżety</h1>
+                        <p className="text-slate-400">Kontroluj finanse</p>
                     </div>
                 </div>
 
-                {/* Month Navigation */}
-                <div className="flex items-center gap-2 bg-slate-800/50 rounded-xl p-1">
+                {/* Month Navigation - Glassmorphism */}
+                <div className="flex items-center gap-2 bg-slate-900/50 backdrop-blur-md border border-slate-800/50 rounded-xl p-1">
                     <button
                         onClick={prevMonth}
-                        className="p-2 hover:bg-slate-700 rounded-lg transition-colors"
+                        className="p-2 hover:bg-slate-700/50 rounded-lg transition-colors text-slate-400 hover:text-white"
                     >
                         <ChevronLeft className="w-5 h-5" />
                     </button>
-                    <div className="px-4 py-2 min-w-[160px] text-center font-medium capitalize">
+                    <div className="px-4 py-2 min-w-[160px] text-center font-medium capitalize text-emerald-400">
                         {format(currentMonth, 'LLLL yyyy', { locale: pl })}
                     </div>
                     <button
                         onClick={nextMonth}
-                        className="p-2 hover:bg-slate-700 rounded-lg transition-colors"
+                        className="p-2 hover:bg-slate-700/50 rounded-lg transition-colors text-slate-400 hover:text-white"
                     >
                         <ChevronRight className="w-5 h-5" />
                     </button>
@@ -144,8 +150,8 @@ export default function BudgetsPage() {
                 </div>
             ) : !budget ? (
                 // No budget set
-                <Card className="p-12 text-center">
-                    <Wallet className="w-16 h-16 text-slate-600 mx-auto mb-4" />
+                <Card className="p-12 text-center bg-slate-900/30 border-slate-800/50 border-dashed">
+                    <Wallet className="w-16 h-16 text-slate-700 mx-auto mb-4" />
                     <h3 className="text-xl font-semibold mb-2">Brak budżetu na ten miesiąc</h3>
                     <p className="text-slate-400 mb-6 max-w-md mx-auto">
                         Ustal miesięczny limit wydatków, aby lepiej kontrolować swoje finanse i otrzymywać alerty przy przekroczeniu.
@@ -156,45 +162,48 @@ export default function BudgetsPage() {
                 </Card>
             ) : (
                 <>
-                    {/* Total Budget Card */}
-                    <Card variant="gradient" className="mb-6">
-                        <CardContent className="pt-6">
+                    {/* Total Budget Card - Deep Blue Theme */}
+                    <div className="mb-6 p-6 rounded-3xl bg-[#0F172A] border border-slate-800 relative overflow-hidden">
+                        {/* Ambient Glow */}
+                        <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-500/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
+
+                        <div className="relative z-10">
                             <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                                 <div className="flex-1">
                                     <div className="flex items-center justify-between mb-2">
-                                        <span className="text-slate-400">Całkowity budżet</span>
+                                        <span className="text-slate-400 font-medium">Całkowity budżet</span>
                                         <button
                                             onClick={() => setShowEditModal(true)}
-                                            className="p-2 hover:bg-slate-700/50 rounded-lg transition-colors"
+                                            className="p-2 hover:bg-slate-800 rounded-lg transition-colors"
                                         >
                                             <Settings className="w-4 h-4 text-slate-400" />
                                         </button>
                                     </div>
 
                                     {/* Progress Bar */}
-                                    <div className="relative h-4 bg-slate-700/50 rounded-full overflow-hidden mb-3">
+                                    <div className="relative h-4 bg-slate-800/80 rounded-full overflow-hidden mb-3 border border-slate-700/30">
                                         <motion.div
                                             initial={{ width: 0 }}
                                             animate={{ width: `${utilizationPercent}%` }}
                                             transition={{ duration: 1, ease: 'easeOut' }}
                                             className={`absolute inset-y-0 left-0 rounded-full ${utilizationPercent >= 100
-                                                ? 'bg-gradient-to-r from-red-500 to-red-400'
+                                                ? 'bg-gradient-to-r from-red-500 to-red-400 shadow-[0_0_10px_rgba(239,68,68,0.5)]'
                                                 : utilizationPercent >= 80
-                                                    ? 'bg-gradient-to-r from-amber-500 to-amber-400'
-                                                    : 'bg-gradient-to-r from-emerald-500 to-emerald-400'
+                                                    ? 'bg-gradient-to-r from-amber-500 to-amber-400 shadow-[0_0_10px_rgba(245,158,11,0.5)]'
+                                                    : 'bg-gradient-to-r from-emerald-500 to-teal-400 shadow-[0_0_10px_rgba(16,185,129,0.5)]'
                                                 }`}
                                         />
                                     </div>
 
                                     <div className="flex items-center justify-between">
-                                        <span className="text-2xl font-bold">
-                                            {formatMoney(totalSpent)} <span className="text-base text-slate-400 font-normal">/ {formatMoney(budget.totalLimit)}</span>
+                                        <span className="text-3xl font-bold text-white tracking-tight">
+                                            {formatMoney(totalSpent)} <span className="text-base text-slate-500 font-normal">/ {formatMoney(budget.totalLimit)}</span>
                                         </span>
-                                        <span className={`text-sm font-medium px-2 py-1 rounded-lg ${utilizationPercent >= 100
-                                            ? 'bg-red-500/20 text-red-400'
+                                        <span className={`text-sm font-bold px-3 py-1 rounded-full ${utilizationPercent >= 100
+                                            ? 'bg-red-500/20 text-red-400 border border-red-500/30'
                                             : utilizationPercent >= 80
-                                                ? 'bg-amber-500/20 text-amber-400'
-                                                : 'bg-emerald-500/20 text-emerald-400'
+                                                ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30'
+                                                : 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
                                             }`}>
                                             {Math.round(utilizationPercent)}%
                                         </span>
@@ -202,18 +211,14 @@ export default function BudgetsPage() {
                                 </div>
 
                                 {/* Stats */}
-                                <div className="flex gap-4 md:gap-6">
+                                <div className="flex gap-4 md:gap-8 border-t md:border-t-0 md:border-l border-slate-800 pt-4 md:pt-0 md:pl-8">
                                     <div className="text-center">
                                         <p className="text-2xl font-bold text-emerald-400">{formatMoney(budget.totalLimit - totalSpent)}</p>
-                                        <p className="text-xs text-slate-400">Zostało</p>
+                                        <p className="text-xs text-slate-500 uppercase tracking-wider font-medium">Zostało</p>
                                     </div>
                                     <div className="text-center">
-                                        <p className="text-2xl font-bold">{daysRemaining > 0 ? daysRemaining : 0}</p>
-                                        <p className="text-xs text-slate-400">Dni</p>
-                                    </div>
-                                    <div className="text-center">
-                                        <p className="text-2xl font-bold">{formatMoney(dailyBudget)}</p>
-                                        <p className="text-xs text-slate-400">/dzień</p>
+                                        <p className="text-2xl font-bold text-white">{daysRemaining > 0 ? daysRemaining : 0}</p>
+                                        <p className="text-xs text-slate-500 uppercase tracking-wider font-medium">Dni</p>
                                     </div>
                                 </div>
                             </div>
@@ -223,20 +228,20 @@ export default function BudgetsPage() {
                                 <motion.div
                                     initial={{ opacity: 0, y: 10 }}
                                     animate={{ opacity: 1, y: 0 }}
-                                    className="mt-4 p-3 bg-red-500/10 border border-red-500/20 rounded-xl flex items-center gap-3"
+                                    className="mt-6 p-4 bg-red-500/10 border border-red-500/20 rounded-2xl flex items-center gap-3 backdrop-blur-sm"
                                 >
                                     <AlertTriangle className="w-5 h-5 text-red-400 flex-shrink-0" />
-                                    <p className="text-sm text-red-300">
-                                        Przekroczono budżet o <strong>{formatMoney(totalSpent - budget.totalLimit)}</strong>!
+                                    <p className="text-sm text-red-200">
+                                        Przekroczono budżet o <strong className="text-red-100">{formatMoney(totalSpent - budget.totalLimit)}</strong>!
                                     </p>
                                 </motion.div>
                             )}
-                        </CardContent>
-                    </Card>
+                        </div>
+                    </div>
 
                     {/* Category Budgets */}
                     <div className="flex items-center justify-between mb-4">
-                        <h2 className="text-lg font-semibold">Wydatki według kategorii</h2>
+                        <h2 className="text-lg font-semibold text-slate-200">Wydatki według kategorii</h2>
                     </div>
 
                     <div className="grid gap-3">
@@ -255,38 +260,34 @@ export default function BudgetsPage() {
                                     animate={{ opacity: 1, x: 0 }}
                                     transition={{ delay: i * 0.05 }}
                                 >
-                                    <Card className={`p-4 ${isOver ? 'border-red-500/30' : ''}`}>
+                                    <div className={`p-4 rounded-2xl bg-slate-900/40 border transition-all hover:bg-slate-800/50 ${isOver ? 'border-red-500/30' : 'border-slate-800'}`}>
                                         <div className="flex items-center gap-4">
                                             <span className="text-2xl">{CATEGORY_ICONS[cat]}</span>
                                             <div className="flex-1 min-w-0">
-                                                <div className="flex items-center justify-between mb-1">
-                                                    <span className="font-medium">{CATEGORY_LABELS[cat]}</span>
+                                                <div className="flex items-center justify-between mb-2">
+                                                    <span className="font-medium text-slate-200">{CATEGORY_LABELS[cat]}</span>
                                                     <div className="flex items-center gap-2">
-                                                        <span className="text-sm">
+                                                        <span className="text-sm font-medium">
                                                             {formatMoney(spent)}
                                                             {limit > 0 && <span className="text-slate-500"> / {formatMoney(limit)}</span>}
                                                         </span>
                                                         {isOver && <AlertTriangle className="w-4 h-4 text-red-400" />}
                                                         {isWarning && <AlertTriangle className="w-4 h-4 text-amber-400" />}
-                                                        {!isOver && !isWarning && limit > 0 && spent > 0 && (
-                                                            <CheckCircle className="w-4 h-4 text-emerald-400" />
-                                                        )}
                                                     </div>
                                                 </div>
                                                 {limit > 0 && (
-                                                    <div className="h-2 bg-slate-700/50 rounded-full overflow-hidden">
+                                                    <div className="h-1.5 bg-slate-800 rounded-full overflow-hidden">
                                                         <motion.div
                                                             initial={{ width: 0 }}
                                                             animate={{ width: `${percent}%` }}
                                                             transition={{ duration: 0.5, delay: i * 0.05 }}
-                                                            className={`h-full rounded-full ${isOver ? 'bg-red-500' : isWarning ? 'bg-amber-500' : 'bg-emerald-500'
-                                                                }`}
+                                                            className={`h-full rounded-full ${isOver ? 'bg-red-500' : isWarning ? 'bg-amber-500' : 'bg-emerald-500'}`}
                                                         />
                                                     </div>
                                                 )}
                                             </div>
                                         </div>
-                                    </Card>
+                                    </div>
                                 </motion.div>
                             );
                         })}
@@ -565,4 +566,3 @@ function BudgetModal({ isOpen, onClose, existingBudget, monthKey }: BudgetModalP
         </div>
     );
 }
-
