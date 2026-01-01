@@ -242,7 +242,7 @@ export default function VoiceExpenseModal({ isOpen, onClose }: VoiceExpenseModal
                         {/* Header */}
                         <div className="flex items-center justify-between p-4 border-b border-slate-800">
                             <h2 className="text-lg font-semibold text-white">
-                                {state === 'idle' && '🎤 Dodaj wydatek'}
+                                {state === 'idle' && '✨ Asystent AI'}
                                 {state === 'recording' && '🔴 Nagrywam...'}
                                 {state === 'processing' && '🤔 Analizuję...'}
                                 {state === 'preview' && '✨ Rozpoznany wydatek'}
@@ -347,8 +347,8 @@ export default function VoiceExpenseModal({ isOpen, onClose }: VoiceExpenseModal
                                                 initial={{ opacity: 0 }}
                                                 animate={{ opacity: 1 }}
                                             >
-                                                <p className="text-slate-400 text-sm">Naciśnij, aby dodać wydatek</p>
-                                                <p className="text-slate-300 font-medium mt-1">"50 zł w Żabce"</p>
+                                                <p className="text-slate-400 text-sm">Dotknij, aby rozmawiać</p>
+                                                <p className="text-slate-300 font-medium mt-1">"50 zł w Żabce..."</p>
                                             </motion.div>
                                         )}
                                     </div>
