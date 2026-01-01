@@ -34,6 +34,9 @@ export default function ExpensesPage() {
     const [selectedCategory, setSelectedCategory] = useState<string>('all');
     const [showAddModal, setShowAddModal] = useState(false);
 
+    const [viewDate, setViewDate] = useState(new Date());
+    const [viewMode, setViewMode] = useState<'month' | 'day'>('month'); // Prepare for day view if needed
+
     // Fetch expenses
     useEffect(() => {
         if (!userData?.id) {
@@ -42,7 +45,9 @@ export default function ExpensesPage() {
         }
 
         const expensesRef = collection(db, 'users', userData.id, 'expenses');
-        const q = query(expensesRef, orderBy('createdAt', 'desc')); // Updated to createdAt for better sorting
+        // We fetch all for now and filter client-side for smooth transitions
+        // In a real huge app, we'd query by date range
+        const q = query(expensesRef, orderBy('createdAt', 'desc'));
 
         const unsubscribe = onSnapshot(q, (snapshot) => {
             const data = snapshot.docs.map(doc => ({
@@ -63,11 +68,34 @@ export default function ExpensesPage() {
             .includes(searchQuery.toLowerCase());
         const matchesCategory = selectedCategory === 'all' ||
             expense.merchant?.category === selectedCategory;
-        return matchesSearch && matchesCategory;
+
+        // Date Logic
+        let expenseDate: Date;
+        if (expense.date && typeof (expense.date as any).toDate === 'function') {
+            expenseDate = (expense.date as any).toDate();
+        } else if (expense.date) {
+            expenseDate = new Date(expense.date as any);
+        } else {
+            expenseDate = new Date();
+        }
+
+        let matchesDate = true;
+        if (viewMode === 'month') {
+            const start = new Date(viewDate.getFullYear(), viewDate.getMonth(), 1);
+            const end = new Date(viewDate.getFullYear(), viewDate.getMonth() + 1, 0, 23, 59, 59);
+            matchesDate = expenseDate >= start && expenseDate <= end;
+        }
+
+        return matchesSearch && matchesCategory && matchesDate;
     });
 
     // Calculate total
     const totalAmount = filteredExpenses.reduce((sum, e) => sum + (e.amount || 0), 0);
+
+    // Navigation Handlers
+    const prevDate = () => setViewDate(d => new Date(d.getFullYear(), d.getMonth() - 1, 1));
+    const nextDate = () => setViewDate(d => new Date(d.getFullYear(), d.getMonth() + 1, 1));
+    const resetDate = () => setViewDate(new Date());
 
     // Group by date (Today, Yesterday, etc.)
     const groupedExpenses = filteredExpenses.reduce((groups, expense) => {
@@ -111,29 +139,62 @@ export default function ExpensesPage() {
 
     return (
         <div className="max-w-4xl mx-auto pb-24 lg:pb-0">
-            {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
-                <div className="flex items-center gap-3">
-                    {/* Back button for mobile mainly, but good for navigation */}
-                    <Link href="/dashboard" className="lg:hidden p-2 -ml-2 hover:bg-slate-800 rounded-full transition-colors">
-                        <ArrowLeft className="w-6 h-6" />
-                    </Link>
-                    <div>
-                        <h1 className="text-2xl md:text-3xl font-bold">Twoje Wydatki</h1>
-                        <p className="text-slate-400 mt-1">
-                            Suma widoczna: <span className="text-white font-medium">{formatMoney(totalAmount)}</span>
-                        </p>
+            {/* Fintech Header */}
+            <div className="mb-8 relative">
+                <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
+                    <div className="flex items-center gap-3">
+                        <Link href="/dashboard" className="lg:hidden p-2 -ml-2 hover:bg-slate-800 rounded-full transition-colors">
+                            <ArrowLeft className="w-6 h-6" />
+                        </Link>
+                        <div>
+                            <h1 className="text-xl md:text-2xl font-bold text-slate-300">Twoje Wydatki</h1>
+                        </div>
+                    </div>
+                    <div className="flex gap-3">
+                        <Link href="/scan">
+                            <Button variant="outline" icon={<Camera className="w-5 h-5" />}>
+                                Skanuj
+                            </Button>
+                        </Link>
+                        <Button icon={<Plus className="w-5 h-5" />} onClick={() => setShowAddModal(true)}>
+                            Dodaj
+                        </Button>
                     </div>
                 </div>
-                <div className="flex gap-3">
-                    <Link href="/scan">
-                        <Button variant="outline" icon={<Camera className="w-5 h-5" />}>
-                            Skanuj
-                        </Button>
-                    </Link>
-                    <Button icon={<Plus className="w-5 h-5" />} onClick={() => setShowAddModal(true)}>
-                        Dodaj
-                    </Button>
+
+                {/* Date Navigator & Big Amount */}
+                <div className="mt-6 flex flex-col items-center justify-center">
+                    {/* Month Navigation */}
+                    <div className="flex items-center gap-4 bg-slate-900/50 p-1.5 rounded-2xl border border-slate-800/50 backdrop-blur-sm mb-4">
+                        <button onClick={prevDate} className="p-2 hover:bg-slate-800 rounded-xl transition-colors text-slate-400 hover:text-white">
+                            <ChevronDown className="w-5 h-5 rotate-90" />
+                        </button>
+
+                        <div className="flex items-center gap-2 px-2 cursor-pointer hover:bg-slate-800/30 rounded-lg transition-colors py-1" onClick={resetDate}>
+                            <Calendar className="w-4 h-4 text-emerald-400" />
+                            <span className="text-lg font-medium capitalize text-slate-200">
+                                {viewDate.toLocaleString('pl-PL', { month: 'long', year: 'numeric' })}
+                            </span>
+                        </div>
+
+                        <button onClick={nextDate} className="p-2 hover:bg-slate-800 rounded-xl transition-colors text-slate-400 hover:text-white">
+                            <ChevronDown className="w-5 h-5 -rotate-90" />
+                        </button>
+                    </div>
+
+                    {/* Big Amount - Fintech Style */}
+                    <div className="text-center relative">
+                        <motion.h2
+                            key={totalAmount}
+                            initial={{ scale: 0.9, opacity: 0.5 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            className="text-5xl md:text-6xl font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-br from-white via-slate-200 to-slate-400"
+                        >
+                            {formatMoney(totalAmount).replace('zł', '')}
+                            <span className="text-2xl text-slate-500 font-medium ml-2">zł</span>
+                        </motion.h2>
+                        <p className="text-slate-500 text-sm mt-2 font-medium uppercase tracking-widest opacity-60">Suma wydatków</p>
+                    </div>
                 </div>
             </div>
 
