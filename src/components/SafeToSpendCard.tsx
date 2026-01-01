@@ -22,16 +22,14 @@ export default function SafeToSpendCard() {
     useEffect(() => {
         if (!user) return;
 
-        // Mock logic to replicate "Safe To Spend" calculation
-        // In reality, this would fetch from a "Budgets" collection or aggregate expenses
-        // For now, let's fetch expenses for this month to calculate "Spent"
+        // Correct path: users/{uid}/expenses
+        const expensesRef = collection(db, 'users', user.uid, 'expenses');
 
         const start = startOfMonth(new Date());
         const end = endOfMonth(new Date());
 
         const q = query(
-            collection(db, 'expenses'),
-            where('userId', '==', user.uid),
+            expensesRef,
             where('date', '>=', start),
             where('date', '<=', end)
         );
@@ -58,6 +56,9 @@ export default function SafeToSpendCard() {
                 limit: monthlyLimit,
                 percentageUsed: (totalSpent / monthlyLimit) * 100
             });
+            setLoading(false);
+        }, (error) => {
+            console.error("SafeToSpendCard Error:", error);
             setLoading(false);
         });
 
