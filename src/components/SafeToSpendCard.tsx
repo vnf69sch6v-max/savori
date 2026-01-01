@@ -2,6 +2,7 @@
 
 import { motion } from 'framer-motion';
 import { Wallet, TrendingUp, TrendingDown, Info, Sparkles } from 'lucide-react';
+import { formatMoney } from '@/lib/utils';
 
 interface SafeToSpendCardProps {
     totalBalance: number;       // Total available balance (in grosz)
@@ -11,7 +12,7 @@ interface SafeToSpendCardProps {
 }
 
 // AI trigger messages based on financial health
-function getAIMessage(budgetUsedPercent: number, dailyBudget: number): string {
+function getAIMessage(budgetUsedPercent: number, dailyBudget: number, currency: string): string {
     if (budgetUsedPercent < 50) {
         const extras = ['kawę', 'lepszy obiad', 'mały prezent dla siebie'];
         return `Świetnie Ci idzie! Stać Cię na ${extras[Math.floor(Math.random() * extras.length)]} ☕`;
@@ -20,7 +21,7 @@ function getAIMessage(budgetUsedPercent: number, dailyBudget: number): string {
         return `Jesteś na dobrej drodze! ${Math.round(100 - budgetUsedPercent)}% budżetu przed Tobą 💪`;
     }
     if (budgetUsedPercent < 85) {
-        return `Uważaj na wydatki. Zostało ${dailyBudget.toFixed(0)} zł dziennie ⚠️`;
+        return `Uważaj na wydatki. Zostało ${formatMoney(dailyBudget * 100, currency)} dziennie ⚠️`;
     }
     if (budgetUsedPercent < 95) {
         return `Limit blisko! Rozważ ograniczenie wydatków do końca miesiąca 🚨`;
@@ -32,11 +33,11 @@ export default function SafeToSpendCard({
     totalBalance,
     plannedExpenses,
     spentThisMonth,
-    budgetLimit
-}: SafeToSpendCardProps) {
+    budgetLimit,
+    currency = 'PLN'
+}: SafeToSpendCardProps & { currency?: string }) {
     // Safe to spend is already calculated as (budget - spent) passed as totalBalance
     const safeToSpend = Math.max(0, totalBalance);
-    const safeToSpendDisplay = (safeToSpend / 100).toFixed(2);
 
     // Calculate days remaining in month
     const now = new Date();
@@ -73,7 +74,7 @@ export default function SafeToSpendCard({
             : 'text-red-400';
 
     // AI Message
-    const aiMessage = getAIMessage(budgetUsedPercent, dailyBudget);
+    const aiMessage = getAIMessage(budgetUsedPercent, dailyBudget, currency);
 
     return (
         <motion.div
@@ -101,11 +102,11 @@ export default function SafeToSpendCard({
                 {/* Main Amount */}
                 <div className="mb-2">
                     <p className={`text-4xl font-bold ${textColor} tabular-nums`} style={{ fontVariantNumeric: 'tabular-nums' }}>
-                        {safeToSpendDisplay} <span className="text-lg">zł</span>
+                        {formatMoney(safeToSpend, currency)}
                     </p>
                     {/* Daily budget - key psychological insight */}
                     <p className="text-sm text-slate-400 mt-1">
-                        <span className="font-medium text-white">~{dailyBudget.toFixed(0)} zł</span> dziennie do końca miesiąca
+                        <span className="font-medium text-white">~{formatMoney(dailyBudget * 100, currency)}</span> dziennie do końca miesiąca
                     </p>
                 </div>
 
@@ -154,12 +155,12 @@ export default function SafeToSpendCard({
                 <div className="flex items-center gap-4 text-sm">
                     <div className="flex items-center gap-1 text-slate-400">
                         <TrendingDown className="w-4 h-4 text-red-400" />
-                        <span>Wydatki: {(spentThisMonth / 100).toFixed(0)} zł</span>
+                        <span>Wydatki: {formatMoney(spentThisMonth, currency)}</span>
                     </div>
                     {plannedExpenses > 0 && (
                         <div className="flex items-center gap-1 text-slate-400">
                             <TrendingUp className="w-4 h-4 text-blue-400" />
-                            <span>Planowane: {(plannedExpenses / 100).toFixed(0)} zł</span>
+                            <span>Planowane: {formatMoney(plannedExpenses, currency)}</span>
                         </div>
                     )}
                 </div>

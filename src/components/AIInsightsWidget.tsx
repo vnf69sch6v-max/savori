@@ -47,16 +47,59 @@ export default function AIInsightsWidget() {
 
             // Generate insights locally
             const generatedInsights = insightsEngine.analyzeDashboard(expenses, engineBudgets);
-
             setInsights(generatedInsights);
+            setLoading(false); // Show local insights immediately
+
+            // Fetch AI insight in background
+            if (expenses.length >= 3) {
+                // Prepare expenses safe for JSON (remove timestamps or conversion issues)
+                const safeExpenses = expenses.slice(0, 15).map(e => ({
+                    ...e,
+                    date: null, // We don't need date for this specific analysis
+                    createdAt: null
+                }));
+
+                fetch('/api/ai-insights', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ expenses: safeExpenses })
+                })
+                    .then(res => res.json())
+                    .then(aiData => {
+                        if (aiData && aiData.title) {
+                            const aiInsight: AIInsight = {
+                                id: `ai_${Date.now()}`,
+                                userId: userData.id,
+                                type: (aiData.type as any) || 'tip',
+                                priority: (aiData.priority as any) || 'high',
+                                emoji: '✨',
+                                title: aiData.title,
+                                message: aiData.message,
+                                confidence: 1.0,
+                                status: 'new',
+                                createdAt: new Date(),
+                                ...aiData
+                            };
+                            setInsights(prev => {
+                                // Prevent duplicates if already fetched
+                                if (prev.some(i => i.id.startsWith('ai_'))) return prev;
+                                return [aiInsight, ...prev];
+                            });
+                        }
+                    })
+                    .catch(err => console.error('AI Fetch Error:', err))
+                    .finally(() => setRefreshing(false));
+            } else {
+                setRefreshing(false);
+            }
 
         } catch (error) {
             console.error('Error generating insights:', error);
-            // Fallback empty
-            setInsights([]);
-        } finally {
-            setLoading(false);
+            // Fallback empty if initial fetch failed
+            if (insights.length === 0) setInsights([]);
             setRefreshing(false);
+        } finally {
+            // Loading is handled inside for smoother UX
         }
     };
 

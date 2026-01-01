@@ -31,6 +31,7 @@ import HookChallengeWidget from '@/components/dashboard/HookChallengeWidget';
 import AIChatSheet from '@/components/AIChatSheet';
 import AddExpenseModal from '@/components/AddExpenseModal';
 import GradientExpenseCard from '@/components/GradientExpenseCard';
+import ImpulseLockModal from '@/components/dashboard/ImpulseLockModal';
 import { recurringExpensesService, getMonthlyEquivalent } from '@/lib/subscriptions/recurring-service';
 
 // Minimum thresholds for showing advanced features
@@ -95,11 +96,13 @@ function StatCard({ title, value, change, icon, color }: StatCardProps) {
 
 export default function DashboardPage() {
     const { userData } = useAuth();
+    const userCurrency = (userData?.settings?.currency as string) || 'PLN';
     const [expenses, setExpenses] = useState<Expense[]>([]);
     const [goals, setGoals] = useState<SavingGoal[]>([]);
     const [loading, setLoading] = useState(true);
     const [isChatOpen, setIsChatOpen] = useState(false);
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+    const [isImpulseModalOpen, setIsImpulseModalOpen] = useState(false);
 
     // Get greeting based on time
     const getGreeting = () => {
@@ -231,17 +234,18 @@ export default function DashboardPage() {
                     plannedExpenses={plannedExpenses}
                     spentThisMonth={monthlyExpenses}
                     budgetLimit={monthlyBudget}
+                    currency={userCurrency}
                 />
 
                 {/* Quick Actions Bar */}
+                {/* Quick Actions Bar */}
                 <QuickActionsBar
-                    onAddManual={() => setIsAddModalOpen(true)}
-                    onOpenChat={() => setIsChatOpen(true)}
+                    onAIChatClick={() => setIsChatOpen(true)}
+                    onImpulseClick={() => setIsImpulseModalOpen(true)}
                 />
 
-                {/* Challenge Widget */}
-                <HookChallengeWidget />
-
+                <AIChatSheet isOpen={isChatOpen} onClose={() => setIsChatOpen(false)} />
+                <ImpulseLockModal isOpen={isImpulseModalOpen} onClose={() => setIsImpulseModalOpen(false)} />
                 {/* Recent Transactions Header */}
                 <div className="flex items-center justify-between pt-2">
                     <h2 className="text-lg font-semibold text-white">Recent Transactions</h2>
@@ -284,7 +288,7 @@ export default function DashboardPage() {
                         {getGreeting()}, {userData?.displayName?.split(' ')[0] || 'tam'}! 👋
                     </h1>
                     <p className="text-slate-400 mt-1">
-                        Dziś wydałeś <span className="text-white font-medium">{formatMoney(monthlyExpensesTotal)}</span>. Trzymaj tak dalej!
+                        Dziś wydałeś <span className="text-white font-medium">{formatMoney(monthlyExpensesTotal, userCurrency)}</span>. Trzymaj tak dalej!
                     </p>
                 </div>
 
@@ -295,6 +299,7 @@ export default function DashboardPage() {
                         plannedExpenses={plannedExpenses}
                         spentThisMonth={monthlyExpenses}
                         budgetLimit={monthlyBudget}
+                        currency={userCurrency}
                     />
                     <GamificationHub
                         xp={userData?.gamification?.xp || 0}
@@ -405,7 +410,7 @@ export default function DashboardPage() {
                                                         <div>
                                                             <p className="font-medium">{goal.name}</p>
                                                             <p className="text-sm text-slate-400">
-                                                                {formatMoney(goal.current)} / {formatMoney(goal.target)}
+                                                                {formatMoney(goal.current, userCurrency)} / {formatMoney(goal.target, userCurrency)}
                                                             </p>
                                                         </div>
                                                     </div>
@@ -474,7 +479,7 @@ export default function DashboardPage() {
                                                 </p>
                                             </div>
                                             <p className="font-medium text-rose-400">
-                                                -{formatMoney(expense.amount)}
+                                                -{formatMoney(expense.amount, userCurrency)}
                                             </p>
                                         </motion.div>
                                     ))}
@@ -496,6 +501,11 @@ export default function DashboardPage() {
             <AIChatSheet
                 isOpen={isChatOpen}
                 onClose={() => setIsChatOpen(false)}
+            />
+
+            <ImpulseLockModal
+                isOpen={isImpulseModalOpen}
+                onClose={() => setIsImpulseModalOpen(false)}
             />
 
             {/* Add Expense Modal */}

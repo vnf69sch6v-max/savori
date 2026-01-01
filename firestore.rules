@@ -247,6 +247,27 @@ service cloud.firestore {
         // Users can manage their own active challenges
         allow read, write: if isOwner(userId);
       }
-    }
+      // ============ SNBL GOALS SUBCOLLECTION ============
+      
+      match /snbl_goals/{goalId} {
+        // Users can manage their own SNBL goals
+        allow read, write: if isOwner(userId);
+      }
+      
+      // ============ IMPULSE LOCKS SUBCOLLECTION ============
+      
+      match /impulse_locks/{lockId} {
+        // Users can manage their own impulse locks
+        allow read, write: if isOwner(userId);
+      }
+
+      // ============ TRANSACTION EVENTS SUBCOLLECTION (IMMUTABLE LOG) ============
+      
+      match /transaction_events/{eventId} {
+        allow read: if isOwner(userId);
+        // Only allow creation, no updates or deletes (append-only log)
+        allow create: if isOwner(userId);
+        allow update, delete: if false;
+      }
   }
 }

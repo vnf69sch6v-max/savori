@@ -5,6 +5,7 @@ import { Trash2, Pencil, Camera, CreditCard, RefreshCw } from 'lucide-react';
 import { Expense } from '@/types';
 import { formatMoney } from '@/lib/utils';
 import { getMerchantIcon, getMerchantColor, cleanMerchantName, CATEGORY_GRADIENTS } from '@/lib/merchant-icons';
+import { useHaptic } from '@/hooks/use-haptic';
 
 // Source badge configs
 const SOURCE_BADGES = {
@@ -49,8 +50,10 @@ export default function GradientExpenseCard({ expense, onDelete }: GradientExpen
     const relativeDate = formatRelativeDate(expenseDate);
 
     // Handle swipe to delete
+    const { trigger } = useHaptic();
     const handleDragEnd = (event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
         if (info.offset.x < -100 && onDelete) {
+            trigger('medium');
             onDelete(expense.id);
         }
     };

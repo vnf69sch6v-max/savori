@@ -31,7 +31,19 @@ export type EventType =
     // AI events
     | 'ai:insight_generated'
     | 'ai:anomaly_detected'
-    | 'ai:prediction_updated';
+    // Impulse Lock events
+    | 'impulse:locked'
+    | 'impulse:unlocked_purchased'
+    | 'impulse:unlocked_saved'
+    // SNBL events
+    | 'snbl:goal_created'
+    | 'snbl:merchant_boost'
+    | 'snbl:completed'
+    // Transaction lifecycle
+    | 'transaction:initiated'
+    | 'transaction:authorized'
+    | 'transaction:cleared'
+    | 'transaction:failed';
 
 export interface EventPayload {
     'expense:added': { expense: { id: string; amount: number; category: string; merchant: string }; userId: string };
@@ -56,6 +68,17 @@ export interface EventPayload {
     'ai:insight_generated': { insights: string[]; userId: string };
     'ai:anomaly_detected': { expenseId: string; severity: string; reason: string; userId: string };
     'ai:prediction_updated': { predictedTotal: number; willExceed: boolean; userId: string };
+    // New events payloads
+    'impulse:locked': { lockId: string; amount: number; item: string; userId: string };
+    'impulse:unlocked_purchased': { lockId: string; amount: number; userId: string };
+    'impulse:unlocked_saved': { lockId: string; amount: number; userId: string };
+    'snbl:goal_created': { goalId: string; product: string; target: number; userId: string };
+    'snbl:merchant_boost': { goalId: string; merchant: string; amount: number; userId: string };
+    'snbl:completed': { goalId: string; product: string; userId: string };
+    'transaction:initiated': { transactionId: string; amount: number; merchant: string; userId: string };
+    'transaction:authorized': { transactionId: string; userId: string };
+    'transaction:cleared': { transactionId: string; userId: string };
+    'transaction:failed': { transactionId: string; reason: string; userId: string };
 }
 
 type EventHandler<T extends EventType> = (payload: EventPayload[T]) => void | Promise<void>;

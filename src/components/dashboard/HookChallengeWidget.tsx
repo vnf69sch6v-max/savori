@@ -54,21 +54,43 @@ const SAMPLE_HOOKS: Challenge[] = [
 ];
 
 export default function HookChallengeWidget() {
+    const [hooks, setHooks] = useState<Challenge[]>(SAMPLE_HOOKS);
     const [currentIndex, setCurrentIndex] = useState(0);
     const [isAutoRotating, setIsAutoRotating] = useState(true);
 
-    const currentHook = SAMPLE_HOOKS[currentIndex];
+    const currentHook = hooks[currentIndex];
+
+    // Fetch AI Quiz
+    useEffect(() => {
+        fetch('/api/ai-quiz')
+            .then(res => res.json())
+            .then(quiz => {
+                if (quiz && quiz.question) {
+                    setHooks(prev => prev.map(h =>
+                        h.type === 'quiz'
+                            ? {
+                                ...h,
+                                title: 'Quiz Dnia AI',
+                                description: quiz.question,
+                                link: '/quiz' // Assuming we'll have a quiz page
+                            }
+                            : h
+                    ));
+                }
+            })
+            .catch(console.error);
+    }, []);
 
     // Auto-rotate every 8 seconds
     useEffect(() => {
         if (!isAutoRotating) return;
 
         const timer = setInterval(() => {
-            setCurrentIndex((prev) => (prev + 1) % SAMPLE_HOOKS.length);
+            setCurrentIndex((prev) => (prev + 1) % hooks.length);
         }, 8000);
 
         return () => clearInterval(timer);
-    }, [isAutoRotating]);
+    }, [isAutoRotating, hooks.length]);
 
     const getIcon = (type: string) => {
         switch (type) {
@@ -167,7 +189,7 @@ export default function HookChallengeWidget() {
 
                     {/* Dots indicator */}
                     <div className="flex justify-center gap-1.5 mt-4">
-                        {SAMPLE_HOOKS.map((_, i) => (
+                        {hooks.map((_, i) => (
                             <button
                                 key={i}
                                 onClick={() => setCurrentIndex(i)}

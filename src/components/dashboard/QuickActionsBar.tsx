@@ -1,53 +1,49 @@
 'use client';
 
-import { motion } from 'framer-motion';
+import { ScanLine, Plus, MessageSquare, ShieldAlert } from 'lucide-react';
 import Link from 'next/link';
-import { Camera, Plus, MessageCircle, Sparkles } from 'lucide-react';
+import { Button } from '@/components/ui';
 
 interface QuickActionsBarProps {
-    onAddManual?: () => void;
-    onOpenChat?: () => void;
+    onAIChatClick: () => void;
+    onImpulseClick?: () => void;
 }
 
-export default function QuickActionsBar({ onAddManual, onOpenChat }: QuickActionsBarProps) {
+export default function QuickActionsBar({ onAIChatClick, onImpulseClick }: QuickActionsBarProps) {
     return (
-        <div className="flex items-center justify-center gap-4 py-4">
-            {/* Scan AI - Primary action */}
-            <Link href="/scan">
-                <motion.button
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    className="flex flex-col items-center gap-2 px-6 py-4 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-2xl shadow-lg shadow-emerald-500/25"
+        <div className="bg-slate-900/50 backdrop-blur-lg border-t border-slate-800 p-4 pb-8 fixed bottom-0 left-0 right-0 z-50 md:hidden">
+            <div className="grid grid-cols-4 gap-3 max-w-md mx-auto">
+                <Link href="/scan" className="col-span-1">
+                    <Button variant="secondary" className="w-full h-12 flex flex-col gap-1 p-0 rounded-xl bg-slate-800 border border-slate-700 hover:bg-slate-700">
+                        <ScanLine className="w-5 h-5 text-emerald-400" />
+                        <span className="text-[10px] font-medium text-slate-300">Skanuj</span>
+                    </Button>
+                </Link>
+
+                <Link href="/add" className="col-span-1">
+                    <Button variant="secondary" className="w-full h-12 flex flex-col gap-1 p-0 rounded-xl bg-slate-800 border border-slate-700 hover:bg-slate-700">
+                        <Plus className="w-5 h-5 text-emerald-400" />
+                        <span className="text-[10px] font-medium text-slate-300">Dodaj</span>
+                    </Button>
+                </Link>
+
+                <Button
+                    variant="secondary"
+                    className="col-span-1 w-full h-12 flex flex-col gap-1 p-0 rounded-xl bg-slate-800 border border-slate-700 hover:bg-slate-700"
+                    onClick={onImpulseClick}
                 >
-                    <div className="relative">
-                        <Camera className="w-7 h-7 text-white" />
-                        <Sparkles className="w-3 h-3 text-yellow-300 absolute -top-1 -right-1" />
-                    </div>
-                    <span className="text-sm font-medium text-white">Skanuj</span>
-                </motion.button>
-            </Link>
+                    <ShieldAlert className="w-5 h-5 text-amber-400" />
+                    <span className="text-[10px] font-medium text-slate-300">Impuls</span>
+                </Button>
 
-            {/* Add manual */}
-            <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={onAddManual}
-                className="flex flex-col items-center gap-2 px-6 py-4 bg-slate-800/80 border border-slate-700 rounded-2xl hover:bg-slate-700/80 transition-colors"
-            >
-                <Plus className="w-7 h-7 text-slate-300" />
-                <span className="text-sm font-medium text-slate-300">Dodaj</span>
-            </motion.button>
-
-            {/* AI Chat */}
-            <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={onOpenChat}
-                className="flex flex-col items-center gap-2 px-6 py-4 bg-gradient-to-br from-purple-500/20 to-blue-500/20 border border-purple-500/30 rounded-2xl hover:border-purple-500/50 transition-colors"
-            >
-                <MessageCircle className="w-7 h-7 text-purple-400" />
-                <span className="text-sm font-medium text-purple-300">Czat AI</span>
-            </motion.button>
+                <Button
+                    onClick={onAIChatClick}
+                    className="col-span-1 w-full h-12 flex flex-col gap-1 p-0 rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 border border-indigo-400/30 shadow-lg shadow-indigo-500/20"
+                >
+                    <MessageSquare className="w-5 h-5 text-white" />
+                    <span className="text-[10px] font-medium text-white">AI Chat</span>
+                </Button>
+            </div>
         </div>
     );
 }

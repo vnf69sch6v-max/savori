@@ -65,25 +65,42 @@ export default function AIChatSheet({ isOpen, onClose }: AIChatSheetProps) {
         setInputValue('');
         setIsLoading(true);
 
-        // Simulate AI response (replace with actual API call)
-        setTimeout(() => {
-            const responses: Record<string, string> = {
-                'Na co mnie stać?': 'Na podstawie Twojego budżetu, bezpiecznie możesz wydać około 98 zł dziennie. Na weekend to około 250 zł na przyjemności! 🎉',
-                'Ile wydałem dziś?': 'Dziś wydałeś 127,50 zł. Głównie w kategorii "Jedzenie" (McDonald\'s - 73,20 zł). Czy chcesz zobaczyć szczegóły?',
-                'Porównaj z zeszłym miesiącem': 'W porównaniu do zeszłego miesiąca wydałeś o 15% mniej! Świetna robota 💪 Oszczędziłeś głównie na kategoriach "Rozrywka" i "Transport".',
-                'Gdzie oszczędzić?': 'Zauważyłem, że często jesz na mieście (5 razy w tym tygodniu). Gdybyś 2 razy ugotował w domu, zaoszczędzisz około 80 zł tygodniowo! 🍳',
-            };
+
+
+        try {
+            const response = await fetch('/api/ai-chat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    question: messageText,
+                    // Context can be passed here if needed, but endpoint has fallback
+                })
+            });
+
+            if (!response.ok) throw new Error('Network response was not ok');
+
+            const data = await response.json();
 
             const aiMessage: Message = {
                 id: `ai-${Date.now()}`,
                 role: 'assistant',
-                content: responses[messageText] || 'Analizuję Twoje dane... Wygląda na to, że jesteś w dobrej kondycji finansowej. Czy jest coś konkretnego, co chciałbyś wiedzieć?',
+                content: data.answer || 'Przepraszam, nie udało mi się wygenerować odpowiedzi.',
                 timestamp: new Date(),
             };
 
             setMessages(prev => [...prev, aiMessage]);
+        } catch (error) {
+            console.error('Chat Error:', error);
+            const errorMessage: Message = {
+                id: `error-${Date.now()}`,
+                role: 'assistant',
+                content: 'Wystąpił błąd połączenia z asystentem. Spróbuj ponownie później.',
+                timestamp: new Date(),
+            };
+            setMessages(prev => [...prev, errorMessage]);
+        } finally {
             setIsLoading(false);
-        }, 1500);
+        }
     };
 
     const handleDragEnd = (event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
@@ -170,8 +187,8 @@ export default function AIChatSheet({ isOpen, onClose }: AIChatSheetProps) {
                                     )}
                                     <div
                                         className={`max-w-[80%] px-4 py-3 rounded-2xl ${message.role === 'user'
-                                                ? 'bg-gradient-to-br from-emerald-500 to-emerald-600 text-white'
-                                                : 'bg-slate-800/80 text-slate-200'
+                                            ? 'bg-gradient-to-br from-emerald-500 to-emerald-600 text-white'
+                                            : 'bg-slate-800/80 text-slate-200'
                                             }`}
                                     >
                                         <p className="text-sm leading-relaxed">{message.content}</p>

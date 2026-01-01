@@ -13,6 +13,19 @@ export interface UserGamification {
     totalExpenses: number;
 }
 
+export type Rarity = 'common' | 'uncommon' | 'rare' | 'epic' | 'legendary';
+
+export interface KitchenItem {
+    id: string;
+    name: string;
+    description: string;
+    price: number;
+    emoji: string;
+    category: 'appliance' | 'decoration' | 'companion' | 'food';
+    rarity: Rarity;
+    effect?: string;
+}
+
 export interface User {
     id: string;
     email: string;
@@ -295,3 +308,59 @@ export interface Notification {
     metadata?: Record<string, unknown>;
 }
 
+
+// ============ SAVE NOW BUY LATER (SNBL) ============
+export interface MerchantBoost {
+    merchantId: string;
+    percentage: number;
+    triggeredAt: Timestamp;
+    amount: number;
+}
+
+export interface SNBLProduct {
+    id: string;
+    name: string;
+    price: number; // in grosz
+    merchantId: string;
+    merchantName: string;
+    imageUrl: string;
+    category: string;
+    boosts: { typeLabel: string; value: number }[];
+    affiliateUrl?: string;
+}
+
+export interface SNBLGoal {
+    id: string;
+    userId: string;
+    productId: string;
+    productName: string;
+    productImageUrl?: string;
+    targetAmount: number;
+    currentAmount: number;
+    merchantBoosts: MerchantBoost[];
+    status: 'saving' | 'ready' | 'purchased';
+    createdAt: Timestamp;
+    predictedCompletion?: Timestamp;
+}
+
+// ============ IMPULSE CONTROL ============
+export interface ImpulseLock {
+    id: string;
+    userId: string;
+    amount: number;
+    reason: string;
+    lockedAt: Timestamp;
+    unlocksAt: Timestamp;
+    status: 'locked' | 'released' | 'cancelled';
+    outcome?: 'purchased' | 'saved';
+}
+
+// ============ EVENT SOURCING ============
+export interface TransactionEvent {
+    id: string;
+    type: 'TRANSACTION_INITIATED' | 'TRANSACTION_AUTHORIZED' |
+    'TRANSACTION_CLEARED' | 'TRANSACTION_FAILED';
+    payload: Record<string, unknown>;
+    timestamp: Timestamp;
+    version: number;
+}

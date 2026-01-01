@@ -1,82 +1,65 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
 import { toast } from 'react-hot-toast';
 import {
     User,
     Bell,
     Palette,
-    Shield,
     CreditCard,
     LogOut,
-    ChevronRight,
     Moon,
-    Sun,
     Globe,
     Coins,
     Check,
 } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent, Button, Input } from '@/components/ui';
 import { useAuth } from '@/contexts/AuthContext';
-import { updateDoc, doc } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { useRouter } from 'next/navigation';
 import { subscriptionService } from '@/lib/subscription-service';
+import { formatMoney } from '@/lib/utils';
 
 export default function SettingsPage() {
     const router = useRouter();
     const { user, userData, signOut, updateUserData } = useAuth();
-    const [saving, setSaving] = useState(false);
-    const [settings, setSettings] = useState({
-        displayName: userData?.displayName || '',
-        currency: userData?.settings?.currency || 'PLN',
-        language: userData?.settings?.language || 'pl',
-        darkMode: userData?.settings?.darkMode ?? true,
-        notifications: userData?.settings?.notifications || {
-            daily: true,
-            weekly: true,
-            goals: true,
-        },
-    });
+    const { language, setLanguage, t } = useLanguage();
 
-    // Sync settings with userData when it loads
+    // Profile state (manual save)
+    const [displayName, setDisplayName] = useState(userData?.displayName || '');
+    const [savingProfile, setSavingProfile] = useState(false);
+
     useEffect(() => {
-        if (userData) {
-            setSettings({
-                displayName: userData.displayName || '',
-                currency: userData.settings?.currency || 'PLN',
-                language: userData.settings?.language || 'pl',
-                darkMode: userData.settings?.darkMode ?? true,
-                notifications: userData.settings?.notifications || {
-                    daily: true,
-                    weekly: true,
-                    goals: true,
-                },
-            });
-        }
-    }, [userData]);
+        if (userData?.displayName) setDisplayName(userData.displayName);
+    }, [userData?.displayName]);
 
-    const handleSave = async () => {
-        if (!user) return;
+    // Instant save handler for preferences
+    const updatePreference = async (key: string, value: any) => {
+        if (!userData) return;
 
         try {
-            setSaving(true);
             await updateUserData({
-                displayName: settings.displayName,
                 settings: {
-                    currency: settings.currency as 'PLN' | 'EUR' | 'USD',
-                    language: settings.language as 'pl' | 'en',
-                    darkMode: settings.darkMode,
-                    notifications: settings.notifications,
-                },
+                    ...userData.settings,
+                    [key]: value
+                }
             });
-            toast.success('Ustawienia zapisane');
+            toast.success(t('common.saved'));
         } catch (error) {
             console.error(error);
-            toast.error('Nie udało się zapisać ustawień');
+            toast.error(t('common.error'));
+        }
+    };
+
+    const handleSaveProfile = async () => {
+        try {
+            setSavingProfile(true);
+            await updateUserData({ displayName });
+            toast.success(t('common.saved'));
+        } catch (error) {
+            toast.error(t('common.error'));
         } finally {
-            setSaving(false);
+            setSavingProfile(false);
         }
     };
 
@@ -91,9 +74,11 @@ export default function SettingsPage() {
         { id: 'premium', name: 'Premium', price: '39.99', current: userData?.subscription?.plan === 'premium' },
     ];
 
+    const notifications = userData?.settings?.notifications || { daily: true, weekly: true, goals: true };
+
     return (
-        <div className="max-w-2xl mx-auto">
-            <h1 className="text-2xl md:text-3xl font-bold mb-6">Ustawienia</h1>
+        <div className="max-w-2xl mx-auto pb-20">
+            <h1 className="text-2xl md:text-3xl font-bold mb-6">{t('settings.title')}</h1>
 
             <div className="space-y-6">
                 {/* Profile */}
@@ -101,14 +86,14 @@ export default function SettingsPage() {
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2">
                             <User className="w-5 h-5 text-emerald-400" />
-                            Profil
+                            {t('settings.profile')}
                         </CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-4">
                         <Input
                             label="Imię i nazwisko"
-                            value={settings.displayName}
-                            onChange={(e) => setSettings({ ...settings, displayName: e.target.value })}
+                            value={displayName}
+                            onChange={(e) => setDisplayName(e.target.value)}
                         />
                         <div>
                             <label className="block text-sm font-medium text-slate-300 mb-1.5">
@@ -116,6 +101,13 @@ export default function SettingsPage() {
                             </label>
                             <p className="text-slate-400">{user?.email}</p>
                         </div>
+                        <Button
+                            onClick={handleSaveProfile}
+                            loading={savingProfile}
+                            className="w-full"
+                        >
+                            {t('common.save')}
+                        </Button>
                     </CardContent>
                 </Card>
 
@@ -124,55 +116,54 @@ export default function SettingsPage() {
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2">
                             <Palette className="w-5 h-5 text-blue-400" />
-                            Preferencje
+                            {t('settings.preferences')}
                         </CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-4">
+                        {/* Dark Mode */}
                         <div className="flex items-center justify-between">
                             <div className="flex items-center gap-3">
                                 <Moon className="w-5 h-5 text-slate-400" />
-                                <span>Tryb ciemny</span>
+                                <span>{t('settings.darkMode')}</span>
                             </div>
                             <button
-                                onClick={() => setSettings({ ...settings, darkMode: !settings.darkMode })}
-                                className={`w-12 h-6 rounded-full transition-colors ${settings.darkMode ? 'bg-emerald-500' : 'bg-slate-600'
-                                    }`}
+                                onClick={() => updatePreference('darkMode', !userData?.settings?.darkMode)}
+                                className={`w-12 h-6 rounded-full transition-colors ${userData?.settings?.darkMode ? 'bg-emerald-500' : 'bg-slate-600'}`}
                             >
-                                <div
-                                    className={`w-5 h-5 rounded-full bg-white transition-transform ${settings.darkMode ? 'translate-x-6' : 'translate-x-0.5'
-                                        }`}
-                                />
+                                <div className={`w-5 h-5 rounded-full bg-white transition-transform ${userData?.settings?.darkMode ? 'translate-x-6' : 'translate-x-0.5'}`} />
                             </button>
                         </div>
 
+                        {/* Language */}
                         <div className="flex items-center justify-between">
                             <div className="flex items-center gap-3">
                                 <Globe className="w-5 h-5 text-slate-400" />
-                                <span>Język</span>
+                                <span>{t('settings.language')}</span>
                             </div>
                             <select
-                                value={settings.language}
-                                onChange={(e) => setSettings({ ...settings, language: e.target.value as 'pl' | 'en' })}
-                                className="px-3 py-1.5 bg-slate-800 border border-slate-700 rounded-lg text-sm"
+                                value={language}
+                                onChange={(e) => setLanguage(e.target.value as any)}
+                                className="px-3 py-1.5 bg-slate-800 border border-slate-700 rounded-lg text-sm appearance-none cursor-pointer hover:border-slate-500 transition-colors"
                             >
-                                <option value="pl">Polski</option>
-                                <option value="en">English</option>
+                                <option value="pl">Polski 🇵🇱</option>
+                                <option value="en">English 🇬🇧</option>
                             </select>
                         </div>
 
+                        {/* Currency */}
                         <div className="flex items-center justify-between">
                             <div className="flex items-center gap-3">
                                 <Coins className="w-5 h-5 text-slate-400" />
-                                <span>Waluta</span>
+                                <span>{t('settings.currency')}</span>
                             </div>
                             <select
-                                value={settings.currency}
-                                onChange={(e) => setSettings({ ...settings, currency: e.target.value as 'PLN' | 'EUR' | 'USD' })}
-                                className="px-3 py-1.5 bg-slate-800 border border-slate-700 rounded-lg text-sm"
+                                value={userData?.settings?.currency || 'PLN'}
+                                onChange={(e) => updatePreference('currency', e.target.value)}
+                                className="px-3 py-1.5 bg-slate-800 border border-slate-700 rounded-lg text-sm appearance-none cursor-pointer hover:border-slate-500 transition-colors"
                             >
-                                <option value="PLN">PLN</option>
-                                <option value="EUR">EUR</option>
-                                <option value="USD">USD</option>
+                                <option value="PLN">PLN (zł)</option>
+                                <option value="EUR">EUR (€)</option>
+                                <option value="USD">USD ($)</option>
                             </select>
                         </div>
                     </CardContent>
@@ -183,7 +174,7 @@ export default function SettingsPage() {
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2">
                             <Bell className="w-5 h-5 text-amber-400" />
-                            Powiadomienia
+                            {t('settings.notifications')}
                         </CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-4">
@@ -195,24 +186,19 @@ export default function SettingsPage() {
                             <div key={key} className="flex items-center justify-between">
                                 <span>{label}</span>
                                 <button
-                                    onClick={() => setSettings({
-                                        ...settings,
-                                        notifications: {
-                                            ...settings.notifications,
-                                            [key]: !settings.notifications[key as keyof typeof settings.notifications],
-                                        },
+                                    onClick={() => updatePreference('notifications', {
+                                        ...notifications,
+                                        [key]: !notifications[key as keyof typeof notifications]
                                     })}
-                                    className={`w-12 h-6 rounded-full transition-colors ${settings.notifications[key as keyof typeof settings.notifications]
+                                    className={`w-12 h-6 rounded-full transition-colors ${notifications[key as keyof typeof notifications]
                                         ? 'bg-emerald-500'
                                         : 'bg-slate-600'
                                         }`}
                                 >
-                                    <div
-                                        className={`w-5 h-5 rounded-full bg-white transition-transform ${settings.notifications[key as keyof typeof settings.notifications]
-                                            ? 'translate-x-6'
-                                            : 'translate-x-0.5'
-                                            }`}
-                                    />
+                                    <div className={`w-5 h-5 rounded-full bg-white transition-transform ${notifications[key as keyof typeof notifications]
+                                        ? 'translate-x-6'
+                                        : 'translate-x-0.5'
+                                        }`} />
                                 </button>
                             </div>
                         ))}
@@ -224,7 +210,7 @@ export default function SettingsPage() {
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2">
                             <CreditCard className="w-5 h-5 text-purple-400" />
-                            Subskrypcja
+                            {t('settings.subscription')}
                         </CardTitle>
                     </CardHeader>
                     <CardContent>
@@ -234,25 +220,19 @@ export default function SettingsPage() {
                                     key={plan.id}
                                     onClick={async () => {
                                         if (plan.current || !userData?.id) return;
-
-                                        // Simple toast confirmation instead of blocking confirm
-                                        const toastId = toast.loading('Przetwarzanie zmiany planu...');
-
+                                        const toastId = toast.loading('Working...');
                                         try {
                                             const result = await subscriptionService.upgradeSubscription(
                                                 userData.id,
                                                 plan.id as 'free' | 'pro' | 'premium'
                                             );
-
                                             if (result.success) {
-                                                toast.success(`🎉 Plan zmieniony na ${plan.name}!`, { id: toastId });
-                                                // Update local state immediately if needed, though onSnapshot in AuthContext should handle it
+                                                toast.success('Plan updated!', { id: toastId });
                                             } else {
-                                                toast.error(result.error || 'Błąd zmiany planu', { id: toastId });
+                                                toast.error(result.error || 'Error', { id: toastId });
                                             }
-                                        } catch (error) {
-                                            console.error(error);
-                                            toast.error('Błąd zmiany planu', { id: toastId });
+                                        } catch (e) {
+                                            toast.error('Error', { id: toastId });
                                         }
                                     }}
                                     className={`p-4 rounded-xl text-center transition-all ${plan.current
@@ -261,73 +241,27 @@ export default function SettingsPage() {
                                         }`}
                                 >
                                     <p className="font-semibold mb-1">{plan.name}</p>
-                                    <p className="text-sm text-slate-400">
-                                        {plan.price} zł/msc
-                                    </p>
-                                    {plan.current ? (
+                                    <p className="text-sm text-slate-400">{plan.price} zł</p>
+                                    {plan.current && (
                                         <div className="flex items-center justify-center gap-1 mt-2 text-xs text-emerald-400">
                                             <Check className="w-3 h-3" />
-                                            Aktywny
-                                        </div>
-                                    ) : (
-                                        <div className="mt-2 text-xs text-blue-400">
-                                            Wybierz
                                         </div>
                                     )}
                                 </button>
                             ))}
                         </div>
-
-                        {/* Features comparison */}
-                        <div className="mt-4 pt-4 border-t border-slate-800">
-                            <p className="text-sm font-medium mb-2">Co zawiera {userData?.subscription?.plan || 'Free'}:</p>
-                            <ul className="text-sm text-slate-400 space-y-1">
-                                {userData?.subscription?.plan === 'premium' && (
-                                    <>
-                                        <li className="flex items-center gap-2"><Check className="w-3 h-3 text-emerald-400" /> Wszystko z Pro</li>
-                                        <li className="flex items-center gap-2"><Check className="w-3 h-3 text-emerald-400" /> Priorytetowe wsparcie</li>
-                                        <li className="flex items-center gap-2"><Check className="w-3 h-3 text-emerald-400" /> Wczesny dostęp do nowości</li>
-                                        <li className="flex items-center gap-2"><Check className="w-3 h-3 text-emerald-400" /> Group challenges</li>
-                                    </>
-                                )}
-                                {userData?.subscription?.plan === 'pro' && (
-                                    <>
-                                        <li className="flex items-center gap-2"><Check className="w-3 h-3 text-emerald-400" /> Nielimitowane skany</li>
-                                        <li className="flex items-center gap-2"><Check className="w-3 h-3 text-emerald-400" /> AI Insights</li>
-                                        <li className="flex items-center gap-2"><Check className="w-3 h-3 text-emerald-400" /> Eksport CSV & PDF</li>
-                                        <li className="flex items-center gap-2"><Check className="w-3 h-3 text-emerald-400" /> Znajomi & ranking</li>
-                                    </>
-                                )}
-                                {(!userData?.subscription?.plan || userData?.subscription?.plan === 'free') && (
-                                    <>
-                                        <li className="flex items-center gap-2"><Check className="w-3 h-3 text-emerald-400" /> Do 10 skanów miesięcznie</li>
-                                        <li className="flex items-center gap-2"><Check className="w-3 h-3 text-emerald-400" /> Podstawowe statystyki</li>
-                                        <li className="flex items-center gap-2"><Check className="w-3 h-3 text-emerald-400" /> Eksport CSV</li>
-                                    </>
-                                )}
-                            </ul>
-                        </div>
-
-                        <p className="text-xs text-slate-500 mt-4 text-center">
-                            🧪 Tryb testowy - bez rzeczywistych płatności
-                        </p>
                     </CardContent>
                 </Card>
 
-                {/* Actions */}
-                <div className="flex flex-col gap-3">
-                    <Button onClick={handleSave} loading={saving} className="w-full">
-                        Zapisz zmiany
-                    </Button>
-                    <Button
-                        variant="outline"
-                        className="w-full text-red-400 border-red-500/30 hover:bg-red-500/10"
-                        onClick={handleSignOut}
-                        icon={<LogOut className="w-5 h-5" />}
-                    >
-                        Wyloguj się
-                    </Button>
-                </div>
+                {/* Sign Out */}
+                <Button
+                    variant="outline"
+                    className="w-full text-red-400 border-red-500/30 hover:bg-red-500/10"
+                    onClick={handleSignOut}
+                    icon={<LogOut className="w-5 h-5" />}
+                >
+                    {t('common.delete')} / Wyloguj
+                </Button>
             </div>
         </div>
     );
