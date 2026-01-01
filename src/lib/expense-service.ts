@@ -143,24 +143,33 @@ class ExpenseService {
             );
         }
 
-        // Task D: AI Insights & Notifications (Heavy Operation)
+        // Task D: AI Insights & Notifications (Optimized - limited queries)
         tasks.push(
             (async () => {
                 try {
-                    const [recentExpenses, budgetsSnap] = await Promise.all([
-                        this.getByPeriod(userId, 'month'),
-                        getDocs(collection(db, 'users', userId, 'budgets'))
+                    // Limit to last 20 expenses and current month's budget only
+                    const now = new Date();
+                    const monthKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+
+                    const [recentExpensesSnap, budgetDoc] = await Promise.all([
+                        getDocs(query(
+                            this.expensesRef(userId),
+                            orderBy('date', 'desc'),
+                            firestoreLimit(20)
+                        )),
+                        getDoc(doc(db, 'users', userId, 'budgets', monthKey))
                     ]);
 
-                    const budgets = budgetsSnap.docs.map(d => {
-                        const b = d.data() as Budget;
-                        const limits = b.categoryLimits ? Object.entries(b.categoryLimits).map(([cat, l]: [string, CategoryBudget]) => ({
+                    const recentExpenses = recentExpensesSnap.docs.map(d => ({ id: d.id, ...d.data() })) as Expense[];
+
+                    const budgets = budgetDoc.exists() ? (() => {
+                        const b = budgetDoc.data() as Budget;
+                        return b.categoryLimits ? Object.entries(b.categoryLimits).map(([cat, l]: [string, CategoryBudget]) => ({
                             category: cat as ExpenseCategory,
                             limit: l.limit,
                             spent: l.spent || 0
                         })) : [];
-                        return limits;
-                    }).flat();
+                    })() : [];
 
                     const fullExpense: Expense = { ...expenseData, id: docRef.id, createdAt: Timestamp.now() } as Expense;
 
