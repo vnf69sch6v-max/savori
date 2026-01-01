@@ -4,18 +4,18 @@ import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import {
-    LayoutDashboard,
+    Home,
     Camera,
-    Target,
-    Trophy,
+    Receipt,
+    Wallet,
     Settings
 } from 'lucide-react';
 
 const NAV_ITEMS = [
-    { href: '/dashboard', icon: LayoutDashboard, label: 'Główna' },
-    { href: '/scan', icon: Camera, label: 'Skanuj' },
-    { href: '/goals', icon: Target, label: 'Cele' },
-    { href: '/achievements', icon: Trophy, label: 'Osiągnięcia' },
+    { href: '/dashboard', icon: Home, label: 'Główna' },
+    { href: '/scan', icon: Camera, label: 'Skan', highlight: true },
+    { href: '/expenses', icon: Receipt, label: 'Wydatki' },
+    { href: '/budgets', icon: Wallet, label: 'Budżet' },
     { href: '/settings', icon: Settings, label: 'Ustawienia' },
 ];
 

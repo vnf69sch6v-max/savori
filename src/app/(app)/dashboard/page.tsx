@@ -29,6 +29,7 @@ import GamificationHub from '@/components/GamificationHub';
 import QuickActionsBar from '@/components/dashboard/QuickActionsBar';
 import HookChallengeWidget from '@/components/dashboard/HookChallengeWidget';
 import AIChatSheet from '@/components/AIChatSheet';
+import AddExpenseModal from '@/components/AddExpenseModal';
 import { recurringExpensesService, getMonthlyEquivalent } from '@/lib/subscriptions/recurring-service';
 
 // Minimum thresholds for showing advanced features
@@ -97,6 +98,7 @@ export default function DashboardPage() {
     const [goals, setGoals] = useState<SavingGoal[]>([]);
     const [loading, setLoading] = useState(true);
     const [isChatOpen, setIsChatOpen] = useState(false);
+    const [isAddModalOpen, setIsAddModalOpen] = useState(false);
 
     // Get greeting based on time
     const getGreeting = () => {
@@ -257,6 +259,7 @@ export default function DashboardPage() {
             {/* Quick Actions Bar - thumb-friendly */}
             <div className="mb-6 md:hidden">
                 <QuickActionsBar
+                    onAddManual={() => setIsAddModalOpen(true)}
                     onOpenChat={() => setIsChatOpen(true)}
                 />
             </div>
@@ -445,6 +448,12 @@ export default function DashboardPage() {
             <AIChatSheet
                 isOpen={isChatOpen}
                 onClose={() => setIsChatOpen(false)}
+            />
+
+            {/* Add Expense Modal */}
+            <AddExpenseModal
+                isOpen={isAddModalOpen}
+                onClose={() => setIsAddModalOpen(false)}
             />
         </div>
     );
