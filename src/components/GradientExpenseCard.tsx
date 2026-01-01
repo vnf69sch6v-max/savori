@@ -1,0 +1,133 @@
+'use client';
+
+import { motion, PanInfo } from 'framer-motion';
+import { Trash2, Pencil, Camera, CreditCard, RefreshCw } from 'lucide-react';
+import { Expense } from '@/types';
+import { formatMoney } from '@/lib/utils';
+import { getMerchantIcon, getMerchantColor, cleanMerchantName, CATEGORY_GRADIENTS } from '@/lib/merchant-icons';
+
+// Source badge configs
+const SOURCE_BADGES = {
+    manual: { icon: Pencil, color: 'bg-amber-500', label: 'Ręcznie' },
+    scan: { icon: Camera, color: 'bg-emerald-500', label: 'AI' },
+    import: { icon: CreditCard, color: 'bg-blue-500', label: 'Karta' },
+    recurring: { icon: RefreshCw, color: 'bg-purple-500', label: 'Cykliczna' },
+} as const;
+
+// Format relative date
+function formatRelativeDate(date: Date): string {
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const targetDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+    const diffDays = Math.floor((today.getTime() - targetDate.getTime()) / (1000 * 60 * 60 * 24));
+
+    if (diffDays === 0) return 'Dziś';
+    if (diffDays === 1) return 'Wczoraj';
+    if (diffDays < 7) {
+        const days = ['Nd', 'Pn', 'Wt', 'Śr', 'Cz', 'Pt', 'Sb'];
+        return days[date.getDay()];
+    }
+
+    const months = ['sty', 'lut', 'mar', 'kwi', 'maj', 'cze', 'lip', 'sie', 'wrz', 'paź', 'lis', 'gru'];
+    return `${date.getDate()} ${months[date.getMonth()]}`;
+}
+
+interface GradientExpenseCardProps {
+    expense: Expense;
+    onDelete?: (id: string) => void;
+}
+
+export default function GradientExpenseCard({ expense, onDelete }: GradientExpenseCardProps) {
+    const category = expense.merchant?.category || 'other';
+    const source = expense.metadata?.source || 'manual';
+    const merchantName = cleanMerchantName(expense.merchant?.name || 'Nieznany');
+    const merchantIcon = getMerchantIcon(merchantName, category);
+    const gradient = CATEGORY_GRADIENTS[category] || CATEGORY_GRADIENTS.other;
+    const sourceConfig = SOURCE_BADGES[source as keyof typeof SOURCE_BADGES] || SOURCE_BADGES.manual;
+
+    const expenseDate = expense.date?.toDate?.() || new Date();
+    const relativeDate = formatRelativeDate(expenseDate);
+
+    // Handle swipe to delete
+    const handleDragEnd = (event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
+        if (info.offset.x < -100 && onDelete) {
+            onDelete(expense.id);
+        }
+    };
+
+    return (
+        <motion.div
+            layout
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, x: -100, height: 0 }}
+            className="relative"
+        >
+            {/* Delete background */}
+            <div className="absolute inset-0 bg-rose-500/30 flex items-center justify-end px-6 rounded-2xl">
+                <Trash2 className="w-6 h-6 text-rose-400" />
+            </div>
+
+            {/* Main card */}
+            <motion.div
+                drag="x"
+                dragConstraints={{ left: 0, right: 0 }}
+                dragElastic={{ left: 0.3, right: 0.1 }}
+                onDragEnd={handleDragEnd}
+                style={{ touchAction: 'pan-y' }}
+                className={`relative rounded-2xl p-4 overflow-hidden ${gradient} backdrop-blur-xl border border-white/10`}
+            >
+                {/* Glassmorphism overlay */}
+                <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent pointer-events-none" />
+
+                <div className="relative flex items-start justify-between">
+                    {/* Left: Large emoji + name */}
+                    <div className="flex items-center gap-4">
+                        {/* Large emoji icon */}
+                        <div className="text-5xl drop-shadow-lg">
+                            {merchantIcon}
+                        </div>
+
+                        <div>
+                            {/* Merchant name */}
+                            <h3 className="font-bold text-lg text-white drop-shadow-sm">
+                                {merchantName}
+                            </h3>
+
+                            {/* Category badge + source */}
+                            <div className="flex items-center gap-2 mt-1">
+                                <span className="px-2 py-0.5 bg-black/20 backdrop-blur rounded-full text-xs text-white/80">
+                                    {category === 'groceries' ? 'Spożywcze' :
+                                        category === 'restaurants' ? 'Jedzenie' :
+                                            category === 'transport' ? 'Transport' :
+                                                category === 'subscriptions' ? 'Subskrypcje' :
+                                                    category === 'entertainment' ? 'Rozrywka' :
+                                                        category === 'shopping' ? 'Zakupy' :
+                                                            category === 'health' ? 'Zdrowie' :
+                                                                category === 'education' ? 'Edukacja' :
+                                                                    category === 'utilities' ? 'Opłaty' : 'Inne'}
+                                </span>
+
+                                {/* Source badge */}
+                                <span className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-xs text-white ${sourceConfig.color}/60`}>
+                                    <sourceConfig.icon className="w-3 h-3" />
+                                    {sourceConfig.label}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Right: Amount + date */}
+                    <div className="text-right">
+                        <p className="text-2xl font-bold text-white drop-shadow-sm tabular-nums" style={{ fontVariantNumeric: 'tabular-nums' }}>
+                            -{formatMoney(expense.amount)}
+                        </p>
+                        <p className="text-xs text-white/60 mt-1">
+                            {relativeDate}
+                        </p>
+                    </div>
+                </div>
+            </motion.div>
+        </motion.div>
+    );
+}
