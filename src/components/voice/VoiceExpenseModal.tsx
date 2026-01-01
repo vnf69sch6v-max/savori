@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Mic, MicOff, X, Check, Loader2, AlertCircle, Keyboard, Send } from 'lucide-react';
 import { Button, Card } from '@/components/ui';
@@ -33,12 +34,14 @@ interface VoiceExpenseModalProps {
 type ModalState = 'idle' | 'recording' | 'processing' | 'preview' | 'saving' | 'success' | 'error' | 'text-input';
 
 export default function VoiceExpenseModal({ isOpen, onClose }: VoiceExpenseModalProps) {
+    const router = useRouter();
     const { userData } = useAuth();
     const [state, setState] = useState<ModalState>('idle');
     const [parsedExpense, setParsedExpense] = useState<ParsedVoiceExpense | null>(null);
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
     const [textInput, setTextInput] = useState('');
     const [transcript, setTranscript] = useState('');
+    const [savedAmount, setSavedAmount] = useState(0);
 
     const {
         isRecording,
@@ -176,11 +179,14 @@ export default function VoiceExpenseModal({ isOpen, onClose }: VoiceExpenseModal
             });
 
             setState('success');
+            setSavedAmount(parsedExpense.amount);
             toast.success('Wydatek dodany! 🎉');
 
+            // Navigate to expenses after showing success
             setTimeout(() => {
                 handleClose();
-            }, 1500);
+                router.push('/expenses');
+            }, 1800);
         } catch (error) {
             console.error('Save error:', error);
             const errorMsg = error instanceof Error ? error.message : 'Nieznany błąd';
@@ -454,18 +460,56 @@ export default function VoiceExpenseModal({ isOpen, onClose }: VoiceExpenseModal
                                 </div>
                             )}
 
-                            {/* Success State */}
+                            {/* Success State with Confetti */}
                             {state === 'success' && (
-                                <div className="text-center py-12">
+                                <div className="text-center py-8 relative overflow-hidden">
+                                    {/* Confetti particles */}
+                                    {[...Array(20)].map((_, i) => (
+                                        <motion.div
+                                            key={i}
+                                            initial={{
+                                                y: -20,
+                                                x: Math.random() * 200 - 100,
+                                                opacity: 1,
+                                                rotate: 0
+                                            }}
+                                            animate={{
+                                                y: 300,
+                                                x: Math.random() * 200 - 100,
+                                                opacity: 0,
+                                                rotate: 360
+                                            }}
+                                            transition={{
+                                                duration: 2 + Math.random(),
+                                                delay: Math.random() * 0.5,
+                                                ease: "easeOut"
+                                            }}
+                                            className={`absolute w-2 h-2 rounded-sm ${['bg-emerald-400', 'bg-cyan-400', 'bg-amber-400', 'bg-violet-400'][i % 4]
+                                                }`}
+                                            style={{ left: `${Math.random() * 100}%` }}
+                                        />
+                                    ))}
+
                                     <motion.div
                                         initial={{ scale: 0 }}
                                         animate={{ scale: 1 }}
-                                        className="w-20 h-20 bg-emerald-500 rounded-full flex items-center justify-center mx-auto mb-4"
+                                        transition={{ type: "spring", stiffness: 200 }}
+                                        className="w-24 h-24 bg-gradient-to-br from-emerald-400 to-cyan-500 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg shadow-emerald-500/30"
                                     >
-                                        <Check className="w-10 h-10 text-white" />
+                                        <Check className="w-12 h-12 text-white" />
                                     </motion.div>
-                                    <p className="text-white text-xl font-semibold">Wydatek dodany!</p>
-                                    <p className="text-slate-400 mt-2">Budżet zaktualizowany</p>
+
+                                    <motion.div
+                                        initial={{ opacity: 0, y: 10 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        transition={{ delay: 0.3 }}
+                                    >
+                                        <p className="text-emerald-400 text-3xl font-bold mb-1">
+                                            {formatAmountFromGrosze(savedAmount)}
+                                        </p>
+                                        <p className="text-white text-lg font-semibold">Wydatek dodany!</p>
+                                        <p className="text-slate-400 mt-1 text-sm">Przekierowuję do wydatków...</p>
+                                    </motion.div>
                                 </div>
                             )}
 
