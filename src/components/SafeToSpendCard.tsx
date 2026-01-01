@@ -1,171 +1,138 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Wallet, TrendingUp, TrendingDown, Info, Sparkles } from 'lucide-react';
-import { formatMoney } from '@/lib/utils';
+import { Wallet, TrendingUp, ArrowRight, Sparkles } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
+import { collection, query, where, onSnapshot, orderBy } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
+import { startOfMonth, endOfMonth } from 'date-fns';
 
-interface SafeToSpendCardProps {
-    totalBalance: number;       // Total available balance (in grosz)
-    plannedExpenses: number;    // Planned recurring expenses (in grosz)
-    spentThisMonth: number;     // Already spent this month (in grosz)
-    budgetLimit?: number;       // Monthly budget limit (in grosz)
-}
+export default function SafeToSpendCard() {
+    const { user } = useAuth();
+    const [stats, setStats] = useState({
+        safeToSpend: 0,
+        dailySafe: 0,
+        spent: 0,
+        limit: 3000, // Default or fetched
+        percentageUsed: 0
+    });
+    const [loading, setLoading] = useState(true);
 
-// AI trigger messages based on financial health
-function getAIMessage(budgetUsedPercent: number, dailyBudget: number, currency: string): string {
-    if (budgetUsedPercent < 50) {
-        const extras = ['kawę', 'lepszy obiad', 'mały prezent dla siebie'];
-        return `Świetnie Ci idzie! Stać Cię na ${extras[Math.floor(Math.random() * extras.length)]} ☕`;
+    useEffect(() => {
+        if (!user) return;
+
+        // Mock logic to replicate "Safe To Spend" calculation
+        // In reality, this would fetch from a "Budgets" collection or aggregate expenses
+        // For now, let's fetch expenses for this month to calculate "Spent"
+
+        const start = startOfMonth(new Date());
+        const end = endOfMonth(new Date());
+
+        const q = query(
+            collection(db, 'expenses'),
+            where('userId', '==', user.uid),
+            where('date', '>=', start),
+            where('date', '<=', end)
+        );
+
+        const unsubscribe = onSnapshot(q, (snapshot) => {
+            let totalSpent = 0;
+            snapshot.docs.forEach(doc => {
+                totalSpent += doc.data().amount || 0;
+            });
+
+            // Hardcoded limit for demo (user can set this in settings realistically)
+            const monthlyLimit = 3000;
+            const safe = monthlyLimit - totalSpent;
+
+            // Days remaining
+            const today = new Date();
+            const lastDay = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+            const daysRemaining = Math.max(1, lastDay.getDate() - today.getDate());
+
+            setStats({
+                safeToSpend: safe,
+                dailySafe: safe / daysRemaining,
+                spent: totalSpent,
+                limit: monthlyLimit,
+                percentageUsed: (totalSpent / monthlyLimit) * 100
+            });
+            setLoading(false);
+        });
+
+        return () => unsubscribe();
+    }, [user]);
+
+    if (loading) {
+        return <div className="h-64 rounded-3xl bg-slate-800/50 animate-pulse" />;
     }
-    if (budgetUsedPercent < 70) {
-        return `Jesteś na dobrej drodze! ${Math.round(100 - budgetUsedPercent)}% budżetu przed Tobą 💪`;
-    }
-    if (budgetUsedPercent < 85) {
-        return `Uważaj na wydatki. Zostało ${formatMoney(dailyBudget * 100, currency)} dziennie ⚠️`;
-    }
-    if (budgetUsedPercent < 95) {
-        return `Limit blisko! Rozważ ograniczenie wydatków do końca miesiąca 🚨`;
-    }
-    return `Przekroczono budżet. Porozmawiajmy o planie naprawczym 💬`;
-}
-
-export default function SafeToSpendCard({
-    totalBalance,
-    plannedExpenses,
-    spentThisMonth,
-    budgetLimit,
-    currency = 'PLN'
-}: SafeToSpendCardProps & { currency?: string }) {
-    // Safe to spend is already calculated as (budget - spent) passed as totalBalance
-    const safeToSpend = Math.max(0, totalBalance);
-
-    // Calculate days remaining in month
-    const now = new Date();
-    const lastDayOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0);
-    const daysRemaining = Math.max(1, lastDayOfMonth.getDate() - now.getDate() + 1);
-
-    // Daily budget
-    const dailyBudget = safeToSpend / 100 / daysRemaining;
-
-    // Calculate percentage of budget used
-    const budgetUsedPercent = budgetLimit ? Math.min(100, (spentThisMonth / budgetLimit) * 100) : 0;
-
-    // Determine status
-    const isHealthy = budgetUsedPercent < 70;
-    const isWarning = budgetUsedPercent >= 70 && budgetUsedPercent < 90;
-    const isDanger = budgetUsedPercent >= 90;
-
-    // Status colors
-    const statusColor = isHealthy ? 'emerald' : isWarning ? 'amber' : 'red';
-    const bgGradient = isHealthy
-        ? 'from-emerald-500/20 to-teal-500/20'
-        : isWarning
-            ? 'from-amber-500/20 to-orange-500/20'
-            : 'from-red-500/20 to-pink-500/20';
-    const borderColor = isHealthy
-        ? 'border-emerald-500/30'
-        : isWarning
-            ? 'border-amber-500/30'
-            : 'border-red-500/30';
-    const textColor = isHealthy
-        ? 'text-emerald-400'
-        : isWarning
-            ? 'text-amber-400'
-            : 'text-red-400';
-
-    // AI Message
-    const aiMessage = getAIMessage(budgetUsedPercent, dailyBudget, currency);
 
     return (
         <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className={`relative overflow-hidden rounded-2xl bg-gradient-to-br ${bgGradient} border ${borderColor} p-6`}
+            className="w-full"
         >
-            {/* Background decoration */}
-            <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/2" />
+            <div className="bg-[#003c3c] rounded-3xl p-6 shadow-xl relative overflow-hidden border border-white/5">
+                {/* Ambient Glow */}
+                <div className="absolute -top-20 -right-20 w-64 h-64 bg-emerald-400/10 rounded-full blur-3xl pointer-events-none"></div>
 
-            <div className="relative">
                 {/* Header */}
-                <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-center gap-2">
-                        <div className={`p-2 rounded-lg bg-${statusColor}-500/20`}>
-                            <Wallet className={`w-5 h-5 ${textColor}`} />
-                        </div>
-                        <span className="text-sm font-medium text-slate-300">Bezpiecznie do wydania</span>
+                <div className="flex items-center gap-3 mb-4 text-gray-300 relative z-10">
+                    <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center backdrop-blur-sm">
+                        <Wallet className="w-5 h-5 text-emerald-400" />
                     </div>
-                    <button className="p-1 text-slate-500 hover:text-slate-300 transition-colors" title="Co to znaczy?">
-                        <Info className="w-4 h-4" />
-                    </button>
+                    <span className="font-medium text-sm">Bezpiecznie do wydania</span>
                 </div>
 
-                {/* Main Amount */}
-                <div className="mb-2">
-                    <p className={`text-4xl font-bold ${textColor} tabular-nums`} style={{ fontVariantNumeric: 'tabular-nums' }}>
-                        {formatMoney(safeToSpend, currency)}
-                    </p>
-                    {/* Daily budget - key psychological insight */}
-                    <p className="text-sm text-slate-400 mt-1">
-                        <span className="font-medium text-white">~{formatMoney(dailyBudget * 100, currency)}</span> dziennie do końca miesiąca
+                {/* Main Number */}
+                <div className="mb-1 relative z-10">
+                    <h2 className="text-4xl font-bold text-emerald-400 tracking-tight">
+                        {stats.safeToSpend.toLocaleString('pl-PL', { minimumFractionDigits: 2 })} zł
+                    </h2>
+                </div>
+
+                {/* Subtext */}
+                <p className="text-sm text-gray-400 mb-6 font-medium relative z-10">
+                    ~{stats.dailySafe.toLocaleString('pl-PL', { maximumFractionDigits: 0 })} zł <span className="text-gray-500">dziennie do końca miesiąca</span>
+                </p>
+
+                {/* AI Insight Pill */}
+                <div className="bg-white/5 border border-white/5 rounded-xl p-3 flex items-start gap-3 mb-6 relative z-10 backdrop-blur-md">
+                    <Sparkles className="w-4 h-4 text-violet-400 mt-0.5 shrink-0" />
+                    <p className="text-xs text-gray-300 leading-relaxed">
+                        Świetnie Ci idzie! Stać Cię na lepszy obiad ☕️
                     </p>
                 </div>
 
-                {/* AI Trigger Bubble */}
-                <motion.div
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ delay: 0.5 }}
-                    className="mb-4 p-3 bg-slate-800/60 rounded-xl border border-slate-700/50"
-                >
-                    <div className="flex items-start gap-2">
-                        <Sparkles className="w-4 h-4 text-purple-400 shrink-0 mt-0.5" />
-                        <p className="text-sm text-slate-300">{aiMessage}</p>
+                {/* Progress Bar Section */}
+                <div className="space-y-2 relative z-10">
+                    <div className="flex justify-between text-xs font-medium text-gray-400 mb-2">
+                        <span>Wykorzystany budżet</span>
+                        <span>{Math.round(stats.percentageUsed)}%</span>
                     </div>
-                </motion.div>
+                    <div className="relative h-1.5 w-full bg-slate-900/50 rounded-full overflow-hidden">
+                        <motion.div
+                            initial={{ width: 0 }}
+                            animate={{ width: `${Math.min(100, stats.percentageUsed)}%` }}
+                            transition={{ duration: 1, ease: "easeOut" }}
+                            className={`absolute top-0 left-0 h-full rounded-full ${stats.percentageUsed > 100 ? 'bg-red-500' : 'bg-emerald-400'}`}
+                        />
+                    </div>
 
-                {/* Progress bar with marker */}
-                {budgetLimit && (
-                    <div className="mb-3">
-                        <div className="flex justify-between text-xs text-slate-400 mb-1">
-                            <span>Wykorzystany budżet</span>
-                            <span>{budgetUsedPercent.toFixed(0)}%</span>
+                    <div className="flex justify-between items-center text-xs mt-3">
+                        <div className="flex items-center gap-1.5 text-red-400">
+                            <TrendingUp className="w-3 h-3" />
+                            <span>Wydatki: {stats.spent.toLocaleString('pl-PL')} zł</span>
                         </div>
-                        <div className="relative h-2 bg-slate-800 rounded-full overflow-hidden">
-                            <motion.div
-                                initial={{ width: 0 }}
-                                animate={{ width: `${budgetUsedPercent}%` }}
-                                transition={{ duration: 1, ease: 'easeOut' }}
-                                className={`h-full rounded-full ${isHealthy ? 'bg-emerald-500' :
-                                    isWarning ? 'bg-amber-500' :
-                                        'bg-red-500'
-                                    }`}
-                            />
-                            {/* "Tu jesteś" marker */}
-                            <motion.div
-                                initial={{ left: 0 }}
-                                animate={{ left: `${Math.min(budgetUsedPercent, 95)}%` }}
-                                transition={{ duration: 1, ease: 'easeOut' }}
-                                className="absolute top-1/2 -translate-y-1/2 w-3 h-3 bg-white rounded-full shadow-lg border-2 border-slate-900"
-                            />
+                        <div className="flex items-center gap-1.5 text-blue-400">
+                            <ArrowRight className="w-3 h-3" />
+                            <span>Limit: {stats.limit.toLocaleString('pl-PL')} zł</span>
                         </div>
                     </div>
-                )}
-
-                {/* Stats row */}
-                <div className="flex items-center gap-4 text-sm">
-                    <div className="flex items-center gap-1 text-slate-400">
-                        <TrendingDown className="w-4 h-4 text-red-400" />
-                        <span>Wydatki: {formatMoney(spentThisMonth, currency)}</span>
-                    </div>
-                    {plannedExpenses > 0 && (
-                        <div className="flex items-center gap-1 text-slate-400">
-                            <TrendingUp className="w-4 h-4 text-blue-400" />
-                            <span>Planowane: {formatMoney(plannedExpenses, currency)}</span>
-                        </div>
-                    )}
                 </div>
             </div>
         </motion.div>
     );
 }
-

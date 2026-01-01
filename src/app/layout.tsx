@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from 'next';
-import { Inter, Plus_Jakarta_Sans } from 'next/font/google';
+import { Inter } from 'next/font/google';
 import { Toaster } from 'react-hot-toast';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { NotificationProvider } from '@/contexts/NotificationContext';
@@ -12,31 +12,18 @@ const inter = Inter({
   display: 'swap',
 });
 
-const jakarta = Plus_Jakarta_Sans({
-  subsets: ['latin', 'latin-ext'],
-  variable: '--font-jakarta',
-  display: 'swap',
-});
-
-export const metadata: Metadata = {
-  title: 'Savori - Inteligentne Oszczędzanie',
-  description: 'Aplikacja do śledzenia wydatków i oszczędzania z AI. Skanuj paragony, ustalaj cele, osiągaj finansową wolność.',
-  keywords: ['oszczędzanie', 'finanse osobiste', 'tracking wydatków', 'budżet', 'AI'],
-  authors: [{ name: 'Savori' }],
-  manifest: '/manifest.json',
-  appleWebApp: {
-    capable: true,
-    statusBarStyle: 'black-translucent',
-    title: 'Savori',
-  },
-};
-
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
   maximumScale: 1,
   userScalable: false,
-  themeColor: '#0f172a',
+  themeColor: '#0B0E14',
+};
+
+export const metadata: Metadata = {
+  title: 'Savori - Twój Inteligentny Asystent Finansowy',
+  description: 'Oszczędzaj mądrzej z Savori. Analiza wydatków, inteligentne budżetowanie i asystent AI.',
+  manifest: '/manifest.json',
 };
 
 export default function RootLayout({
@@ -45,8 +32,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="pl" className={`${inter.variable} ${jakarta.variable}`}>
-      <body className="font-sans antialiased">
+    <html lang="pl">
+      <head>
+        <link href="https://fonts.googleapis.com/css2?family=Pacifico&display=swap" rel="stylesheet" />
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+      </head>
+      <body className={inter.className}>
         <AuthProvider>
           <LanguageProvider>
             <NotificationProvider>

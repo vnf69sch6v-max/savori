@@ -1,9 +1,9 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation'
+import { usePathname } from 'next/navigation';
 import { motion } from 'framer-motion';
 import {
     LayoutDashboard,
@@ -20,26 +20,20 @@ import {
     Wallet,
     Trophy,
     Flame,
-    FileText,
     ShoppingBag,
     Users,
-    Plus,
     Download,
-    CreditCard,
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
-import { useState } from 'react';
 import OnboardingWizard from '@/components/OnboardingWizard';
-import MobileBottomNav from '@/components/MobileBottomNav';
+import SavoriBottomNav from '@/components/SavoriBottomNav';
 import NotificationCenter from '@/components/NotificationCenter';
-import OmniSearch from '@/components/OmniSearch';
-import PWAInstallPrompt from '@/components/PWAInstallPrompt';
+import { useUIStore } from '@/stores/uiStore';
 
-
-// Grouped navigation structure (Miller's Law: 5-7 items max)
+// Grouped navigation structure
 const navGroups = [
     {
-        label: null, // No label for main
+        label: null,
         items: [
             { href: '/dashboard', icon: LayoutDashboard, label: 'Pulpit' },
         ]
@@ -78,7 +72,6 @@ const navGroups = [
     },
 ];
 
-// Quick actions (FAB-style)
 const quickActions = [
     { href: '/scan', icon: Camera, label: 'Skanuj', badge: 'AI' },
     { href: '/import', icon: Download, label: 'Import' },
@@ -88,10 +81,9 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     const router = useRouter();
     const pathname = usePathname();
     const { user, userData, loading, signOut } = useAuth();
-    const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+    const { isSidebarOpen, closeSidebar } = useUIStore();
     const [showOnboarding, setShowOnboarding] = useState(true);
 
-    // Redirect to login if not authenticated
     useEffect(() => {
         if (!loading && !user) {
             router.push('/login');
@@ -115,18 +107,16 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         return null; // Will redirect
     }
 
-    // Show onboarding for new users
     const shouldShowOnboarding = showOnboarding && userData && !userData.onboardingComplete;
 
     return (
-        <div className="min-h-screen flex overflow-x-hidden w-full">
-            {/* Onboarding Wizard */}
+        <div className="min-h-screen flex overflow-x-hidden w-full bg-[#0B0E14] text-white">
             {shouldShowOnboarding && (
                 <OnboardingWizard onComplete={() => setShowOnboarding(false)} />
             )}
+
             {/* Desktop Sidebar */}
             <aside className="hidden lg:flex w-64 flex-col fixed inset-y-0 left-0 bg-slate-900/50 border-r border-slate-800">
-                {/* Logo */}
                 <Link href="/dashboard" className="flex items-center gap-2 p-6">
                     <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center">
                         <PiggyBank className="w-6 h-6 text-white" />
@@ -134,9 +124,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                     <span className="font-bold text-xl">Savori</span>
                 </Link>
 
-                {/* Navigation */}
                 <nav className="flex-1 px-3 py-4 overflow-y-auto">
-                    {/* Quick Actions */}
                     <div className="flex gap-2 mb-4">
                         {quickActions.map((action) => (
                             <Link
@@ -146,16 +134,10 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                             >
                                 <action.icon className="w-4 h-4" />
                                 <span className="text-sm font-medium">{action.label}</span>
-                                {action.badge && (
-                                    <span className="px-1.5 py-0.5 text-[10px] bg-emerald-500/30 text-emerald-300 rounded-full">
-                                        {action.badge}
-                                    </span>
-                                )}
                             </Link>
                         ))}
                     </div>
 
-                    {/* Grouped Navigation */}
                     <div className="space-y-4">
                         {navGroups.map((group, groupIndex) => (
                             <div key={groupIndex}>
@@ -188,7 +170,6 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                     </div>
                 </nav>
 
-                {/* User Section */}
                 <div className="p-4 border-t border-slate-800">
                     <div className="flex items-center gap-3 mb-4">
                         <div className="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center text-white font-medium">
@@ -200,7 +181,6 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                                 {userData?.subscription?.plan === 'free' ? 'Plan Free' : `Plan ${userData?.subscription?.plan}`}
                             </p>
                         </div>
-                        <NotificationCenter />
                     </div>
                     <button
                         onClick={handleSignOut}
@@ -212,42 +192,27 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                 </div>
             </aside>
 
-            {/* Mobile Header */}
-            <header className="lg:hidden fixed top-0 left-0 right-0 h-16 bg-slate-900/95 backdrop-blur border-b border-slate-800 z-50 flex items-center justify-between px-4">
-                <Link href="/dashboard" className="flex items-center gap-2">
-                    <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center">
-                        <PiggyBank className="w-5 h-5 text-white" />
-                    </div>
-                    <span className="font-bold">Savori</span>
-                </Link>
-                <div className="flex items-center gap-2">
-                    <OmniSearch />
-                    <NotificationCenter />
-                    <button
-                        onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                        className="p-2 text-slate-400 hover:text-white"
-                    >
-                        {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-                    </button>
-                </div>
-            </header>
-
-            {/* Mobile Menu Overlay */}
-            {mobileMenuOpen && (
+            {/* Mobile Sidebar Overlay */}
+            {isSidebarOpen && (
                 <motion.div
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
-                    className="lg:hidden fixed inset-0 z-40 bg-slate-900/95 backdrop-blur pt-16 overflow-y-auto"
+                    className="lg:hidden fixed inset-0 z-[60] bg-slate-900/95 backdrop-blur pt-16 overflow-y-auto"
                 >
+                    <button
+                        onClick={closeSidebar}
+                        className="absolute top-4 right-4 p-2 text-slate-400 hover:text-white"
+                    >
+                        <X className="w-8 h-8" />
+                    </button>
                     <nav className="p-4">
-                        {/* Quick Actions Mobile */}
                         <div className="flex gap-2 mb-4">
                             {quickActions.map((action) => (
                                 <Link
                                     key={action.href}
                                     href={action.href}
-                                    onClick={() => setMobileMenuOpen(false)}
+                                    onClick={closeSidebar}
                                     className="flex-1 flex items-center justify-center gap-2 px-3 py-3 rounded-xl bg-gradient-to-r from-emerald-500/20 to-teal-500/20 border border-emerald-500/30 text-emerald-400"
                                 >
                                     <action.icon className="w-5 h-5" />
@@ -256,7 +221,6 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                             ))}
                         </div>
 
-                        {/* Grouped Navigation Mobile */}
                         <div className="space-y-4">
                             {navGroups.map((group, groupIndex) => (
                                 <div key={groupIndex}>
@@ -272,7 +236,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                                                 <li key={item.href}>
                                                     <Link
                                                         href={item.href}
-                                                        onClick={() => setMobileMenuOpen(false)}
+                                                        onClick={closeSidebar}
                                                         className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${isActive
                                                             ? 'bg-emerald-500/10 text-emerald-400'
                                                             : 'text-slate-400 hover:text-white hover:bg-slate-800/50'
@@ -300,15 +264,17 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                 </motion.div>
             )}
 
-            {/* Mobile Bottom Navigation */}
-            <MobileBottomNav />
+            {/* Mobile Bottom Navigation (Floating Glass) */}
+            <div className="lg:hidden">
+                <SavoriBottomNav />
+            </div>
 
             {/* Main Content */}
-            <main className="flex-1 lg:ml-64 pt-16 lg:pt-0 pb-20 lg:pb-0">
+            <main className="flex-1 lg:ml-64 pt-0 lg:pt-0 pb-20 lg:pb-0">
                 <div className="p-4 lg:p-8">{children}</div>
             </main>
-
-            {/* <PWAInstallPrompt /> */}
-        </div >
+        </div>
     );
 }
+
+

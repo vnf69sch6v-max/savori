@@ -2,29 +2,39 @@
 
 /* ============ CSS VARIABLES ============ */
 :root {
-  /* Primary - Emerald/Teal */
-  --primary-50: #ecfdf5;
-  --primary-100: #d1fae5;
-  --primary-200: #a7f3d0;
-  --primary-300: #6ee7b7;
-  --primary-400: #34d399;
-  --primary-500: #10b981;
-  --primary-600: #059669;
-  --primary-700: #047857;
-  --primary-800: #065f46;
-  --primary-900: #064e3b;
+  /* Savori Theme - Deep Blue & Emerald */
+  --background: 222.9 30% 6%;
+  /* #0B0E14 */
+  --foreground: 210 40% 98%;
 
-  /* Accent - Gold/Amber */
-  --accent-400: #fbbf24;
-  --accent-500: #f59e0b;
-  --accent-600: #d97706;
+  --card: 222.9 30% 6%;
+  --card-foreground: 210 40% 98%;
 
-  /* Dark mode - Slate */
-  --background: #0f172a;
-  --surface: #1e293b;
-  --surface-hover: #334155;
-  --border: #334155;
-  --border-light: #475569;
+  --popover: 222.9 30% 6%;
+  --popover-foreground: 210 40% 98%;
+
+  --primary: 158 64% 52%;
+  /* #34d399 Emerald 400 */
+  --primary-foreground: 222.9 30% 6%;
+  /* Dark text on bright green */
+
+  --secondary: 217.2 32.6% 17.5%;
+  --secondary-foreground: 210 40% 98%;
+
+  --muted: 217.2 32.6% 17.5%;
+  --muted-foreground: 215 20.2% 65.1%;
+
+  --accent: 217.2 32.6% 17.5%;
+  --accent-foreground: 210 40% 98%;
+
+  --destructive: 0 62.8% 30.6%;
+  --destructive-foreground: 210 40% 98%;
+
+  --border: 217.2 32.6% 17.5%;
+  --input: 217.2 32.6% 17.5%;
+  --ring: 158 64% 52%;
+
+  --radius: 0.5rem;
 
   /* Text */
   --text-primary: #f8fafc;
