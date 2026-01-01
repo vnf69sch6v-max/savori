@@ -111,6 +111,10 @@ export default function DashboardPage() {
     const defaultBudget = (userData?.settings as any)?.monthlyBudget || 500000;
     const [monthlyBudget, setMonthlyBudget] = useState(defaultBudget);
     const [plannedExpenses, setPlannedExpenses] = useState(0);
+    const [widgetPriorities, setWidgetPriorities] = useState({
+        prediction: 'low',
+        ai: 'low'
+    });
 
     useEffect(() => {
         if (!userData?.id) return;
@@ -142,28 +146,35 @@ export default function DashboardPage() {
     const showPredictions = expenses.length >= MIN_EXPENSES_FOR_PREDICTIONS;
     const showAI = expenses.length >= MIN_EXPENSES_FOR_AI;
 
+    const handlePriorityChange = (widget: 'prediction' | 'ai', priority: string) => {
+        setWidgetPriorities(prev => {
+            if (prev[widget] === priority) return prev;
+            return { ...prev, [widget]: priority };
+        });
+    };
+
+    const isPredictionCritical = widgetPriorities.prediction === 'critical';
+    const isAICritical = widgetPriorities.ai === 'critical';
+
     if (isEmpty && !loading) {
         return <EmptyDashboard userName={userData?.displayName?.split(' ')[0] || 'tam'} />;
     }
 
+    // Desktop Layout
     return (
         <div className="max-w-7xl mx-auto pb-24 lg:pb-0">
             {/* Mobile Layout */}
             <div className="lg:hidden space-y-4 max-w-2xl mx-auto">
                 <DashboardHeader />
+                <SafeToSpendCard />
 
-                <SafeToSpendCard
-                // Note: These props are not used by the new SafeToSpendCard but kept for compatibility logic if needed
-                // Actually new SafeToSpendCard fetches its own data internally in my previous implementation.
-                // But I should check if I made it accept props? 
-                // My previous `write_to_file` for SafeToSpendCard used internal logic (useEffect/onSnapshot).
-                // So passing props here might be ignored, which is fine, or I should update SafeToSpendCard to accept props.
-                // Given time constraints, I'll rely on its internal logic as written in step 1802.
-                />
+                {/* Dynamic Mobile Layout: Critical items first */}
+                {isAICritical && <AIInsightsWidget onPriorityChange={(p) => handlePriorityChange('ai', p)} />}
+                {isPredictionCritical && showPredictions && <PredictiveSpendingWidget lastUpdate={expenses.length + monthlyExpenses} onPriorityChange={(p) => handlePriorityChange('prediction', p)} />}
 
-                {/* AI Coach for Mobile */}
-                {showPredictions && <PredictiveSpendingWidget lastUpdate={expenses.length + monthlyExpenses} />}
-                {showAI && <AIInsightsWidget />}
+                {/* Normal order for non-critical */}
+                {!isPredictionCritical && showPredictions && <PredictiveSpendingWidget lastUpdate={expenses.length + monthlyExpenses} onPriorityChange={(p) => handlePriorityChange('prediction', p)} />}
+                {!isAICritical && showAI && <AIInsightsWidget onPriorityChange={(p) => handlePriorityChange('ai', p)} />}
 
                 <HookChallengeWidget />
 
@@ -195,12 +206,7 @@ export default function DashboardPage() {
                             />
                         </motion.div>
                     ))}
-                    {displayExpenses.length === 0 && (
-                        <div className="text-center py-8 text-slate-500">
-                            <Receipt className="w-10 h-10 mx-auto mb-2 opacity-50" />
-                            <p>Brak wydatków</p>
-                        </div>
-                    )}
+                    {/* ... expenses list ... */}
                 </div>
             </div>
 
@@ -213,11 +219,22 @@ export default function DashboardPage() {
                     budget={monthlyBudget}
                 />
 
+                {/* High Priority Section (Desktop) */}
+                {(isPredictionCritical || isAICritical) && (
+                    <div className="mb-6 grid grid-cols-1 gap-6">
+                        {isPredictionCritical && showPredictions && (
+                            <PredictiveSpendingWidget
+                                lastUpdate={expenses.length + monthlyExpenses}
+                                onPriorityChange={(p) => handlePriorityChange('prediction', p)}
+                            />
+                        )}
+                        {isAICritical && showAI && (
+                            <AIInsightsWidget onPriorityChange={(p) => handlePriorityChange('ai', p)} />
+                        )}
+                    </div>
+                )}
+
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-8">
-                    {/* For desktop we might want to use the same logic or the old card? 
-                         New SafeToSpendCard is designed for mobile but works fine.
-                         It ignores props in my implementation, so I can pass whatever.
-                     */}
                     <SafeToSpendCard />
                     <GamificationHub
                         xp={userData?.gamification?.xp || 0}
@@ -240,10 +257,15 @@ export default function DashboardPage() {
 
                 <div className="grid lg:grid-cols-3 gap-6">
                     <div className="lg:col-span-2">
-                        {showPredictions ? (
-                            <PredictiveSpendingWidget lastUpdate={expenses.length + monthlyExpenses} />
+                        {/* Show Prediction here ONLY if NOT critical */}
+                        {!isPredictionCritical && (showPredictions ? (
+                            <PredictiveSpendingWidget
+                                lastUpdate={expenses.length + monthlyExpenses}
+                                onPriorityChange={(p) => handlePriorityChange('prediction', p)}
+                            />
                         ) : (
                             <Card className="p-6">
+                                {/* Placeholder content */}
                                 <div className="flex items-center gap-3 mb-4">
                                     <div className="w-10 h-10 rounded-xl bg-blue-500/20 flex items-center justify-center">
                                         <TrendingUp className="w-5 h-5 text-blue-400" />
@@ -263,14 +285,16 @@ export default function DashboardPage() {
                                     </Link>
                                 </div>
                             </Card>
-                        )}
+                        ))}
                     </div>
 
                     <div>
-                        {showAI ? (
-                            <AIInsightsWidget />
+                        {/* Show AI here ONLY if NOT critical */}
+                        {!isAICritical && (showAI ? (
+                            <AIInsightsWidget onPriorityChange={(p) => handlePriorityChange('ai', p)} />
                         ) : (
                             <Card className="p-6">
+                                {/* Placeholder content */}
                                 <div className="flex items-center gap-3 mb-4">
                                     <div className="w-10 h-10 rounded-xl bg-purple-500/20 flex items-center justify-center">
                                         <Sparkles className="w-5 h-5 text-purple-400" />
@@ -289,7 +313,7 @@ export default function DashboardPage() {
                                     </div>
                                 </div>
                             </Card>
-                        )}
+                        ))}
                     </div>
 
                     <div className="lg:col-span-2">
@@ -400,7 +424,15 @@ export default function DashboardPage() {
                 </div>
             </div>
 
-            <AIChatSheet isOpen={isChatOpen} onClose={() => setIsChatOpen(false)} />
+            <AIChatSheet
+                isOpen={isChatOpen}
+                onClose={() => setIsChatOpen(false)}
+                context={{
+                    expenses: expenses.slice(0, 20), // Pass recent 20
+                    budget: { totalLimit: monthlyBudget },
+                    userName: userData?.displayName?.split(' ')[0] || 'User'
+                }}
+            />
             <ImpulseLockModal isOpen={isImpulseModalOpen} onClose={() => setIsImpulseModalOpen(false)} />
             <AddExpenseModal isOpen={isAddModalOpen} onClose={() => setIsAddModalOpen(false)} />
         </div>

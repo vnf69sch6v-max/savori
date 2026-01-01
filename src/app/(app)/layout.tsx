@@ -32,6 +32,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import OnboardingWizard from '@/components/OnboardingWizard';
 import SavoriBottomNav from '@/components/SavoriBottomNav';
 import NotificationCenter from '@/components/NotificationCenter';
+import PWAInstallPrompt from '@/components/PWAInstallPrompt';
 import { useUIStore } from '@/stores/uiStore';
 
 // Grouped navigation structure
@@ -118,6 +119,8 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             {shouldShowOnboarding && (
                 <OnboardingWizard onComplete={() => setShowOnboarding(false)} />
             )}
+
+            <PWAInstallPrompt />
 
             {/* Desktop Sidebar */}
             <aside className="hidden lg:flex w-64 flex-col fixed inset-y-0 left-0 bg-slate-900/50 border-r border-slate-800">

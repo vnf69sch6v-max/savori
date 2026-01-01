@@ -31,13 +31,17 @@ export default function PWAInstallPrompt() {
 
         window.addEventListener('beforeinstallprompt', handler);
 
-        // iOS Detection
+        // iOS Detection - deferred to avoid sync setState
         const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
+        let iosTimer: NodeJS.Timeout;
         if (isIOS) {
-            setShowIOSPrompt(true);
+            iosTimer = setTimeout(() => setShowIOSPrompt(true), 0);
         }
 
-        return () => window.removeEventListener('beforeinstallprompt', handler);
+        return () => {
+            window.removeEventListener('beforeinstallprompt', handler);
+            if (iosTimer) clearTimeout(iosTimer);
+        };
     }, []);
 
     const handleInstallClick = async () => {

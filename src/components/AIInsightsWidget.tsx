@@ -11,11 +11,39 @@ import { Expense, Budget, ExpenseCategory, CategoryBudget } from '@/types';
 import { insightsEngine, AIInsight } from '@/lib/ai/insights-engine';
 import InsightCard from './ai/InsightCard';
 
-export default function AIInsightsWidget() {
+interface AIInsightsWidgetProps {
+    onPriorityChange?: (priority: 'critical' | 'high' | 'medium' | 'low') => void;
+}
+
+export default function AIInsightsWidget({ onPriorityChange }: AIInsightsWidgetProps) {
     const { userData } = useAuth();
     const [insights, setInsights] = useState<AIInsight[]>([]);
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
+
+    // Notify parent about priority changes
+    useEffect(() => {
+        if (!onPriorityChange || loading) return;
+
+        if (insights.length === 0) {
+            onPriorityChange('low');
+            return;
+        }
+
+        const hasCritical = insights.some(i => i.priority === 'critical');
+        if (hasCritical) {
+            onPriorityChange('critical');
+            return;
+        }
+
+        const hasHigh = insights.some(i => i.priority === 'high');
+        if (hasHigh) {
+            onPriorityChange('high');
+            return;
+        }
+
+        onPriorityChange('medium');
+    }, [insights, loading, onPriorityChange]);
 
     const fetchInsights = async () => {
         if (!userData?.id) return;

@@ -10,9 +10,10 @@ import { predictMonthlySpending, SpendingPrediction, getPredictionStatus } from 
 
 interface PredictiveSpendingWidgetProps {
     lastUpdate?: number;
+    onPriorityChange?: (priority: 'critical' | 'high' | 'medium' | 'low') => void;
 }
 
-export default function PredictiveSpendingWidget({ lastUpdate }: PredictiveSpendingWidgetProps) {
+export default function PredictiveSpendingWidget({ lastUpdate, onPriorityChange }: PredictiveSpendingWidgetProps) {
     const { userData } = useAuth();
     const [prediction, setPrediction] = useState<SpendingPrediction | null>(null);
     const [loading, setLoading] = useState(true);
@@ -36,6 +37,19 @@ export default function PredictiveSpendingWidget({ lastUpdate }: PredictiveSpend
     useEffect(() => {
         fetchPrediction();
     }, [fetchPrediction, lastUpdate]);
+
+    useEffect(() => {
+        if (!onPriorityChange || !prediction) return;
+
+        const status = getPredictionStatus(prediction);
+        if (status.status === 'danger') {
+            onPriorityChange('critical');
+        } else if (status.status === 'warning') {
+            onPriorityChange('high');
+        } else {
+            onPriorityChange('low');
+        }
+    }, [prediction, onPriorityChange]);
 
     if (loading) {
         return (

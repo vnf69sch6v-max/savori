@@ -44,8 +44,8 @@ export default function BudgetsPage() {
     // Fetch budget for current month
     useEffect(() => {
         if (!userData?.id) {
-            setLoading(false);
-            return;
+            const timer = setTimeout(() => setLoading(false), 0);
+            return () => clearTimeout(timer);
         }
 
         const budgetRef = doc(db, 'users', userData.id, 'budgets', monthKey);
@@ -128,23 +128,25 @@ export default function BudgetsPage() {
                     </div>
                 </div>
 
-                {/* Month Navigation - Glassmorphism */}
-                <div className="flex items-center gap-2 bg-slate-900/50 backdrop-blur-md border border-slate-800/50 rounded-xl p-1">
-                    <button
-                        onClick={prevMonth}
-                        className="p-2 hover:bg-slate-700/50 rounded-lg transition-colors text-slate-400 hover:text-white"
-                    >
-                        <ChevronLeft className="w-5 h-5" />
-                    </button>
-                    <div className="px-4 py-2 min-w-[160px] text-center font-medium capitalize text-emerald-400">
-                        {format(currentMonth, 'LLLL yyyy', { locale: pl })}
+                {/* Month Navigation - Glassmorphism - centered on mobile */}
+                <div className="flex items-center justify-center w-full md:w-auto">
+                    <div className="flex items-center gap-2 bg-slate-900/50 backdrop-blur-md border border-slate-800/50 rounded-xl p-1">
+                        <button
+                            onClick={prevMonth}
+                            className="p-2 hover:bg-slate-700/50 rounded-lg transition-colors text-slate-400 hover:text-white"
+                        >
+                            <ChevronLeft className="w-5 h-5" />
+                        </button>
+                        <div className="px-4 py-2 min-w-[160px] text-center font-medium capitalize text-emerald-400">
+                            {format(currentMonth, 'LLLL yyyy', { locale: pl })}
+                        </div>
+                        <button
+                            onClick={nextMonth}
+                            className="p-2 hover:bg-slate-700/50 rounded-lg transition-colors text-slate-400 hover:text-white"
+                        >
+                            <ChevronRight className="w-5 h-5" />
+                        </button>
                     </div>
-                    <button
-                        onClick={nextMonth}
-                        className="p-2 hover:bg-slate-700/50 rounded-lg transition-colors text-slate-400 hover:text-white"
-                    >
-                        <ChevronRight className="w-5 h-5" />
-                    </button>
                 </div>
             </div>
 
@@ -199,11 +201,11 @@ export default function BudgetsPage() {
                                         />
                                     </div>
 
-                                    <div className="flex items-center justify-between">
-                                        <span className="text-3xl font-bold text-white tracking-tight">
-                                            {formatMoney(totalSpent)} <span className="text-base text-slate-500 font-normal">/ {formatMoney(budget.totalLimit)}</span>
+                                    <div className="flex items-center justify-between gap-3 flex-wrap">
+                                        <span className="text-2xl sm:text-3xl font-bold text-white tracking-tight">
+                                            {formatMoney(totalSpent)} <span className="text-sm sm:text-base text-slate-500 font-normal">/ {formatMoney(budget.totalLimit)}</span>
                                         </span>
-                                        <span className={`text-sm font-bold px-3 py-1 rounded-full ${utilizationPercent >= 100
+                                        <span className={`text-xs sm:text-sm font-bold px-2.5 py-1 rounded-full whitespace-nowrap ${utilizationPercent >= 100
                                             ? 'bg-red-500/20 text-red-400 border border-red-500/30'
                                             : utilizationPercent >= 80
                                                 ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30'
@@ -268,10 +270,10 @@ export default function BudgetsPage() {
                                         <div className="flex items-center gap-4">
                                             <span className="text-2xl">{CATEGORY_ICONS[cat]}</span>
                                             <div className="flex-1 min-w-0">
-                                                <div className="flex items-center justify-between mb-2">
-                                                    <span className="font-medium text-slate-200">{CATEGORY_LABELS[cat]}</span>
-                                                    <div className="flex items-center gap-2">
-                                                        <span className="text-sm font-medium">
+                                                <div className="flex items-center justify-between gap-4 mb-2">
+                                                    <span className="font-medium text-slate-200 truncate">{CATEGORY_LABELS[cat]}</span>
+                                                    <div className="flex items-center gap-2 flex-shrink-0">
+                                                        <span className="text-sm font-medium whitespace-nowrap">
                                                             {formatMoney(spent)}
                                                             {limit > 0 && <span className="text-slate-500"> / {formatMoney(limit)}</span>}
                                                         </span>

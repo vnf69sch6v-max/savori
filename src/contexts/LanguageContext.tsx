@@ -22,10 +22,11 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
     const { userData } = useAuth();
     const [language, setLanguageState] = useState<Language>('pl');
 
-    // Sync with user data
+    // Sync with user data - deferred to avoid sync setState
     useEffect(() => {
         if (userData?.settings?.language) {
-            setLanguageState(userData.settings.language as Language);
+            const timer = setTimeout(() => setLanguageState(userData.settings.language as Language), 0);
+            return () => clearTimeout(timer);
         }
     }, [userData?.settings?.language]);
 

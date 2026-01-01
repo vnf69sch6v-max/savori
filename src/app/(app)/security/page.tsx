@@ -99,20 +99,25 @@ export default function SecurityPage() {
             setTimeout(() => setLoading(false), 0);
         });
 
-        // Mock current session
+        // Mock current session - deferred to avoid sync setState in effect
         const { device, browser } = getDeviceInfo();
-        setSessions([
-            {
-                id: 'current',
-                device,
-                browser,
-                location: 'Polska',
-                lastActive: Timestamp.now(),
-                current: true,
-            }
-        ]);
+        const sessionTimer = setTimeout(() => {
+            setSessions([
+                {
+                    id: 'current',
+                    device,
+                    browser,
+                    location: 'Polska',
+                    lastActive: Timestamp.now(),
+                    current: true,
+                }
+            ]);
+        }, 0);
 
-        return () => unsubscribe();
+        return () => {
+            unsubscribe();
+            clearTimeout(sessionTimer);
+        };
     }, [userData?.id]);
 
     // Log security event

@@ -1,27 +1,18 @@
 import { NextResponse } from 'next/server';
-import { askFinancialAssistant } from '@/lib/ai/gemini-assistant';
-// We don't have next-auth set up with getServerSession nicely in this project structure usually
-// using mock session for now or assuming context passed from client if auth is client-side
-// But let's try to mock the context logic for now as we don't have full backend context service ready
+import { DataAnalysisAgent } from '@/lib/ai/data-analysis-agent';
+import { redactor } from '@/lib/security/redactor';
 
 export async function POST(request: Request) {
     try {
         const { question, context } = await request.json();
 
-        // If context is provided from client (temporary solution until we have full backend service)
-        const safeContext = context || {
-            safeToSpend: 150000, // 1500 zł
-            monthlySpent: 350000, // 3500 zł
-            budgetLimit: 500000, // 5000 zł
-            topCategory: 'Jedzenie',
-            recentExpenses: [
-                { merchant: 'Biedronka', amount: 12550 },
-                { merchant: 'Uber', amount: 2500 },
-                { merchant: 'Netflix', amount: 4500 }
-            ]
-        };
+        // 1. Redact PII from context and question
+        const safeContext = redactor.object(context || {});
+        const safeQuestion = redactor.text(question);
 
-        const answer = await askFinancialAssistant(question, safeContext);
+        // 2. Use Data Analysis Agent
+        const agent = new DataAnalysisAgent();
+        const answer = await agent.ask(safeQuestion, safeContext);
 
         return NextResponse.json({ answer });
     } catch (error) {

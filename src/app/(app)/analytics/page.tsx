@@ -234,7 +234,8 @@ export default function AnalyticsPage() {
 
     // Clear forecast on period change
     useEffect(() => {
-        setForecastData(undefined);
+        const timer = setTimeout(() => setForecastData(undefined), 0);
+        return () => clearTimeout(timer);
     }, [period]);
 
     // Calculate stats

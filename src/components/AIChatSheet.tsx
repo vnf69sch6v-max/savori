@@ -28,9 +28,14 @@ const INITIAL_MESSAGE: Message = {
 interface AIChatSheetProps {
     isOpen: boolean;
     onClose: () => void;
+    context?: {
+        expenses: any[];
+        budget: any;
+        userName: string;
+    };
 }
 
-export default function AIChatSheet({ isOpen, onClose }: AIChatSheetProps) {
+export default function AIChatSheet({ isOpen, onClose, context }: AIChatSheetProps) {
     const [messages, setMessages] = useState<Message[]>([INITIAL_MESSAGE]);
     const [inputValue, setInputValue] = useState('');
     const [isLoading, setIsLoading] = useState(false);
@@ -65,15 +70,13 @@ export default function AIChatSheet({ isOpen, onClose }: AIChatSheetProps) {
         setInputValue('');
         setIsLoading(true);
 
-
-
         try {
             const response = await fetch('/api/ai-chat', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     question: messageText,
-                    // Context can be passed here if needed, but endpoint has fallback
+                    context: context || {} // Send real context
                 })
             });
 
