@@ -170,9 +170,9 @@ export default function VoiceExpenseModal({ isOpen, onClose }: VoiceExpenseModal
                 },
                 date: expenseDate,
                 source: 'manual',
-                notes: parsedExpense.items.length > 0
-                    ? `Produkty: ${parsedExpense.items.join(', ')}`
-                    : undefined,
+                ...(parsedExpense.items.length > 0 && {
+                    notes: `Produkty: ${parsedExpense.items.join(', ')}`
+                }),
             });
 
             setState('success');
