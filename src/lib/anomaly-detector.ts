@@ -3,6 +3,14 @@ import { db } from './firebase';
 import { Expense } from '@/types';
 import { subDays, startOfMonth } from 'date-fns';
 
+// Cache for anomaly detection to reduce reads
+let anomalyCache: { userId: string; expenses: Expense[]; timestamp: number } = {
+    userId: '',
+    expenses: [],
+    timestamp: 0
+};
+const CACHE_TTL = 2 * 60 * 1000; // 2 minutes
+
 export interface AnomalyResult {
     isAnomaly: boolean;
     type: 'high_amount' | 'new_category' | 'new_merchant' | 'unusual_frequency' | null;
@@ -28,11 +36,22 @@ export async function detectAnomaly(
     }
 ): Promise<AnomalyResult> {
     try {
-        // Fetch recent expenses for analysis
-        const expensesRef = collection(db, 'users', userId, 'expenses');
-        const q = query(expensesRef, orderBy('date', 'desc'), limit(200));
-        const snapshot = await getDocs(q);
-        const expenses = snapshot.docs.map(d => ({ id: d.id, ...d.data() })) as Expense[];
+        const now = Date.now();
+        let expenses: Expense[];
+
+        // Use cached expenses if available and fresh
+        if (anomalyCache.userId === userId && (now - anomalyCache.timestamp) < CACHE_TTL) {
+            expenses = anomalyCache.expenses;
+        } else {
+            // Fetch recent expenses for analysis - REDUCED from 200 to 100
+            const expensesRef = collection(db, 'users', userId, 'expenses');
+            const q = query(expensesRef, orderBy('date', 'desc'), limit(100));
+            const snapshot = await getDocs(q);
+            expenses = snapshot.docs.map(d => ({ id: d.id, ...d.data() })) as Expense[];
+
+            // Store in cache
+            anomalyCache = { userId, expenses, timestamp: now };
+        }
 
         if (expenses.length < 5) {
             // Not enough data to detect anomalies

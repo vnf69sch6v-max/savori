@@ -2,6 +2,14 @@ import { collection, query, getDocs, orderBy, limit } from 'firebase/firestore';
 import { db } from './firebase';
 import { Expense } from '@/types';
 
+// Cache for fraud detection to reduce reads
+let fraudCache: { userId: string; expenses: Expense[]; timestamp: number } = {
+    userId: '',
+    expenses: [],
+    timestamp: 0
+};
+const CACHE_TTL = 1 * 60 * 1000; // 1 minute
+
 export interface FraudCheckResult {
     isDuplicate: boolean;
     confidence: number;
@@ -52,24 +60,25 @@ export async function checkForDuplicate(
         // Generate hash for this receipt
         const hash = generateReceiptHash(receiptData);
 
-        // Get recent expenses from the same merchant
-        const expensesRef = collection(db, 'users', userId, 'expenses');
+        const now = Date.now();
+        let recentExpenses: Expense[];
 
-        // Check expenses from last 7 days
-        const sevenDaysAgo = new Date();
-        sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+        // Use cached expenses if available
+        if (fraudCache.userId === userId && (now - fraudCache.timestamp) < CACHE_TTL) {
+            recentExpenses = fraudCache.expenses;
+        } else {
+            // Get recent expenses - REDUCED from 50 to 30
+            const expensesRef = collection(db, 'users', userId, 'expenses');
+            const q = query(expensesRef, orderBy('date', 'desc'), limit(30));
+            const snapshot = await getDocs(q);
+            recentExpenses = snapshot.docs.map(doc => ({
+                id: doc.id,
+                ...doc.data()
+            })) as Expense[];
 
-        const q = query(
-            expensesRef,
-            orderBy('date', 'desc'),
-            limit(50)
-        );
-
-        const snapshot = await getDocs(q);
-        const recentExpenses = snapshot.docs.map(doc => ({
-            id: doc.id,
-            ...doc.data()
-        })) as Expense[];
+            // Cache the result
+            fraudCache = { userId, expenses: recentExpenses, timestamp: now };
+        }
 
         // Check 1: Exact hash match (same store, amount, date, items)
         for (const expense of recentExpenses) {

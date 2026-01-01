@@ -44,7 +44,7 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
         const q = query(
             notificationsRef,
             orderBy('createdAt', 'desc'),
-            limit(50)
+            limit(20) // Reduced from 50 to save reads
         );
 
         const unsubscribe = onSnapshot(q, (snapshot) => {
