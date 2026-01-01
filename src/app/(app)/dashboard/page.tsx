@@ -227,7 +227,7 @@ export default function DashboardPage() {
     return (
         <div className="max-w-7xl mx-auto">
             {/* Mobile Layout - matches mockup */}
-            <div className="lg:hidden space-y-4">
+            <div className="lg:hidden space-y-4 max-w-2xl mx-auto">
                 {/* SafeToSpend Hero Card - full width on mobile */}
                 <SafeToSpendCard
                     totalBalance={Math.max(0, monthlyBudget - monthlyExpenses)}
