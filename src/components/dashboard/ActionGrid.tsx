@@ -49,21 +49,21 @@ export default function ActionGrid({ onScanClick, onAddClick, onImpulseClick, on
     ];
 
     return (
-        <div className="grid grid-cols-4 gap-3 w-full">
+        <div className="grid grid-cols-2 gap-3 w-full">
             {actions.map((action, index) => (
                 <motion.button
                     key={index}
-                    whileTap={{ scale: 0.95 }}
+                    whileTap={{ scale: 0.98 }}
                     onClick={action.onClick}
                     className={`
-                        aspect-[4/3] w-full 
-                        flex flex-col items-center justify-center gap-1.5 
+                        h-24 w-full 
+                        flex flex-col items-center justify-center gap-2
                         rounded-2xl border ${action.border} ${action.bg} 
                         backdrop-blur-sm transition-all
                     `}
                 >
                     <action.icon className={`w-6 h-6 ${action.color}`} />
-                    <span className={`text-[10px] font-medium ${action.color} opacity-90`}>
+                    <span className={`text-xs font-medium ${action.color} opacity-90`}>
                         {action.label}
                     </span>
                 </motion.button>

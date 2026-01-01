@@ -151,8 +151,8 @@ export default function HookChallengeWidget() {
                     <div className="flex items-center gap-4">
                         <span className="text-4xl">{currentHook.emoji}</span>
                         <div className="flex-1 min-w-0">
-                            <h3 className="font-semibold text-white">{currentHook.title}</h3>
-                            <p className="text-sm text-slate-400 mt-0.5">{currentHook.description}</p>
+                            <h3 className="font-semibold text-white truncate">{currentHook.title}</h3>
+                            <p className="text-sm text-slate-400 mt-0.5 line-clamp-2">{currentHook.description}</p>
 
                             {/* Progress bar for challenges */}
                             {currentHook.progress && (
