@@ -8,15 +8,31 @@ import { Card } from '@/components/ui';
 import { useAuth } from '@/contexts/AuthContext';
 import { engagementService } from '@/lib/engagement/xp-system';
 
-interface Challenge {
-    type: 'challenge' | 'insight' | 'quiz' | 'stats';
+type BaseChallenge = {
     emoji: string;
     title: string;
     description: string;
-    progress?: { current: number; total: number };
-    xp?: number;
     link?: string;
+    xp?: number;
 }
+
+type QuizChallenge = BaseChallenge & {
+    type: 'quiz';
+    xp: number; // Required for quiz
+    progress?: never;
+}
+
+type StatsChallenge = BaseChallenge & {
+    type: 'stats' | 'challenge';
+    progress: { current: number; total: number };
+}
+
+type InsightChallenge = BaseChallenge & {
+    type: 'insight';
+    progress?: never;
+}
+
+type Challenge = QuizChallenge | StatsChallenge | InsightChallenge;
 
 // Initial fallback mock data
 const INITIAL_HOOKS: Challenge[] = [
