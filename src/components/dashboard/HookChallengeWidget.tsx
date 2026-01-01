@@ -124,9 +124,9 @@ export default function HookChallengeWidget() {
             <AnimatePresence mode="wait">
                 <motion.div
                     key={currentIndex}
-                    initial={{ opacity: 0, x: 20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: -20 }}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
                     transition={{ duration: 0.3 }}
                     className="p-4"
                     onMouseEnter={() => setIsAutoRotating(false)}
