@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import {
     TrendingUp,
@@ -26,7 +27,7 @@ import PredictiveSpendingWidget from '@/components/PredictiveSpendingWidget';
 import EmptyDashboard from '@/components/EmptyDashboard';
 import SafeToSpendCard from '@/components/SafeToSpendCard';
 import GamificationHub from '@/components/GamificationHub';
-import QuickActionsBar from '@/components/dashboard/QuickActionsBar';
+import ActionGrid from '@/components/dashboard/ActionGrid';
 import HookChallengeWidget from '@/components/dashboard/HookChallengeWidget';
 import AIChatSheet from '@/components/AIChatSheet';
 import AddExpenseModal from '@/components/AddExpenseModal';
@@ -95,6 +96,7 @@ function StatCard({ title, value, change, icon, color }: StatCardProps) {
 }
 
 export default function DashboardPage() {
+    const router = useRouter();
     const { userData } = useAuth();
     const userCurrency = (userData?.settings?.currency as string) || 'PLN';
     const [expenses, setExpenses] = useState<Expense[]>([]);
@@ -237,11 +239,15 @@ export default function DashboardPage() {
                     currency={userCurrency}
                 />
 
-                {/* Quick Actions Bar */}
-                {/* Quick Actions Bar */}
-                <QuickActionsBar
-                    onAIChatClick={() => setIsChatOpen(true)}
+                {/* Hook Challenge (Mobile) */}
+                <HookChallengeWidget />
+
+                {/* Action Grid (In-flow, unbreakable) */}
+                <ActionGrid
+                    onScanClick={() => router.push('/scan')}
+                    onAddClick={() => setIsAddModalOpen(true)}
                     onImpulseClick={() => setIsImpulseModalOpen(true)}
+                    onChatClick={() => setIsChatOpen(true)}
                 />
 
                 <AIChatSheet isOpen={isChatOpen} onClose={() => setIsChatOpen(false)} />
