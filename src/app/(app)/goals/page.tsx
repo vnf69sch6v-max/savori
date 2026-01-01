@@ -16,6 +16,7 @@ import {
     TrendingUp,
     Calendar,
     Coins,
+    Lock,
 } from 'lucide-react';
 import { Button, Card, CardHeader, CardTitle, CardContent, Input } from '@/components/ui';
 import { useAuth } from '@/contexts/AuthContext';
@@ -23,6 +24,8 @@ import { formatMoney, parseMoneyToCents } from '@/lib/utils';
 import { collection, query, onSnapshot, addDoc, updateDoc, deleteDoc, doc, Timestamp, where, orderBy, limit } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { SavingGoal, Expense } from '@/types';
+import { useSubscription } from '@/hooks/useSubscription';
+import UpgradeModal from '@/components/UpgradeModal';
 import { fireGoalConfetti } from '@/hooks/useConfetti';
 import SmartGoalAdvisor from '@/components/goals/SmartGoalAdvisor';
 
@@ -30,6 +33,7 @@ const GOAL_EMOJIS = ['🏠', '🚗', '✈️', '💻', '📱', '🎓', '💍', '
 
 export default function GoalsPage() {
     const { userData } = useAuth();
+    const { getLimit, openUpgrade, showUpgradeModal, closeUpgrade, upgradeReason, isFree, isPro } = useSubscription();
     const [goals, setGoals] = useState<SavingGoal[]>([]);
     const [expenses, setExpenses] = useState<Expense[]>([]);
     const [loading, setLoading] = useState(true);
@@ -93,8 +97,18 @@ export default function GoalsPage() {
     }, [userData?.id, selectedGoalForAdvisor]);
 
     // Create goal
+    const goalLimit = getLimit('goals');
     const handleCreateGoal = async () => {
         if (!userData?.id) return;
+
+        // Check goal limit
+        const activeGoals = goals.filter(g => g.status !== 'completed');
+        if (activeGoals.length >= goalLimit) {
+            openUpgrade(`Osiągnąłeś limit ${goalLimit} ${goalLimit === 1 ? 'celu' : 'celów'}. Ulepsz plan, aby dodać więcej!`);
+            setShowAddModal(false);
+            return;
+        }
+
         if (!newGoal.name || !newGoal.targetAmount) {
             toast.error('Wypełnij nazwę i kwotę');
             return;
@@ -504,6 +518,13 @@ export default function GoalsPage() {
                     </motion.div>
                 )}
             </AnimatePresence>
+
+            {/* Upgrade Modal */}
+            <UpgradeModal
+                isOpen={showUpgradeModal}
+                onClose={closeUpgrade}
+                reason={upgradeReason}
+            />
         </div>
     );
 }
