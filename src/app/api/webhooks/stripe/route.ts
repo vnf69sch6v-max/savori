@@ -75,7 +75,7 @@ export async function POST(req: NextRequest) {
                 await adminDb.collection('users').doc(targetUserId).set({
                     subscription: {
                         status,
-                        periodEnd: admin.firestore.Timestamp.fromMillis(subscription.current_period_end * 1000),
+                        periodEnd: admin.firestore.Timestamp.fromMillis((subscription as any).current_period_end * 1000),
                         updatedAt: admin.firestore.Timestamp.now()
                     }
                 }, { merge: true });

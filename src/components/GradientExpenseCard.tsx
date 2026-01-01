@@ -3,9 +3,9 @@
 import { motion, PanInfo } from 'framer-motion';
 import { Trash2, Pencil, Camera, CreditCard, RefreshCw } from 'lucide-react';
 import { Expense } from '@/types';
-import { formatMoney } from '@/lib/utils';
-import { getMerchantIcon, getMerchantColor, cleanMerchantName, CATEGORY_GRADIENTS } from '@/lib/merchant-icons';
+import { getMerchantIcon, cleanMerchantName, CATEGORY_GRADIENTS } from '@/lib/merchant-icons';
 import { useHaptic } from '@/hooks/use-haptic';
+import { useCurrency } from '@/hooks/use-language';
 
 // Source badge configs
 const SOURCE_BADGES = {
@@ -39,6 +39,7 @@ interface GradientExpenseCardProps {
 }
 
 export default function GradientExpenseCard({ expense, onDelete }: GradientExpenseCardProps) {
+    const { format: formatMoney } = useCurrency();
     const category = expense.merchant?.category || 'other';
     const source = expense.metadata?.source || 'manual';
     const merchantName = cleanMerchantName(expense.merchant?.name || 'Nieznany');

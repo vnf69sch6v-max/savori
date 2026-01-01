@@ -5,8 +5,9 @@ import { motion } from 'framer-motion';
 import { TrendingUp, TrendingDown, AlertTriangle, CheckCircle, Loader2, RefreshCw, Target, Calendar } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui';
 import { useAuth } from '@/contexts/AuthContext';
-import { formatMoney, CATEGORY_LABELS, CATEGORY_ICONS } from '@/lib/utils';
+import { formatMoney as formatMoneyBase, CATEGORY_LABELS, CATEGORY_ICONS } from '@/lib/utils';
 import { predictMonthlySpending, SpendingPrediction, getPredictionStatus } from '@/lib/spending-predictor';
+import { useCurrency } from '@/hooks/use-language';
 
 interface PredictiveSpendingWidgetProps {
     lastUpdate?: number;
@@ -15,6 +16,7 @@ interface PredictiveSpendingWidgetProps {
 
 export default function PredictiveSpendingWidget({ lastUpdate, onPriorityChange }: PredictiveSpendingWidgetProps) {
     const { userData } = useAuth();
+    const { format: formatMoney } = useCurrency();
     const [prediction, setPrediction] = useState<SpendingPrediction | null>(null);
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);

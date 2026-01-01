@@ -7,26 +7,26 @@ import { useAuth } from '@/contexts/AuthContext';
 import { collection, query, where, onSnapshot, orderBy, doc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { startOfMonth, endOfMonth } from 'date-fns';
+import { useCurrency } from '@/hooks/use-language';
 
 export default function SafeToSpendCard() {
     const { user } = useAuth();
+    const { format: formatMoney } = useCurrency();
     const [limit, setLimit] = useState(300000); // Default 3000 PLN in grosze
     const [spent, setSpent] = useState(0); // in grosze
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         if (!user) return;
-
+        // ... budget fetching logic same as before ... 
         const now = new Date();
         const monthKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
-
-        // 1. Subscribe to Budget Limit & Spent
         const budgetRef = doc(db, 'users', user.uid, 'budgets', monthKey);
         const unsubscribeBudget = onSnapshot(budgetRef, (doc) => {
             if (doc.exists()) {
                 const data = doc.data();
                 if (data.totalLimit) setLimit(data.totalLimit);
-                setSpent(data.totalSpent || 0); // Use aggregated value
+                setSpent(data.totalSpent || 0);
             }
             setLoading(false);
         });
@@ -36,10 +36,8 @@ export default function SafeToSpendCard() {
         };
     }, [user]);
 
-    // Derived Stats
-    const safeToSpend = (limit - spent) / 100;
-    const spentPLN = spent / 100;
-    const limitPLN = limit / 100;
+    // Derived Stats (in cents)
+    const safeToSpend = limit - spent; // Keep in cents for formatMoney
     const percentageUsed = (spent / limit) * 100;
 
     // Days remaining
@@ -73,13 +71,13 @@ export default function SafeToSpendCard() {
                 {/* Main Number */}
                 <div className="mb-1 relative z-10">
                     <h2 className="text-4xl font-bold text-emerald-400 tracking-tight">
-                        {safeToSpend.toLocaleString('pl-PL', { minimumFractionDigits: 2 })} zł
+                        {formatMoney(safeToSpend)}
                     </h2>
                 </div>
 
                 {/* Subtext */}
                 <p className="text-sm text-gray-400 mb-6 font-medium relative z-10">
-                    ~{dailySafe.toLocaleString('pl-PL', { maximumFractionDigits: 0 })} zł <span className="text-gray-500">dziennie do końca miesiąca</span>
+                    ~{formatMoney(dailySafe).replace(/,00..$/, '')} <span className="text-gray-500">dziennie do końca miesiąca</span>
                 </p>
 
                 {/* AI Insight Pill */}
@@ -111,11 +109,11 @@ export default function SafeToSpendCard() {
                     <div className="flex justify-between items-center text-xs mt-3">
                         <div className="flex items-center gap-1.5 text-red-400">
                             <TrendingUp className="w-3 h-3" />
-                            <span>Wydatki: {spentPLN.toLocaleString('pl-PL')} zł</span>
+                            <span>Wydatki: {formatMoney(spent)}</span>
                         </div>
                         <div className="flex items-center gap-1.5 text-blue-400">
                             <ArrowRight className="w-3 h-3" />
-                            <span>Limit: {limitPLN.toLocaleString('pl-PL')} zł</span>
+                            <span>Limit: {formatMoney(limit)}</span>
                         </div>
                     </div>
                 </div>

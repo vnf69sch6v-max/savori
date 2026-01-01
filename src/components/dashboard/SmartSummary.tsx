@@ -1,8 +1,9 @@
 import { useMemo } from 'react';
 import { Expense } from '@/types';
-import { formatMoney } from '@/lib/utils';
+import { formatMoney as formatMoneyUtil } from '@/lib/utils';
 import { TrendingUp, TrendingDown, Sparkles } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useCurrency } from '@/hooks/use-language';
 
 interface SmartSummaryProps {
     expenses: Expense[];
@@ -12,6 +13,8 @@ interface SmartSummaryProps {
 }
 
 export default function SmartSummary({ expenses, userName, currency, budget }: SmartSummaryProps) {
+    const { format: formatMoney } = useCurrency();
+
     const summary = useMemo(() => {
         const now = new Date();
         const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
@@ -45,7 +48,7 @@ export default function SmartSummary({ expenses, userName, currency, budget }: S
         if (todayTotal > dailyBudget * 2) {
             return {
                 title: 'Ostrożnie z wydatkami! 💸',
-                message: `Dziś wydałeś ${formatMoney(todayTotal, currency)}, co znacząco przekracza dzienny budżet. Spróbuj zwolnić.`,
+                message: `Dziś wydałeś ${formatMoney(todayTotal)}, co znacząco przekracza dzienny budżet. Spróbuj zwolnić.`,
                 icon: <TrendingUp className="w-5 h-5 text-rose-400" />,
                 color: 'text-rose-400'
             };
@@ -54,7 +57,7 @@ export default function SmartSummary({ expenses, userName, currency, budget }: S
         if (monthlyTotal < (budget * (now.getDate() / daysInMonth)) * 0.9) {
             return {
                 title: 'Jesteś w świetnej formie! 🚀',
-                message: `W tym miesiącu wydałeś ${formatMoney(monthlyTotal, currency)}, czyli mniej niż planowano. Oszczędzasz na coś ekstra?`,
+                message: `W tym miesiącu wydałeś ${formatMoney(monthlyTotal)}, czyli mniej niż planowano. Oszczędzasz na coś ekstra?`,
                 icon: <TrendingDown className="w-5 h-5 text-emerald-400" />,
                 color: 'text-emerald-400'
             };
@@ -71,12 +74,12 @@ export default function SmartSummary({ expenses, userName, currency, budget }: S
 
         return {
             title: `Witaj, ${userName}! 👋`,
-            message: `W tym miesiącu wydałeś łącznie ${formatMoney(monthlyTotal, currency)}. Masz jeszcze ${formatMoney(Math.max(0, budget - monthlyTotal), currency)} do wykorzystania.`,
+            message: `W tym miesiącu wydałeś łącznie ${formatMoney(monthlyTotal)}. Masz jeszcze ${formatMoney(Math.max(0, budget - monthlyTotal))} do wykorzystania.`,
             icon: <Sparkles className="w-5 h-5 text-blue-400" />,
             color: 'text-blue-400'
         };
 
-    }, [expenses, userName, currency, budget]);
+    }, [expenses, userName, currency, budget, formatMoney]);
 
     return (
         <div className="mb-6">

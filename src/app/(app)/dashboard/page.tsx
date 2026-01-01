@@ -39,10 +39,18 @@ import SmartSummary from '@/components/dashboard/SmartSummary';
 const MIN_EXPENSES_FOR_AI = 5;
 const MIN_EXPENSES_FOR_PREDICTIONS = 3;
 
+import { useLanguage, useCurrency } from '@/hooks/use-language';
+
 export default function DashboardPage() {
     const router = useRouter();
     const { userData } = useAuth();
-    const userCurrency = (userData?.settings?.currency as string) || 'PLN';
+    const { t, currency } = useLanguage();
+    const { format: formatMoney } = useCurrency(); // Override global formatMoney
+    // const userCurrency = (userData?.settings?.currency as string) || 'PLN'; // Deprecated for display
+
+    // ...
+
+    // ...
     const [expenses, setExpenses] = useState<Expense[]>([]);
     const [goals, setGoals] = useState<SavingGoal[]>([]);
     const [loading, setLoading] = useState(true);
@@ -53,9 +61,9 @@ export default function DashboardPage() {
 
     const getGreeting = () => {
         const hour = new Date().getHours();
-        if (hour < 12) return 'Dzień dobry';
-        if (hour < 18) return 'Cześć';
-        return 'Dobry wieczór';
+        if (hour < 12) return t.dashboard.greeting.morning;
+        if (hour < 18) return t.dashboard.greeting.afternoon;
+        return t.dashboard.greeting.evening;
     };
 
     useEffect(() => {
@@ -194,9 +202,9 @@ export default function DashboardPage() {
                 />
 
                 <div className="flex items-center justify-between pt-2 px-1">
-                    <h2 className="text-lg font-semibold text-white">Ostatnie Transakcje</h2>
+                    <h2 className="text-lg font-semibold text-white">{t.dashboard.recentTransactions}</h2>
                     <Link href="/expenses" className="text-sm text-emerald-400">
-                        Zobacz wszystkie
+                        {t.dashboard.seeAll}
                     </Link>
                 </div>
 
@@ -223,7 +231,7 @@ export default function DashboardPage() {
                 <SmartSummary
                     expenses={expenses}
                     userName={userData?.displayName?.split(' ')[0] || 'tam'}
-                    currency={userCurrency}
+                    currency={currency}
                     budget={monthlyBudget}
                 />
 
@@ -353,7 +361,7 @@ export default function DashboardPage() {
                                                         <div>
                                                             <p className="font-medium">{goal.name}</p>
                                                             <p className="text-sm text-slate-400">
-                                                                {formatMoney(goal.current, userCurrency)} / {formatMoney(goal.target, userCurrency)}
+                                                                {formatMoney(goal.current)} / {formatMoney(goal.target)}
                                                             </p>
                                                         </div>
                                                     </div>
@@ -415,7 +423,7 @@ export default function DashboardPage() {
                                                 </p>
                                             </div>
                                             <p className="font-medium text-rose-400">
-                                                -{formatMoney(expense.amount, userCurrency)}
+                                                -{formatMoney(expense.amount)}
                                             </p>
                                         </motion.div>
                                     ))}
