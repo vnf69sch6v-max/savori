@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Mic, MicOff, X, Check, Edit3, Loader2, AlertCircle } from 'lucide-react';
+import { Mic, MicOff, X, Check, Edit3, Loader2, AlertCircle, Keyboard, Send } from 'lucide-react';
 import { Button, Card } from '@/components/ui';
 import { useSpeechRecognition } from '@/hooks/useSpeechRecognition';
 import { useAuth } from '@/contexts/AuthContext';
@@ -30,14 +30,14 @@ interface VoiceExpenseModalProps {
     onClose: () => void;
 }
 
-type ModalState = 'idle' | 'listening' | 'processing' | 'preview' | 'saving' | 'success' | 'error';
+type ModalState = 'idle' | 'listening' | 'processing' | 'preview' | 'saving' | 'success' | 'error' | 'text-input';
 
 export default function VoiceExpenseModal({ isOpen, onClose }: VoiceExpenseModalProps) {
     const { userData } = useAuth();
     const [state, setState] = useState<ModalState>('idle');
     const [parsedExpense, setParsedExpense] = useState<ParsedVoiceExpense | null>(null);
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
-    const [editingField, setEditingField] = useState<string | null>(null);
+    const [textInput, setTextInput] = useState('');
 
     const {
         transcript,
@@ -50,12 +50,19 @@ export default function VoiceExpenseModal({ isOpen, onClose }: VoiceExpenseModal
         resetTranscript,
     } = useSpeechRecognition();
 
-    // Start listening when modal opens
+    // Detect iOS
+    const isIOS = typeof navigator !== 'undefined' && /iPad|iPhone|iPod/.test(navigator.userAgent);
+
+    // Start in text mode on iOS, voice mode otherwise
     useEffect(() => {
-        if (isOpen && state === 'idle' && isSupported) {
-            handleStartListening();
+        if (isOpen && state === 'idle') {
+            if (isIOS || !isSupported) {
+                setState('text-input');
+            } else {
+                handleStartListening();
+            }
         }
-    }, [isOpen]);
+    }, [isOpen, isIOS, isSupported]);
 
     // Process transcript when speech ends
     useEffect(() => {
@@ -64,11 +71,16 @@ export default function VoiceExpenseModal({ isOpen, onClose }: VoiceExpenseModal
         }
     }, [isListening, transcript, state]);
 
-    // Handle speech errors
+    // Handle speech errors - switch to text input
     useEffect(() => {
         if (speechError) {
-            setErrorMessage(speechError);
-            setState('error');
+            // On iOS/unsupported, switch to text input mode
+            if (speechError.includes('service-not-allowed') || speechError.includes('not-allowed')) {
+                setState('text-input');
+            } else {
+                setErrorMessage(speechError);
+                setState('error');
+            }
         }
     }, [speechError]);
 
@@ -82,6 +94,12 @@ export default function VoiceExpenseModal({ isOpen, onClose }: VoiceExpenseModal
 
     const handleStopListening = () => {
         stopListening();
+    };
+
+    const handleTextSubmit = () => {
+        if (textInput.trim().length > 3) {
+            processTranscript(textInput.trim());
+        }
     };
 
     const processTranscript = async (text: string) => {
@@ -135,7 +153,6 @@ export default function VoiceExpenseModal({ isOpen, onClose }: VoiceExpenseModal
             setState('success');
             toast.success('Wydatek dodany! 🎉');
 
-            // Close after success animation
             setTimeout(() => {
                 handleClose();
             }, 1500);
@@ -152,18 +169,22 @@ export default function VoiceExpenseModal({ isOpen, onClose }: VoiceExpenseModal
         setState('idle');
         setParsedExpense(null);
         setErrorMessage(null);
+        setTextInput('');
         onClose();
     };
 
     const handleRetry = () => {
-        handleStartListening();
+        setTextInput('');
+        if (isIOS || !isSupported) {
+            setState('text-input');
+        } else {
+            handleStartListening();
+        }
     };
 
-    const updateParsedExpense = (field: keyof ParsedVoiceExpense, value: unknown) => {
-        if (parsedExpense) {
-            setParsedExpense({ ...parsedExpense, [field]: value });
-        }
-        setEditingField(null);
+    const switchToTextInput = () => {
+        stopListening();
+        setState('text-input');
     };
 
     if (!isOpen) return null;
@@ -194,7 +215,8 @@ export default function VoiceExpenseModal({ isOpen, onClose }: VoiceExpenseModal
                                 {state === 'saving' && '💾 Zapisuję...'}
                                 {state === 'success' && '✅ Dodano!'}
                                 {state === 'error' && '❌ Błąd'}
-                                {state === 'idle' && '🎤 Dodaj głosowo'}
+                                {state === 'idle' && '🎤 Dodaj wydatek'}
+                                {state === 'text-input' && '⌨️ Wpisz wydatek'}
                             </h2>
                             <button
                                 onClick={handleClose}
@@ -206,12 +228,62 @@ export default function VoiceExpenseModal({ isOpen, onClose }: VoiceExpenseModal
 
                         {/* Content */}
                         <div className="p-6">
+                            {/* Text Input Mode (for iOS and fallback) */}
+                            {state === 'text-input' && (
+                                <div className="space-y-4">
+                                    <p className="text-slate-400 text-sm text-center mb-4">
+                                        Wpisz wydatek, np. "50 zł w Żabce na zakupy"
+                                    </p>
+                                    <div className="relative">
+                                        <input
+                                            type="text"
+                                            value={textInput}
+                                            onChange={(e) => setTextInput(e.target.value)}
+                                            onKeyDown={(e) => e.key === 'Enter' && handleTextSubmit()}
+                                            placeholder="Wydałem 50 zł w Żabce..."
+                                            autoFocus
+                                            className="w-full h-14 px-4 pr-14 bg-slate-800/50 border border-slate-700/50 rounded-2xl text-white placeholder:text-slate-500 focus:outline-none focus:border-emerald-500/50 focus:ring-2 focus:ring-emerald-500/20 transition-all text-lg"
+                                        />
+                                        <button
+                                            onClick={handleTextSubmit}
+                                            disabled={textInput.trim().length < 4}
+                                            className="absolute right-2 top-1/2 -translate-y-1/2 p-3 bg-emerald-500 hover:bg-emerald-600 disabled:bg-slate-700 disabled:text-slate-500 text-white rounded-xl transition-colors"
+                                        >
+                                            <Send className="w-5 h-5" />
+                                        </button>
+                                    </div>
+
+                                    {/* Quick examples */}
+                                    <div className="flex flex-wrap gap-2 mt-4">
+                                        {['50 zł zakupy', '15 zł kawa', '200 zł paliwo'].map((example) => (
+                                            <button
+                                                key={example}
+                                                onClick={() => setTextInput(example)}
+                                                className="px-3 py-1.5 bg-slate-800/50 border border-slate-700/50 rounded-full text-sm text-slate-400 hover:text-white hover:border-slate-600 transition-colors"
+                                            >
+                                                {example}
+                                            </button>
+                                        ))}
+                                    </div>
+
+                                    {/* Switch to voice (if supported) */}
+                                    {isSupported && !isIOS && (
+                                        <button
+                                            onClick={handleStartListening}
+                                            className="w-full mt-4 py-3 text-slate-400 hover:text-white flex items-center justify-center gap-2 transition-colors"
+                                        >
+                                            <Mic className="w-4 h-4" />
+                                            Użyj głosu
+                                        </button>
+                                    )}
+                                </div>
+                            )}
+
                             {/* Listening State */}
                             {(state === 'listening' || state === 'idle') && (
                                 <div className="text-center py-8">
                                     {/* Microphone Button */}
                                     <div className="relative inline-block mb-6">
-                                        {/* Pulse rings */}
                                         {isListening && (
                                             <>
                                                 <motion.div
@@ -231,8 +303,8 @@ export default function VoiceExpenseModal({ isOpen, onClose }: VoiceExpenseModal
                                             whileTap={{ scale: 0.95 }}
                                             onClick={isListening ? handleStopListening : handleStartListening}
                                             className={`relative w-24 h-24 rounded-full flex items-center justify-center transition-all ${isListening
-                                                ? 'bg-gradient-to-br from-emerald-500 to-cyan-500 shadow-lg shadow-emerald-500/40'
-                                                : 'bg-slate-800 hover:bg-slate-700'
+                                                    ? 'bg-gradient-to-br from-emerald-500 to-cyan-500 shadow-lg shadow-emerald-500/40'
+                                                    : 'bg-slate-800 hover:bg-slate-700'
                                                 }`}
                                         >
                                             {isListening ? (
@@ -259,12 +331,14 @@ export default function VoiceExpenseModal({ isOpen, onClose }: VoiceExpenseModal
                                         )}
                                     </div>
 
-                                    {!isSupported && (
-                                        <p className="text-amber-400 text-sm">
-                                            ⚠️ Twoja przeglądarka nie obsługuje rozpoznawania mowy.
-                                            Użyj Chrome lub Edge.
-                                        </p>
-                                    )}
+                                    {/* Switch to text input button */}
+                                    <button
+                                        onClick={switchToTextInput}
+                                        className="text-slate-500 hover:text-white text-sm flex items-center justify-center gap-2 mx-auto transition-colors"
+                                    >
+                                        <Keyboard className="w-4 h-4" />
+                                        Wpisz ręcznie
+                                    </button>
                                 </div>
                             )}
 
@@ -272,40 +346,28 @@ export default function VoiceExpenseModal({ isOpen, onClose }: VoiceExpenseModal
                             {state === 'processing' && (
                                 <div className="text-center py-12">
                                     <Loader2 className="w-12 h-12 text-emerald-400 animate-spin mx-auto mb-4" />
-                                    <p className="text-slate-400">AI analizuje Twoją komendę...</p>
-                                    <p className="text-white mt-2">"{transcript}"</p>
+                                    <p className="text-slate-400">AI analizuje...</p>
+                                    <p className="text-white mt-2 text-sm">"{transcript || textInput}"</p>
                                 </div>
                             )}
 
                             {/* Preview State */}
                             {state === 'preview' && parsedExpense && (
                                 <div className="space-y-4">
-                                    {/* Amount */}
                                     <div className="text-center py-4">
                                         <p className="text-4xl font-bold text-emerald-400">
                                             {formatAmountFromGrosze(parsedExpense.amount)}
                                         </p>
                                     </div>
 
-                                    {/* Details */}
                                     <div className="space-y-3 bg-slate-800/50 rounded-2xl p-4">
-                                        {/* Merchant */}
                                         <div className="flex items-center justify-between">
                                             <span className="text-slate-400">Sklep</span>
-                                            <div className="flex items-center gap-2">
-                                                <span className="text-white font-medium">
-                                                    {parsedExpense.merchant || 'Nieznany'}
-                                                </span>
-                                                <button
-                                                    onClick={() => setEditingField('merchant')}
-                                                    className="p-1 text-slate-500 hover:text-white"
-                                                >
-                                                    <Edit3 className="w-4 h-4" />
-                                                </button>
-                                            </div>
+                                            <span className="text-white font-medium">
+                                                {parsedExpense.merchant || 'Nieznany'}
+                                            </span>
                                         </div>
 
-                                        {/* Category */}
                                         <div className="flex items-center justify-between">
                                             <span className="text-slate-400">Kategoria</span>
                                             <span className="text-white font-medium">
@@ -313,7 +375,6 @@ export default function VoiceExpenseModal({ isOpen, onClose }: VoiceExpenseModal
                                             </span>
                                         </div>
 
-                                        {/* Date */}
                                         <div className="flex items-center justify-between">
                                             <span className="text-slate-400">Data</span>
                                             <span className="text-white">
@@ -323,7 +384,6 @@ export default function VoiceExpenseModal({ isOpen, onClose }: VoiceExpenseModal
                                             </span>
                                         </div>
 
-                                        {/* Items */}
                                         {parsedExpense.items.length > 0 && (
                                             <div className="flex items-center justify-between">
                                                 <span className="text-slate-400">Produkty</span>
@@ -332,17 +392,8 @@ export default function VoiceExpenseModal({ isOpen, onClose }: VoiceExpenseModal
                                                 </span>
                                             </div>
                                         )}
-
-                                        {/* Confidence */}
-                                        <div className="flex items-center justify-between text-xs">
-                                            <span className="text-slate-500">Pewność AI</span>
-                                            <span className={parsedExpense.confidence >= 0.8 ? 'text-emerald-400' : 'text-amber-400'}>
-                                                {Math.round(parsedExpense.confidence * 100)}%
-                                            </span>
-                                        </div>
                                     </div>
 
-                                    {/* Actions */}
                                     <div className="flex gap-3 pt-2">
                                         <Button
                                             onClick={handleRetry}
@@ -392,9 +443,15 @@ export default function VoiceExpenseModal({ isOpen, onClose }: VoiceExpenseModal
                                         <AlertCircle className="w-8 h-8 text-red-400" />
                                     </div>
                                     <p className="text-red-400 mb-4">{errorMessage}</p>
-                                    <Button onClick={handleRetry}>
-                                        Spróbuj ponownie
-                                    </Button>
+                                    <div className="flex gap-3 justify-center">
+                                        <Button onClick={handleRetry} variant="outline">
+                                            Spróbuj ponownie
+                                        </Button>
+                                        <Button onClick={switchToTextInput}>
+                                            <Keyboard className="w-4 h-4 mr-2" />
+                                            Wpisz ręcznie
+                                        </Button>
+                                    </div>
                                 </div>
                             )}
                         </div>
