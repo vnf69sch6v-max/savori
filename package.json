@@ -15,6 +15,7 @@
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
     "firebase": "^12.7.0",
+    "firebase-admin": "^13.6.0",
     "framer-motion": "^12.23.26",
     "jspdf": "^3.0.4",
     "lucide-react": "^0.562.0",
@@ -23,6 +24,7 @@
     "react-dom": "19.2.3",
     "react-hot-toast": "^2.6.0",
     "recharts": "^3.6.0",
+    "stripe": "^20.1.0",
     "tailwind-merge": "^3.4.0",
     "zustand": "^5.0.9"
   },

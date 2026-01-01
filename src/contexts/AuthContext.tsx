@@ -11,7 +11,7 @@ import {
     signOut as firebaseSignOut,
     updateProfile,
 } from 'firebase/auth';
-import { doc, getDoc, setDoc, Timestamp, onSnapshot } from 'firebase/firestore';
+import { doc, getDoc, setDoc, Timestamp, onSnapshot, writeBatch } from 'firebase/firestore';
 import { auth, db } from '@/lib/firebase';
 import { User, UserSettings, UserStats, Subscription } from '@/types';
 import { logSecurityEvent, SecurityEvents } from '@/lib/security';
@@ -81,8 +81,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             stats: DEFAULT_STATS,
         };
 
+        const batch = writeBatch(db);
         const userRef = doc(db, 'users', firebaseUser.uid);
-        await setDoc(userRef, newUser);
+        const publicRef = doc(db, 'public_profiles', firebaseUser.uid);
+
+        batch.set(userRef, newUser);
+
+        // Write safe public data
+        batch.set(publicRef, {
+            id: newUser.id,
+            displayName: newUser.displayName,
+            photoURL: newUser.photoURL,
+            stats: newUser.stats,
+            xp: 0, // Initialize gamification
+            level: 1,
+            badges: []
+        });
+
+        await batch.commit();
 
         return newUser;
     };
@@ -97,9 +113,31 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             if (firebaseUser) {
                 // Subscribe to user document changes
                 const userRef = doc(db, 'users', firebaseUser.uid);
-                unsubscribeUserDoc = onSnapshot(userRef, (docSnap) => {
+                unsubscribeUserDoc = onSnapshot(userRef, async (docSnap) => {
                     if (docSnap.exists()) {
-                        setUserData(docSnap.data() as User);
+                        const data = docSnap.data() as User;
+                        setUserData(data);
+
+                        // Self-healing: Check if public profile exists, if not create it (Migration for old users)
+                        // Verify once per session to avoid spamming
+                        if (!sessionStorage.getItem('public_profile_checked')) {
+                            const publicRef = doc(db, 'public_profiles', firebaseUser.uid);
+                            const publicSnap = await getDoc(publicRef);
+
+                            if (!publicSnap.exists()) {
+                                console.log('Migrating user to public_profiles...');
+                                await setDoc(publicRef, {
+                                    id: data.id,
+                                    displayName: data.displayName,
+                                    photoURL: data.photoURL,
+                                    stats: data.stats || DEFAULT_STATS,
+                                    xp: 0,
+                                    level: 1,
+                                    badges: []
+                                }, { merge: true });
+                            }
+                            sessionStorage.setItem('public_profile_checked', 'true');
+                        }
                     }
                     setLoading(false);
                 }, (error) => {
@@ -231,8 +269,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         if (!user) return;
 
         try {
+            const batch = writeBatch(db);
             const userRef = doc(db, 'users', user.uid);
-            await setDoc(userRef, data, { merge: true });
+            const publicRef = doc(db, 'public_profiles', user.uid);
+
+            // 1. Update private doc
+            batch.update(userRef, data);
+
+            // 2. Update public doc if relevant fields changed
+            // Only sync safe public fields
+            const publicUpdates: any = {};
+            if (data.displayName !== undefined) publicUpdates.displayName = data.displayName;
+            if (data.photoURL !== undefined) publicUpdates.photoURL = data.photoURL;
+            if (data.stats !== undefined) publicUpdates.stats = data.stats;
+
+            if (Object.keys(publicUpdates).length > 0) {
+                batch.set(publicRef, publicUpdates, { merge: true });
+            }
+
+            await batch.commit();
 
             // Dane odświeżą się same dzięki onSnapshot
         } catch (err: unknown) {

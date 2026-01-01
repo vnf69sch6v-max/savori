@@ -17,26 +17,56 @@ interface UpgradeModalProps {
 }
 
 export default function UpgradeModal({ isOpen, onClose, reason, highlightPlan = 'pro' }: UpgradeModalProps) {
-    const { userData } = useAuth();
+    const { userData, user } = useAuth(); // Destructure user from AuthContext
     const [loading, setLoading] = useState<string | null>(null);
     const [yearly, setYearly] = useState(false);
 
     const handleUpgrade = async (planId: 'pro' | 'premium') => {
-        if (!userData?.id) return;
+        if (!userData?.id || !user) {
+            toast.error('Musisz być zalogowany');
+            return;
+        }
 
         setLoading(planId);
         try {
-            const result = await subscriptionService.upgradeSubscription(userData.id, planId, yearly);
-            if (result.success) {
-                toast.success(`🎉 Witamy w ${planId === 'pro' ? 'Pro' : 'Premium'}!`);
-                onClose();
-                // Reload to refresh subscription state
-                window.location.reload();
+            const token = await user.getIdToken();
+            const plan = SUBSCRIPTION_PLANS.find(p => p.id === planId);
+
+            if (!plan) throw new Error('Nieprawidłowy plan');
+            // Assuming price is defined in SUBSCRIPTION_PLANS, but we need Stripe Price ID.
+            // For now, we'll pass a placeholder or look it up if it was in the plan object.
+            // Since we don't have price IDs in the static file yet, we might need to hardcode map them here or add them to the file.
+            // Let's rely on the API route to map planId to Stripe Price ID for now, 
+            // OR pass a dummy priceId if testing mode.
+
+            // Map plan to Stripe Price ID (TEST IDs - Replace with real ones from env or config)
+            const priceIds = {
+                pro: yearly ? 'price_pro_yearly_test' : 'price_pro_monthly_test',
+                premium: yearly ? 'price_premium_yearly_test' : 'price_premium_monthly_test' // premium is 'ultimate' in UI
+            };
+
+            const response = await fetch('/api/create-checkout-session', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    priceId: priceIds[planId],
+                    planId: planId === 'premium' ? 'ultimate' : 'pro'
+                }),
+            });
+
+            const data = await response.json();
+
+            if (data.url) {
+                window.location.href = data.url;
             } else {
-                toast.error(result.error || 'Błąd upgrade');
+                throw new Error(data.error || 'Błąd tworzenia płatności');
             }
         } catch (e) {
-            toast.error('Błąd połączenia');
+            console.error(e);
+            toast.error('Błąd połączenia z płatnościami');
         } finally {
             setLoading(null);
         }
