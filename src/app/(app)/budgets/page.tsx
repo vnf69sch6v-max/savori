@@ -50,20 +50,27 @@ export default function BudgetsPage() {
 
         const budgetRef = doc(db, 'users', userData.id, 'budgets', monthKey);
 
-        const unsubscribeBudget = onSnapshot(budgetRef, (doc) => {
-            if (doc.exists()) {
-                const budgetData = { id: doc.id, ...doc.data() } as Budget;
+        const unsubscribeBudget = onSnapshot(budgetRef, async (docSnap) => {
+            if (docSnap.exists()) {
+                const budgetData = { id: docSnap.id, ...docSnap.data() } as Budget;
                 setBudget(budgetData);
 
-                // Use aggregated totalSpent from budget document instead of fetching all expenses
-                // This reduces reads from N (all expenses) to 1 (budget doc)
-                if (budgetData.totalSpent !== undefined) {
-                    // Create a virtual expense list just for calculations if needed
-                    // Most components should use budget.totalSpent directly
-                    setExpenses([]);
+                // Self-healing: If totalSpent is 0 or undefined but budget exists,
+                // trigger a recalculation to sync with actual expenses
+                if ((budgetData.totalSpent === undefined || budgetData.totalSpent === 0) && budgetData.totalLimit > 0) {
+                    // Trigger recalculation in background
+                    import('@/lib/expense-service').then(({ expenseService }) => {
+                        expenseService.recalculateMonthlyStats(userData.id);
+                    });
                 }
+
+                setExpenses([]);
             } else {
                 setBudget(null);
+                // No budget doc - trigger creation with recalculation
+                import('@/lib/expense-service').then(({ expenseService }) => {
+                    expenseService.recalculateMonthlyStats(userData.id);
+                });
             }
             setLoading(false);
         });
@@ -82,9 +89,13 @@ export default function BudgetsPage() {
         }, {} as Record<string, number>);
     }, [expenses]);
 
-    const totalSpent = useMemo(() =>
-        Object.values(spentByCategory).reduce((sum, v) => sum + v, 0),
-        [spentByCategory]);
+    // Use budget.totalSpent directly if available, otherwise calculate from expenses
+    const totalSpent = useMemo(() => {
+        if (budget?.totalSpent !== undefined && budget.totalSpent > 0) {
+            return budget.totalSpent;
+        }
+        return Object.values(spentByCategory).reduce((sum, v) => sum + v, 0);
+    }, [budget?.totalSpent, spentByCategory]);
 
     // Navigation
     const prevMonth = () => setCurrentMonth(subMonths(currentMonth, 1));
