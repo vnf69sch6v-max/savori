@@ -456,18 +456,21 @@ export default function SubscriptionsPage() {
             </div>
 
             {/* Quick Stats */}
-            <div className="grid grid-cols-3 gap-4 mb-8">
-                <Card className="p-4 text-center">
-                    <p className="text-sm text-slate-400 mb-1">Miesięcznie</p>
-                    <p className="text-xl font-bold text-emerald-400">{formatMoney(totalMonthly)}</p>
+            {/* Quick Stats */}
+            <div className="grid grid-cols-3 gap-2 md:gap-4 mb-8">
+                <Card className="p-2 md:p-4 text-center flex flex-col justify-center">
+                    <p className="text-xs text-slate-400 mb-0.5 md:mb-1">Miesięcznie</p>
+                    <p className="text-sm sm:text-lg md:text-xl font-bold text-emerald-400 break-all sm:break-normal">{formatMoney(totalMonthly)}</p>
                 </Card>
-                <Card className="p-4 text-center">
-                    <p className="text-sm text-slate-400 mb-1">Rocznie</p>
-                    <p className="text-xl font-bold text-blue-400">{formatMoney(totalMonthly * 12)}</p>
+                <Card className="p-2 md:p-4 text-center flex flex-col justify-center">
+                    <p className="text-xs text-slate-400 mb-0.5 md:mb-1">Rocznie</p>
+                    <p className="text-sm sm:text-lg md:text-xl font-bold text-blue-400 break-all sm:break-normal">{formatMoney(totalMonthly * 12)}</p>
                 </Card>
-                <Card className="p-4 text-center">
-                    <p className="text-sm text-slate-400 mb-1">Nadchodzi (7 dni)</p>
-                    <p className="text-xl font-bold text-amber-400">{upcomingSubscriptions.length}</p>
+                <Card className="p-2 md:p-4 text-center flex flex-col justify-center">
+                    <p className="text-xs text-slate-400 mb-0.5 md:mb-1">
+                        Nadchodzi <span className="hidden sm:inline">(7 dni)</span>
+                    </p>
+                    <p className="text-sm sm:text-lg md:text-xl font-bold text-amber-400">{upcomingSubscriptions.length}</p>
                 </Card>
             </div>
 
