@@ -61,68 +61,74 @@ export default function ExpensesPage() {
         return () => unsubscribe();
     }, [userData?.id]);
 
-    // Filter expenses
-    const filteredExpenses = expenses.filter(expense => {
-        const matchesSearch = expense.merchant?.name
-            ?.toLowerCase()
-            .includes(searchQuery.toLowerCase());
-        const matchesCategory = selectedCategory === 'all' ||
-            expense.merchant?.category === selectedCategory;
+    // Filter expenses - Memoized
+    const filteredExpenses = useMemo(() => {
+        return expenses.filter(expense => {
+            const matchesSearch = expense.merchant?.name
+                ?.toLowerCase()
+                .includes(searchQuery.toLowerCase());
+            const matchesCategory = selectedCategory === 'all' ||
+                expense.merchant?.category === selectedCategory;
 
-        // Date Logic
-        let expenseDate: Date;
-        if (expense.date && typeof (expense.date as any).toDate === 'function') {
-            expenseDate = (expense.date as any).toDate();
-        } else if (expense.date) {
-            expenseDate = new Date(expense.date as any);
-        } else {
-            expenseDate = new Date();
-        }
+            // Date Logic
+            let expenseDate: Date;
+            if (expense.date && typeof (expense.date as any).toDate === 'function') {
+                expenseDate = (expense.date as any).toDate();
+            } else if (expense.date) {
+                expenseDate = new Date(expense.date as any);
+            } else {
+                expenseDate = new Date();
+            }
 
-        let matchesDate = true;
-        if (viewMode === 'month') {
-            const start = new Date(viewDate.getFullYear(), viewDate.getMonth(), 1);
-            const end = new Date(viewDate.getFullYear(), viewDate.getMonth() + 1, 0, 23, 59, 59);
-            matchesDate = expenseDate >= start && expenseDate <= end;
-        }
+            let matchesDate = true;
+            if (viewMode === 'month') {
+                const start = new Date(viewDate.getFullYear(), viewDate.getMonth(), 1);
+                const end = new Date(viewDate.getFullYear(), viewDate.getMonth() + 1, 0, 23, 59, 59);
+                matchesDate = expenseDate >= start && expenseDate <= end;
+            }
 
-        return matchesSearch && matchesCategory && matchesDate;
-    });
+            return matchesSearch && matchesCategory && matchesDate;
+        });
+    }, [expenses, searchQuery, selectedCategory, viewDate, viewMode]);
 
-    // Calculate total
-    const totalAmount = filteredExpenses.reduce((sum, e) => sum + (e.amount || 0), 0);
+    // Calculate total - Memoized
+    const totalAmount = useMemo(() =>
+        filteredExpenses.reduce((sum: number, e: Expense) => sum + (e.amount || 0), 0),
+        [filteredExpenses]);
 
     // Navigation Handlers
     const prevDate = () => setViewDate(d => new Date(d.getFullYear(), d.getMonth() - 1, 1));
     const nextDate = () => setViewDate(d => new Date(d.getFullYear(), d.getMonth() + 1, 1));
     const resetDate = () => setViewDate(new Date());
 
-    // Group by date (Today, Yesterday, etc.)
-    const groupedExpenses = filteredExpenses.reduce((groups, expense) => {
-        // Handle Firestore Timestamp or Date
-        let dateObj: Date;
-        if (expense.date && typeof (expense.date as any).toDate === 'function') {
-            dateObj = (expense.date as any).toDate();
-        } else if (expense.date) {
-            dateObj = new Date(expense.date as any);
-        } else {
-            dateObj = new Date();
-        }
+    // Group by date - Memoized
+    const groupedExpenses = useMemo(() => {
+        return filteredExpenses.reduce((groups: Record<string, Expense[]>, expense: Expense) => {
+            // Handle Firestore Timestamp or Date
+            let dateObj: Date;
+            if (expense.date && typeof (expense.date as any).toDate === 'function') {
+                dateObj = (expense.date as any).toDate();
+            } else if (expense.date) {
+                dateObj = new Date(expense.date as any);
+            } else {
+                dateObj = new Date();
+            }
 
-        const today = new Date();
-        const yesterday = new Date(today);
-        yesterday.setDate(yesterday.getDate() - 1);
+            const today = new Date();
+            const yesterday = new Date(today);
+            yesterday.setDate(yesterday.getDate() - 1);
 
-        let dateLabel = formatDate(dateObj);
-        if (dateObj.toDateString() === today.toDateString()) dateLabel = 'Dzisiaj';
-        else if (dateObj.toDateString() === yesterday.toDateString()) dateLabel = 'Wczoraj';
+            let dateLabel = formatDate(dateObj);
+            if (dateObj.toDateString() === today.toDateString()) dateLabel = 'Dzisiaj';
+            else if (dateObj.toDateString() === yesterday.toDateString()) dateLabel = 'Wczoraj';
 
-        if (!groups[dateLabel]) {
-            groups[dateLabel] = [];
-        }
-        groups[dateLabel].push(expense);
-        return groups;
-    }, {} as Record<string, Expense[]>);
+            if (!groups[dateLabel]) {
+                groups[dateLabel] = [];
+            }
+            groups[dateLabel].push(expense);
+            return groups;
+        }, {} as Record<string, Expense[]>);
+    }, [filteredExpenses]);
 
     // Delete expense
     const handleDelete = async (expenseId: string) => {

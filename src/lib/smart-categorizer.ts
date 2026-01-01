@@ -4,17 +4,15 @@
  */
 
 import { ExpenseCategory } from '@/types';
-import { findMerchant, MerchantMapping } from './merchant-db';
+import { findMerchant } from './merchant-db';
 import { db } from './firebase';
 import {
     collection,
     doc,
-    getDoc,
     getDocs,
     addDoc,
     updateDoc,
     query,
-    where,
     orderBy,
     limit,
     Timestamp,

@@ -14,7 +14,7 @@ export const snblService = {
             const boosts: MerchantBoost[] = [];
 
             // Check for cashback boost
-            const cashbackOffer = product.boosts.find(b => b.typeLabel.toLowerCase().includes('cashback'));
+            // const cashbackOffer = product.boosts.find(b => b.typeLabel.toLowerCase().includes('cashback'));
 
             // Optional: Add a "Locked" boost wrapper if needed, but for MVP standard goal
 

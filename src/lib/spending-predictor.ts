@@ -62,7 +62,6 @@ export async function predictMonthlySpending(userId: string): Promise<SpendingPr
         const date = e.date?.toDate?.();
         return date && date >= lastMonthStart && date <= lastMonthEnd;
     });
-    const lastMonthTotal = lastMonthExpenses.reduce((sum, e) => sum + (e.amount || 0), 0);
 
     // Calculate daily average (weighted: recent days count more)
     const dailySpending: Record<number, number> = {};

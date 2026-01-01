@@ -2,10 +2,51 @@ import { NextRequest, NextResponse } from 'next/server';
 import { DataAnalysisAgent } from '@/lib/ai/data-analysis-agent';
 import { getAIModel } from '@/lib/firebase';
 
+// ==========================================
+// PII REDACTION LAYER (Digital Fortress)
+// ==========================================
+function sanitizeValue(value: any): any {
+    if (typeof value === 'string') {
+        // 1. Mask Emails
+        let safe = value.replace(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g, '[EMAIL]');
+
+        // 2. Mask Phone Numbers (simple pattern)
+        safe = safe.replace(/(?<!\d)\d{9}(?!\d)/g, '[PHONE]');
+        safe = safe.replace(/(?<!\d)\d{3}[-\s]\d{3}[-\s]\d{3}(?!\d)/g, '[PHONE]');
+
+        // 3. Mask potential IBANs (PL)
+        safe = safe.replace(/PL\d{2}[ ]\d{4}[ ]\d{4}[ ]\d{4}[ ]\d{4}[ ]\d{4}[ ]\d{4}/g, '[IBAN]');
+
+        return safe;
+    }
+    if (Array.isArray(value)) {
+        return value.map(sanitizeValue);
+    }
+    if (typeof value === 'object' && value !== null) {
+        return sanitizeData(value);
+    }
+    return value;
+}
+
+function sanitizeData(data: any): any {
+    if (!data) return data;
+    const safeData = { ...data };
+
+    for (const key in safeData) {
+        if (key === 'userName' && typeof safeData[key] === 'string') {
+            // Special handling for names: Keep only first name
+            safeData[key] = safeData[key].split(' ')[0];
+        } else {
+            safeData[key] = sanitizeValue(safeData[key]);
+        }
+    }
+    return safeData;
+}
+
 export async function POST(request: NextRequest) {
     try {
         const body = await request.json();
-        const { type, data } = body;
+        let { type, data } = body;
 
         if (!type || !data) {
             return NextResponse.json(
@@ -14,8 +55,12 @@ export async function POST(request: NextRequest) {
             );
         }
 
+        // REDACT PII BEFORE PROCESSING
+        data = sanitizeData(data);
+
         const agent = new DataAnalysisAgent();
         let resultData = '';
+        // ... func continues ...
 
         switch (type) {
             case 'monthly_report':

@@ -13,12 +13,8 @@ import {
     updateDoc,
     deleteDoc,
     query,
-    where,
-    orderBy,
-    limit,
     onSnapshot,
     QueryConstraint,
-    DocumentData,
     Timestamp,
     CollectionReference
 } from 'firebase/firestore';
