@@ -26,6 +26,8 @@ import PredictiveSpendingWidget from '@/components/PredictiveSpendingWidget';
 import EmptyDashboard from '@/components/EmptyDashboard';
 import SafeToSpendCard from '@/components/SafeToSpendCard';
 import GamificationHub from '@/components/GamificationHub';
+import QuickActionsBar from '@/components/dashboard/QuickActionsBar';
+import HookChallengeWidget from '@/components/dashboard/HookChallengeWidget';
 import { recurringExpensesService, getMonthlyEquivalent } from '@/lib/subscriptions/recurring-service';
 
 // Minimum thresholds for showing advanced features
@@ -217,27 +219,14 @@ export default function DashboardPage() {
     return (
         <div className="max-w-7xl mx-auto">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
-                <div>
-                    <h1 className="text-2xl md:text-3xl font-bold">
-                        {getGreeting()}, {userData?.displayName?.split(' ')[0] || 'tam'}! 👋
-                    </h1>
-                    <p className="text-slate-400 mt-1">
-                        Oto podsumowanie Twoich finansów
-                    </p>
-                </div>
-                <div className="flex gap-3">
-                    <Link href="/scan">
-                        <Button icon={<Camera className="w-5 h-5" />}>
-                            Skanuj paragon
-                        </Button>
-                    </Link>
-                    <Link href="/expenses">
-                        <Button variant="outline" icon={<Plus className="w-5 h-5" />}>
-                            Dodaj ręcznie
-                        </Button>
-                    </Link>
-                </div>
+            {/* Personal Header */}
+            <div className="mb-6">
+                <h1 className="text-2xl md:text-3xl font-bold">
+                    {getGreeting()}, {userData?.displayName?.split(' ')[0] || 'tam'}! 👋
+                </h1>
+                <p className="text-slate-400 mt-1">
+                    Dziś wydałeś <span className="text-white font-medium">{formatMoney(monthlyExpensesTotal)}</span>. Trzymaj tak dalej!
+                </p>
             </div>
 
             {/* Hero Section - Safe to Spend + Gamification */}
@@ -261,6 +250,16 @@ export default function DashboardPage() {
                         emoji: '🏅'
                     } : undefined}
                 />
+            </div>
+
+            {/* Quick Actions Bar - thumb-friendly */}
+            <div className="mb-6 md:hidden">
+                <QuickActionsBar />
+            </div>
+
+            {/* Hook Challenge Widget - Variable Reward Zone */}
+            <div className="mb-6">
+                <HookChallengeWidget />
             </div>
 
             <div className="grid lg:grid-cols-3 gap-6">
