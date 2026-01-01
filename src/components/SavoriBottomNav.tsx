@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Mic, PieChart, Shield, Menu } from 'lucide-react';
+import { Mic, PieChart, Shield, Home } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useHaptic } from '@/hooks/use-haptic';
 import dynamic from 'next/dynamic';
@@ -80,14 +80,17 @@ export default function SavoriBottomNav() {
                             <span className="text-[10px] font-medium">Transakcje</span>
                         </Link>
 
-                        {/* Menu / Sidebar */}
+                        {/* Dashboard / Home */}
                         <Link
-                            href="/settings"
+                            href="/dashboard"
                             onClick={handleNavClick}
-                            className="flex flex-col items-center justify-center w-full h-14 rounded-2xl bg-violet-500 text-white shadow-lg shadow-violet-500/20 ml-1 active:scale-95 transition-transform"
+                            className={`flex flex-col items-center justify-center w-full h-14 rounded-2xl ml-1 transition-all ${isActive('/dashboard')
+                                ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/30'
+                                : 'bg-violet-500 text-white shadow-lg shadow-violet-500/20 active:scale-95'
+                                }`}
                         >
-                            <Menu className="w-6 h-6 mb-0.5" />
-                            <span className="text-[10px] font-bold">Menu</span>
+                            <Home className="w-6 h-6 mb-0.5" />
+                            <span className="text-[10px] font-bold">Pulpit</span>
                         </Link>
 
                     </nav>
