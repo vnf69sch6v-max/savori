@@ -28,6 +28,7 @@ import SafeToSpendCard from '@/components/SafeToSpendCard';
 import GamificationHub from '@/components/GamificationHub';
 import QuickActionsBar from '@/components/dashboard/QuickActionsBar';
 import HookChallengeWidget from '@/components/dashboard/HookChallengeWidget';
+import AIChatSheet from '@/components/AIChatSheet';
 import { recurringExpensesService, getMonthlyEquivalent } from '@/lib/subscriptions/recurring-service';
 
 // Minimum thresholds for showing advanced features
@@ -95,6 +96,7 @@ export default function DashboardPage() {
     const [expenses, setExpenses] = useState<Expense[]>([]);
     const [goals, setGoals] = useState<SavingGoal[]>([]);
     const [loading, setLoading] = useState(true);
+    const [isChatOpen, setIsChatOpen] = useState(false);
 
     // Get greeting based on time
     const getGreeting = () => {
@@ -254,7 +256,9 @@ export default function DashboardPage() {
 
             {/* Quick Actions Bar - thumb-friendly */}
             <div className="mb-6 md:hidden">
-                <QuickActionsBar />
+                <QuickActionsBar
+                    onOpenChat={() => setIsChatOpen(true)}
+                />
             </div>
 
             {/* Hook Challenge Widget - Variable Reward Zone */}
@@ -436,6 +440,12 @@ export default function DashboardPage() {
                     </Card>
                 </div>
             </div>
+
+            {/* AI Chat Bottom Sheet */}
+            <AIChatSheet
+                isOpen={isChatOpen}
+                onClose={() => setIsChatOpen(false)}
+            />
         </div>
     );
 }

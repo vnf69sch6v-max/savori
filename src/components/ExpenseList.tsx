@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Calendar } from 'lucide-react';
 import { formatMoney, formatDate } from '@/lib/utils';
 import { Expense } from '@/types';
-import CompactExpenseCard from './dashboard/CompactExpenseCard';
+import GradientExpenseCard from './GradientExpenseCard';
 
 interface ExpenseListProps {
     expenses: Record<string, Expense[]>;
@@ -37,21 +37,20 @@ export default function ExpenseList({ expenses, onDelete }: ExpenseListProps) {
                             </span>
                         </div>
 
-                        {/* Compact expense cards (Layout A) */}
-                        <div className="space-y-2">
+                        {/* Gradient expense cards (Layout B) */}
+                        <div className="space-y-3">
                             <AnimatePresence mode='popLayout'>
                                 {dayExpenses.map((expense, index) => (
                                     <motion.div
                                         key={expense.id}
-                                        initial={{ opacity: 0, y: 10 }}
-                                        animate={{ opacity: 1, y: 0 }}
+                                        initial={{ opacity: 0, y: 20, scale: 0.95 }}
+                                        animate={{ opacity: 1, y: 0, scale: 1 }}
                                         exit={{ opacity: 0, x: -100 }}
-                                        transition={{ delay: index * 0.03 }}
+                                        transition={{ delay: index * 0.05 }}
                                     >
-                                        <CompactExpenseCard
+                                        <GradientExpenseCard
                                             expense={expense}
                                             onDelete={onDelete}
-                                            showDate={false}
                                         />
                                     </motion.div>
                                 ))}
