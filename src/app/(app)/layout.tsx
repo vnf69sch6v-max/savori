@@ -33,6 +33,7 @@ import OnboardingWizard from '@/components/OnboardingWizard';
 import SavoriBottomNav from '@/components/SavoriBottomNav';
 import NotificationCenter from '@/components/NotificationCenter';
 import PWAInstallPrompt from '@/components/PWAInstallPrompt';
+import ErrorBoundary from '@/components/ErrorBoundary';
 import { useUIStore } from '@/stores/uiStore';
 
 // Grouped navigation structure
@@ -278,7 +279,9 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
             {/* Main Content */}
             <main className="flex-1 lg:ml-64 pt-0 lg:pt-0 pb-20 lg:pb-0">
-                <div className="p-4 lg:p-8">{children}</div>
+                <ErrorBoundary>
+                    <div className="p-4 lg:p-8">{children}</div>
+                </ErrorBoundary>
             </main>
         </div>
     );
