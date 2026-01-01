@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
@@ -112,27 +112,28 @@ export default function DashboardPage() {
 
 
 
+    // Guard to prevent repeated recalculation calls
+    const hasTriggeredRecalc = useRef(false);
+
     useEffect(() => {
         if (!userData?.id) return;
         const now = new Date();
         const monthKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
         const budgetRef = doc(db, 'users', userData.id, 'budgets', monthKey);
 
-        const unsubscribe = onSnapshot(budgetRef, (doc) => {
-            if (doc.exists()) {
-                const data = doc.data() as Budget;
+        const unsubscribe = onSnapshot(budgetRef, (docSnap) => {
+            if (docSnap.exists()) {
+                const data = docSnap.data() as Budget;
                 setMonthlyBudget(data.totalLimit);
                 setMonthlySpent(data.totalSpent || 0);
-
-                // Self-healing: If spent is 0 but we know user has data, trigger repair once
-                // This is a heuristic check. For a more robust one, we could check expenses.length > 0 && spent === 0
-                // But since expenses are loaded via another hook, let's keep it simple or manual.
             } else {
-                // Missing budget doc? Auto-create/repair it.
-                // This handles the migration case where the month exists but no budget doc was created yet.
-                import('@/lib/expense-service').then(({ expenseService }) => {
-                    expenseService.recalculateMonthlyStats(userData.id);
-                });
+                // Missing budget doc? Auto-create/repair ONCE
+                if (!hasTriggeredRecalc.current) {
+                    hasTriggeredRecalc.current = true;
+                    import('@/lib/expense-service').then(({ expenseService }) => {
+                        expenseService.recalculateMonthlyStats(userData.id);
+                    });
+                }
             }
         });
         return () => unsubscribe();

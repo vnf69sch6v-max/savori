@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { toast } from 'react-hot-toast';
 import {
@@ -42,11 +42,17 @@ export default function BudgetsPage() {
     const monthKey = format(currentMonth, 'yyyy-MM');
 
     // Fetch budget for current month
+    // Guard to prevent repeated recalculation calls
+    const hasTriggeredRecalc = useRef(false);
+
     useEffect(() => {
         if (!userData?.id) {
             const timer = setTimeout(() => setLoading(false), 0);
             return () => clearTimeout(timer);
         }
+
+        // Reset recalc flag when month changes
+        hasTriggeredRecalc.current = false;
 
         const budgetRef = doc(db, 'users', userData.id, 'budgets', monthKey);
 
@@ -55,10 +61,11 @@ export default function BudgetsPage() {
                 const budgetData = { id: docSnap.id, ...docSnap.data() } as Budget;
                 setBudget(budgetData);
 
-                // Self-healing: If totalSpent is 0 or undefined but budget exists,
-                // trigger a recalculation to sync with actual expenses
-                if ((budgetData.totalSpent === undefined || budgetData.totalSpent === 0) && budgetData.totalLimit > 0) {
-                    // Trigger recalculation in background
+                // Self-healing: ONLY trigger once per session to avoid loops
+                if (!hasTriggeredRecalc.current &&
+                    (budgetData.totalSpent === undefined || budgetData.totalSpent === 0) &&
+                    budgetData.totalLimit > 0) {
+                    hasTriggeredRecalc.current = true;
                     import('@/lib/expense-service').then(({ expenseService }) => {
                         expenseService.recalculateMonthlyStats(userData.id);
                     });
@@ -67,10 +74,13 @@ export default function BudgetsPage() {
                 setExpenses([]);
             } else {
                 setBudget(null);
-                // No budget doc - trigger creation with recalculation
-                import('@/lib/expense-service').then(({ expenseService }) => {
-                    expenseService.recalculateMonthlyStats(userData.id);
-                });
+                // No budget doc - trigger creation ONCE
+                if (!hasTriggeredRecalc.current) {
+                    hasTriggeredRecalc.current = true;
+                    import('@/lib/expense-service').then(({ expenseService }) => {
+                        expenseService.recalculateMonthlyStats(userData.id);
+                    });
+                }
             }
             setLoading(false);
         });
