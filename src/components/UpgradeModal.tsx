@@ -142,12 +142,19 @@ export default function UpgradeModal({ isOpen, onClose, reason, highlightPlan = 
                             </Button>
                         </div>
 
-                        {/* Premium Plan */}
-                        <div className={`relative p-5 rounded-xl border-2 transition-all ${highlightPlan === 'premium' ? 'border-amber-500 bg-amber-500/5' : 'border-slate-700 bg-slate-800/30'
+                        {/* Ultimate Plan */}
+                        <div className={`relative p-5 rounded-xl border-2 transition-all ${premiumPlan.isHighlighted
+                            ? 'border-emerald-500 bg-emerald-500/5 ring-2 ring-emerald-500/30'
+                            : 'border-slate-700 bg-slate-800/30'
                             }`}>
-                            {highlightPlan === 'premium' && (
-                                <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 bg-amber-500 text-black text-xs font-bold rounded-full">
-                                    NAJLEPSZY
+                            {premiumPlan.isHighlighted && premiumPlan.highlightBadge && (
+                                <div className="absolute -top-3 right-4 flex items-center gap-2">
+                                    <span className="px-2 py-1 bg-slate-800 text-emerald-400 text-xs font-medium rounded-full border border-emerald-500/30">
+                                        NAJLEPSZA WARTOŚĆ
+                                    </span>
+                                    <span className="px-2 py-1 bg-emerald-500 text-white text-xs font-bold rounded-full">
+                                        {premiumPlan.highlightBadge}
+                                    </span>
                                 </div>
                             )}
 
@@ -181,7 +188,7 @@ export default function UpgradeModal({ isOpen, onClose, reason, highlightPlan = 
                                 variant="outline"
                                 className="w-full border-amber-500/50 text-amber-400 hover:bg-amber-500/10"
                             >
-                                {loading === 'premium' ? 'Przetwarzanie...' : 'Wybierz Premium'}
+                                {loading === 'premium' ? 'Przetwarzanie...' : 'Wybierz Ultimate'}
                             </Button>
                         </div>
                     </div>

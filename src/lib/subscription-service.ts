@@ -25,8 +25,11 @@ export type FeatureId =
 export interface PlanFeatures {
     id: 'free' | 'pro' | 'premium';
     name: string;
+    subtitle: string;
     price: number;
     yearlyPrice: number;
+    isHighlighted?: boolean;
+    highlightBadge?: string;
     features: string[];
     limits: {
         monthlyScans: number;
@@ -47,21 +50,20 @@ export const SUBSCRIPTION_PLANS: PlanFeatures[] = [
     {
         id: 'free',
         name: 'Free',
+        subtitle: 'Idealny na start',
         price: 0,
         yearlyPrice: 0,
         features: [
-            '10 skanów miesięcznie',
-            'Głosowe dodawanie wydatków',
-            '3 budżety',
-            '3 cele oszczędnościowe',
-            'Statystyki podstawowe',
-            'Eksport CSV',
+            '1 cel oszczędnościowy',
+            '10 skanów/miesiąc',
+            'Podstawowe statystyki',
+            'Śledzenie wydatków',
         ],
         limits: {
             monthlyScans: 10,
-            budgets: 3,
-            goals: 3,
-            voice: true,           // Voice is FREE!
+            budgets: 1,
+            goals: 1,
+            voice: true,
             aiInsights: false,
             exportPdf: false,
             social: false,
@@ -72,23 +74,23 @@ export const SUBSCRIPTION_PLANS: PlanFeatures[] = [
     {
         id: 'pro',
         name: 'Pro',
-        price: 19.99,
-        yearlyPrice: 149.99,  // ~12.50/mies
+        subtitle: 'Dla regularnych oszczędzaczy',
+        price: 25,
+        yearlyPrice: 199,  // ~16.60/mies
         features: [
-            'Nielimitowane skany',
-            'AI Komentarze',
-            'Nielimitowane budżety i cele',
-            'Eksport PDF',
-            'Znajomi & Ranking',
-            'Wszystkie wyzwania',
+            'Wszystko z Free',
+            '5 celów oszczędnościowych',
+            '50 skanów/miesiąc',
+            'Automatyczne reguły',
+            'Tygodniowe raporty',
         ],
         limits: {
-            monthlyScans: Infinity,
-            budgets: Infinity,
-            goals: Infinity,
+            monthlyScans: 50,
+            budgets: 5,
+            goals: 5,
             voice: true,
-            aiInsights: true,
-            exportPdf: true,
+            aiInsights: false,
+            exportPdf: false,
             social: true,
             groupChallenges: false,
             prioritySupport: false,
@@ -96,15 +98,20 @@ export const SUBSCRIPTION_PLANS: PlanFeatures[] = [
     },
     {
         id: 'premium',
-        name: 'Premium',
-        price: 39.99,
-        yearlyPrice: 299.99,  // ~25/mies
+        name: 'Ultimate',
+        subtitle: 'Pełna kontrola finansów',
+        price: 30,
+        yearlyPrice: 249,  // ~20.75/mies
+        isHighlighted: true,
+        highlightBadge: 'Tylko 5 zł więcej!',
         features: [
             'Wszystko z Pro',
-            'Group Challenges',
-            'Priorytetowe wsparcie',
-            'Ekskluzywne odznaki',
-            'Wczesny dostęp do nowości',
+            'Nieograniczone cele',
+            'Nieograniczone skany',
+            'AI Financial Coach',
+            'Predykcje wydatków',
+            'Eksport danych',
+            'Priority support',
         ],
         limits: {
             monthlyScans: Infinity,
