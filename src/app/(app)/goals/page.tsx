@@ -22,15 +22,18 @@ import { useAuth } from '@/contexts/AuthContext';
 import { formatMoney, parseMoneyToCents } from '@/lib/utils';
 import { collection, query, onSnapshot, addDoc, updateDoc, deleteDoc, doc, Timestamp } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
-import { SavingGoal } from '@/types';
+import { SavingGoal, Expense } from '@/types';
 import { fireGoalConfetti } from '@/hooks/useConfetti';
+import SmartGoalAdvisor from '@/components/goals/SmartGoalAdvisor';
 
 const GOAL_EMOJIS = ['🏠', '🚗', '✈️', '💻', '📱', '🎓', '💍', '🎯', '🎁', '🏝️', '🎸', '🐶'];
 
 export default function GoalsPage() {
     const { userData } = useAuth();
     const [goals, setGoals] = useState<SavingGoal[]>([]);
+    const [expenses, setExpenses] = useState<Expense[]>([]);
     const [loading, setLoading] = useState(true);
+    const [selectedGoalForAdvisor, setSelectedGoalForAdvisor] = useState<string | null>(null);
     const [showAddModal, setShowAddModal] = useState(false);
     const [showContributeModal, setShowContributeModal] = useState<string | null>(null);
     const [newGoal, setNewGoal] = useState({
@@ -60,6 +63,28 @@ export default function GoalsPage() {
                 return 0;
             }));
             setLoading(false);
+        });
+
+        return () => unsubscribe();
+    }, [userData?.id]);
+
+    // Fetch expenses for AI advisor
+    useEffect(() => {
+        if (!userData?.id) return;
+
+        const startOfMonth = new Date();
+        startOfMonth.setDate(1);
+        startOfMonth.setHours(0, 0, 0, 0);
+
+        const expensesRef = collection(db, 'users', userData.id, 'expenses');
+        const unsubscribe = onSnapshot(expensesRef, (snapshot) => {
+            const data = snapshot.docs
+                .map(doc => ({ id: doc.id, ...doc.data() }) as Expense)
+                .filter(e => {
+                    const date = e.date?.toDate?.();
+                    return date && date >= startOfMonth;
+                });
+            setExpenses(data);
         });
 
         return () => unsubscribe();
@@ -296,13 +321,46 @@ export default function GoalsPage() {
                                         <span className="text-slate-400">
                                             {Math.round(progress)}% ukończone
                                         </span>
-                                        {goal.deadline && (
-                                            <span className="text-slate-500 flex items-center gap-1">
-                                                <Calendar className="w-3 h-3" />
-                                                {new Date(goal.deadline.toDate()).toLocaleDateString('pl-PL')}
-                                            </span>
-                                        )}
+                                        <div className="flex items-center gap-2">
+                                            {!isCompleted && (
+                                                <button
+                                                    onClick={() => setSelectedGoalForAdvisor(
+                                                        selectedGoalForAdvisor === goal.id ? null : goal.id
+                                                    )}
+                                                    className={`flex items-center gap-1 px-2 py-1 rounded-lg text-xs transition-colors ${selectedGoalForAdvisor === goal.id
+                                                            ? 'bg-purple-500/20 text-purple-400'
+                                                            : 'text-slate-400 hover:text-purple-400'
+                                                        }`}
+                                                >
+                                                    <Sparkles className="w-3 h-3" />
+                                                    AI
+                                                </button>
+                                            )}
+                                            {goal.deadline && (
+                                                <span className="text-slate-500 flex items-center gap-1">
+                                                    <Calendar className="w-3 h-3" />
+                                                    {new Date(goal.deadline.toDate()).toLocaleDateString('pl-PL')}
+                                                </span>
+                                            )}
+                                        </div>
                                     </div>
+
+                                    {/* AI Advisor Panel */}
+                                    <AnimatePresence>
+                                        {selectedGoalForAdvisor === goal.id && expenses.length > 0 && (
+                                            <motion.div
+                                                initial={{ opacity: 0, height: 0 }}
+                                                animate={{ opacity: 1, height: 'auto' }}
+                                                exit={{ opacity: 0, height: 0 }}
+                                                className="mt-4"
+                                            >
+                                                <SmartGoalAdvisor
+                                                    goal={goal}
+                                                    expenses={expenses}
+                                                />
+                                            </motion.div>
+                                        )}
+                                    </AnimatePresence>
                                 </Card>
                             </motion.div>
                         );
