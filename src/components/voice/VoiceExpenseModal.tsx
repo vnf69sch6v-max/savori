@@ -143,12 +143,23 @@ export default function VoiceExpenseModal({ isOpen, onClose }: VoiceExpenseModal
     };
 
     const handleSaveExpense = async () => {
-        if (!parsedExpense || !userData?.id) return;
+        if (!parsedExpense || !userData?.id) {
+            setErrorMessage('Brak danych użytkownika. Zaloguj się ponownie.');
+            setState('error');
+            return;
+        }
 
         setState('saving');
 
         try {
             const expenseDate = getDateFromOffset(parsedExpense.dateOffset);
+
+            console.log('Saving expense:', {
+                userId: userData.id,
+                amount: parsedExpense.amount,
+                merchant: parsedExpense.merchant,
+                category: parsedExpense.category,
+            });
 
             await expenseService.create({
                 userId: userData.id,
@@ -172,7 +183,8 @@ export default function VoiceExpenseModal({ isOpen, onClose }: VoiceExpenseModal
             }, 1500);
         } catch (error) {
             console.error('Save error:', error);
-            setErrorMessage('Nie udało się zapisać wydatku');
+            const errorMsg = error instanceof Error ? error.message : 'Nieznany błąd';
+            setErrorMessage(`Nie udało się zapisać: ${errorMsg}`);
             setState('error');
         }
     };
@@ -267,8 +279,8 @@ export default function VoiceExpenseModal({ isOpen, onClose }: VoiceExpenseModal
                                             whileTap={{ scale: 0.95 }}
                                             onClick={isRecording ? handleStopRecording : handleStartRecording}
                                             className={`relative w-24 h-24 rounded-full flex items-center justify-center transition-all ${isRecording
-                                                    ? 'bg-gradient-to-br from-red-500 to-orange-500 shadow-lg shadow-red-500/40'
-                                                    : 'bg-gradient-to-br from-emerald-500 to-cyan-500 shadow-lg shadow-emerald-500/40 hover:shadow-emerald-500/60'
+                                                ? 'bg-gradient-to-br from-red-500 to-orange-500 shadow-lg shadow-red-500/40'
+                                                : 'bg-gradient-to-br from-emerald-500 to-cyan-500 shadow-lg shadow-emerald-500/40 hover:shadow-emerald-500/60'
                                                 }`}
                                         >
                                             {isRecording ? (
