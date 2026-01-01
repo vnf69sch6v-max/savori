@@ -123,6 +123,16 @@ export default function DashboardPage() {
                 const data = doc.data() as Budget;
                 setMonthlyBudget(data.totalLimit);
                 setMonthlySpent(data.totalSpent || 0);
+
+                // Self-healing: If spent is 0 but we know user has data, trigger repair once
+                // This is a heuristic check. For a more robust one, we could check expenses.length > 0 && spent === 0
+                // But since expenses are loaded via another hook, let's keep it simple or manual.
+            } else {
+                // Missing budget doc? Auto-create/repair it.
+                // This handles the migration case where the month exists but no budget doc was created yet.
+                import('@/lib/expense-service').then(({ expenseService }) => {
+                    expenseService.recalculateMonthlyStats(userData.id);
+                });
             }
         });
         return () => unsubscribe();

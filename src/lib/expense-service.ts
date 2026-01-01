@@ -456,6 +456,35 @@ class ExpenseService {
         cache.invalidate(`expenses:${userId}`);
         cache.invalidate(`stats:${userId}`);
     }
+
+    /**
+     * Recalculate monthly statistics and repair budget document
+     * Use this when totalSpent in budget doesn't match actual expenses
+     */
+    async recalculateMonthlyStats(userId: string): Promise<void> {
+        const range = getMonthRange();
+        const start = Timestamp.fromDate(range.start);
+        const end = Timestamp.fromDate(range.end);
+
+        const q = query(
+            this.expensesRef(userId),
+            where('date', '>=', start),
+            where('date', '<=', end)
+        );
+
+        const snapshot = await getDocs(q);
+        const total = snapshot.docs.reduce((sum, doc) => sum + (doc.data().amount || 0), 0);
+        const monthKey = `${range.start.getFullYear()}-${String(range.start.getMonth() + 1).padStart(2, '0')}`;
+        const budgetRef = doc(db, 'users', userId, 'budgets', monthKey);
+
+        await setDoc(budgetRef, {
+            totalSpent: total,
+            updatedAt: Timestamp.now()
+        }, { merge: true });
+
+        console.log(`Recalculated budget for ${monthKey}: ${total}`);
+        cache.invalidate(`stats:${userId}`);
+    }
 }
 
 // Singleton instance
