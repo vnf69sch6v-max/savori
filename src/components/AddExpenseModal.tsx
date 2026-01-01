@@ -113,24 +113,14 @@ export default function AddExpenseModal({ isOpen, onClose, onSuccess }: AddExpen
             // Get updated engagement data
             const engagement = await engagementService.getEngagement(userData.id);
 
-            // Get budget for remaining
+            // Get budget for remaining - USE AGGREGATED totalSpent
             const monthKey = format(new Date(), 'yyyy-MM');
             const budgetRef = doc(db, 'users', userData.id, 'budgets', monthKey);
             const budgetSnap = await getDoc(budgetRef);
             const budget = budgetSnap.exists() ? budgetSnap.data() as Budget : null;
 
-            // Calculate monthly spent
-            const expensesRef = collection(db, 'users', userData.id, 'expenses');
-            const expensesSnap = await getDocs(query(expensesRef, orderBy('date', 'desc'), limit(100)));
-            const monthStart = startOfMonth(new Date());
-            let monthlySpent = amountInCents;
-            expensesSnap.docs.forEach(d => {
-                const exp = d.data();
-                const expDate = exp.date?.toDate?.();
-                if (expDate && expDate >= monthStart) {
-                    monthlySpent += exp.amount || 0;
-                }
-            });
+            // Use aggregated totalSpent from budget document instead of fetching expenses
+            const monthlySpent = (budget?.totalSpent || 0) + amountInCents;
 
             // Prepare saved expense for analysis card
             setSavedExpense({ merchant: merchant.trim(), amount: amountInCents, category });

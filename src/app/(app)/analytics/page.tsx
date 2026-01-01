@@ -18,7 +18,7 @@ import {
 import { Card, CardHeader, CardTitle, CardContent, Button } from '@/components/ui';
 import { useAuth } from '@/contexts/AuthContext';
 import { formatMoney, CATEGORY_LABELS, CATEGORY_COLORS, CATEGORY_ICONS } from '@/lib/utils';
-import { collection, query, where, orderBy, onSnapshot, Timestamp } from 'firebase/firestore';
+import { collection, query, where, orderBy, onSnapshot, Timestamp, limit } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Expense } from '@/types';
 import AICommentary from '@/components/AICommentary';
@@ -217,7 +217,8 @@ export default function AnalyticsPage() {
         const q = query(
             expensesRef,
             where('date', '>=', Timestamp.fromDate(start)),
-            orderBy('date', 'desc')
+            orderBy('date', 'desc'),
+            limit(500) // Limit to prevent excessive reads
         );
 
         const unsubscribe = onSnapshot(q, (snapshot) => {

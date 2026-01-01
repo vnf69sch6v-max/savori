@@ -20,7 +20,7 @@ import {
 import { Button, Card, CardHeader, CardTitle, CardContent, Input } from '@/components/ui';
 import { useAuth } from '@/contexts/AuthContext';
 import { formatMoney, parseMoneyToCents } from '@/lib/utils';
-import { collection, query, onSnapshot, addDoc, updateDoc, deleteDoc, doc, Timestamp } from 'firebase/firestore';
+import { collection, query, onSnapshot, addDoc, updateDoc, deleteDoc, doc, Timestamp, where, orderBy, limit } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { SavingGoal, Expense } from '@/types';
 import { fireGoalConfetti } from '@/hooks/useConfetti';
@@ -68,27 +68,29 @@ export default function GoalsPage() {
         return () => unsubscribe();
     }, [userData?.id]);
 
-    // Fetch expenses for AI advisor
+    // Fetch expenses for AI advisor - LIMITED to reduce reads
     useEffect(() => {
         if (!userData?.id) return;
+        // Only fetch expenses if an advisor panel is open
+        if (!selectedGoalForAdvisor) {
+            setExpenses([]);
+            return;
+        }
 
         const startOfMonth = new Date();
         startOfMonth.setDate(1);
         startOfMonth.setHours(0, 0, 0, 0);
 
         const expensesRef = collection(db, 'users', userData.id, 'expenses');
-        const unsubscribe = onSnapshot(expensesRef, (snapshot) => {
-            const data = snapshot.docs
-                .map(doc => ({ id: doc.id, ...doc.data() }) as Expense)
-                .filter(e => {
-                    const date = e.date?.toDate?.();
-                    return date && date >= startOfMonth;
-                });
+        const q = query(expensesRef, where('date', '>=', Timestamp.fromDate(startOfMonth)), orderBy('date', 'desc'), limit(50));
+
+        const unsubscribe = onSnapshot(q, (snapshot) => {
+            const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }) as Expense);
             setExpenses(data);
         });
 
         return () => unsubscribe();
-    }, [userData?.id]);
+    }, [userData?.id, selectedGoalForAdvisor]);
 
     // Create goal
     const handleCreateGoal = async () => {
@@ -328,8 +330,8 @@ export default function GoalsPage() {
                                                         selectedGoalForAdvisor === goal.id ? null : goal.id
                                                     )}
                                                     className={`flex items-center gap-1 px-2 py-1 rounded-lg text-xs transition-colors ${selectedGoalForAdvisor === goal.id
-                                                            ? 'bg-purple-500/20 text-purple-400'
-                                                            : 'text-slate-400 hover:text-purple-400'
+                                                        ? 'bg-purple-500/20 text-purple-400'
+                                                        : 'text-slate-400 hover:text-purple-400'
                                                         }`}
                                                 >
                                                     <Sparkles className="w-3 h-3" />

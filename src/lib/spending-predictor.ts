@@ -3,6 +3,14 @@ import { db } from './firebase';
 import { Expense, Budget } from '@/types';
 import { startOfMonth, endOfMonth, subMonths, differenceInDays, format } from 'date-fns';
 
+// Simple in-memory cache for predictions
+let predictionCache: { data: SpendingPrediction | null; timestamp: number; userId: string } = {
+    data: null,
+    timestamp: 0,
+    userId: ''
+};
+const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+
 export interface SpendingPrediction {
     currentSpent: number;
     predictedTotal: number;
@@ -26,22 +34,28 @@ export interface SpendingPrediction {
  * Predict spending for the rest of the month
  */
 export async function predictMonthlySpending(userId: string): Promise<SpendingPrediction> {
-    const now = new Date();
-    const monthStart = startOfMonth(now);
-    const monthEnd = endOfMonth(now);
+    // Check cache first
+    const now = Date.now();
+    if (predictionCache.userId === userId && predictionCache.data && (now - predictionCache.timestamp) < CACHE_TTL) {
+        return predictionCache.data;
+    }
+
+    const nowDate = new Date();
+    const monthStart = startOfMonth(nowDate);
+    const monthEnd = endOfMonth(nowDate);
     const daysInMonth = differenceInDays(monthEnd, monthStart) + 1;
-    const daysElapsed = differenceInDays(now, monthStart) + 1;
+    const daysElapsed = differenceInDays(nowDate, monthStart) + 1;
     const daysRemaining = daysInMonth - daysElapsed;
 
-    // Fetch expenses from last 3 months
-    const threeMonthsAgo = startOfMonth(subMonths(now, 3));
+    // Fetch expenses from last 3 months - REDUCED LIMIT from 1000 to 200
+    const threeMonthsAgo = startOfMonth(subMonths(nowDate, 3));
     const expensesRef = collection(db, 'users', userId, 'expenses');
     const budgetsRef = collection(db, 'users', userId, 'budgets');
 
     // Parallelize independent queries
     const [expensesSnap, budgetsSnap] = await Promise.all([
-        getDocs(query(expensesRef, orderBy('date', 'desc'), where('date', '>=', Timestamp.fromDate(threeMonthsAgo)), limit(1000))),
-        getDocs(budgetsRef)
+        getDocs(query(expensesRef, orderBy('date', 'desc'), where('date', '>=', Timestamp.fromDate(threeMonthsAgo)), limit(200))),
+        getDocs(query(budgetsRef, limit(3))) // Only need recent budgets
     ]);
 
     const allExpenses = expensesSnap.docs.map(d => ({ id: d.id, ...d.data() })) as Expense[];
@@ -131,7 +145,7 @@ export async function predictMonthlySpending(userId: string): Promise<SpendingPr
     // Confidence based on data available
     const confidence = Math.min(100, (daysElapsed / daysInMonth) * 100 + 20);
 
-    return {
+    const result: SpendingPrediction = {
         currentSpent,
         predictedTotal,
         budgetLimit,
@@ -144,6 +158,11 @@ export async function predictMonthlySpending(userId: string): Promise<SpendingPr
         confidence,
         breakdown,
     };
+
+    // Store in cache
+    predictionCache = { data: result, timestamp: Date.now(), userId };
+
+    return result;
 }
 
 /**

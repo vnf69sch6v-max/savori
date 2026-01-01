@@ -20,7 +20,7 @@ import {
 import { Card, CardHeader, CardTitle, CardContent, Button } from '@/components/ui';
 import { useAuth } from '@/contexts/AuthContext';
 import { formatMoney, CATEGORY_LABELS, CATEGORY_ICONS } from '@/lib/utils';
-import { collection, query, orderBy, getDocs, doc, getDoc } from 'firebase/firestore';
+import { collection, query, orderBy, getDocs, doc, getDoc, limit } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Expense, Budget, SavingGoal } from '@/types';
 import { format, startOfMonth, endOfMonth, subMonths, addMonths } from 'date-fns';
@@ -126,9 +126,9 @@ export default function ReportsPage() {
             const prevMonthStart = startOfMonth(subMonths(currentMonth, 1));
             const prevMonthEnd = endOfMonth(subMonths(currentMonth, 1));
 
-            // Fetch expenses
+            // Fetch expenses with limit to prevent excessive reads
             const expensesRef = collection(db, 'users', userData.id, 'expenses');
-            const expensesSnap = await getDocs(query(expensesRef, orderBy('date', 'desc')));
+            const expensesSnap = await getDocs(query(expensesRef, orderBy('date', 'desc'), limit(500)));
             const allExpenses = expensesSnap.docs.map(d => ({ id: d.id, ...d.data() })) as Expense[];
 
             // Filter by month

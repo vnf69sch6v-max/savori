@@ -52,38 +52,24 @@ export default function BudgetsPage() {
 
         const unsubscribeBudget = onSnapshot(budgetRef, (doc) => {
             if (doc.exists()) {
-                setBudget({ id: doc.id, ...doc.data() } as Budget);
+                const budgetData = { id: doc.id, ...doc.data() } as Budget;
+                setBudget(budgetData);
+
+                // Use aggregated totalSpent from budget document instead of fetching all expenses
+                // This reduces reads from N (all expenses) to 1 (budget doc)
+                if (budgetData.totalSpent !== undefined) {
+                    // Create a virtual expense list just for calculations if needed
+                    // Most components should use budget.totalSpent directly
+                    setExpenses([]);
+                }
             } else {
                 setBudget(null);
             }
-        });
-
-        // Fetch expenses for current month
-        const start = startOfMonth(currentMonth);
-        const end = endOfMonth(currentMonth);
-
-        const expensesRef = collection(db, 'users', userData.id, 'expenses');
-
-        const unsubscribeExpenses = onSnapshot(expensesRef, (snapshot) => {
-            const data = snapshot.docs
-                .map(doc => ({ id: doc.id, ...doc.data() }) as Expense)
-                .filter(expense => {
-                    // Check local date conversion
-                    let expenseDate: Date | null = null;
-                    if (expense.date && typeof (expense.date as any).toDate === 'function') {
-                        expenseDate = (expense.date as any).toDate();
-                    } else if (expense.date) {
-                        expenseDate = new Date(expense.date as any);
-                    }
-                    return expenseDate && expenseDate >= start && expenseDate <= end;
-                });
-            setExpenses(data);
             setLoading(false);
         });
 
         return () => {
             unsubscribeBudget();
-            unsubscribeExpenses();
         };
     }, [userData?.id, monthKey, currentMonth]);
 
