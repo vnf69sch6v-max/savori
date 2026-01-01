@@ -85,6 +85,8 @@ export interface ExpenseMetadata {
     receiptUrl?: string;
     aiConfidence?: number;  // 0-1
     verified: boolean;
+    paymentMethod?: 'card' | 'blik' | 'cash' | 'transfer' | 'other';
+    pending?: boolean;      // Transaction pending/processing
 }
 
 export interface SavingsRuleApplied {
