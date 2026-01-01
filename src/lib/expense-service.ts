@@ -26,6 +26,7 @@ import { engagementService } from '@/lib/engagement/xp-system';
 import { insightsEngine } from '@/lib/ai/insights-engine';
 import { notificationService } from '@/lib/engagement/notifications';
 import { recurringExpensesService } from '@/lib/subscriptions/recurring-service';
+import { AuditService } from './audit-service';
 
 export interface CreateExpenseInput {
     userId: string;
@@ -211,6 +212,16 @@ class ExpenseService {
             })()
         );
 
+        // Task F: Audit Log (Immutable)
+        tasks.push(
+            AuditService.logAction(userId, 'EXPENSE_CREATE', 'expense', docRef.id, {
+                amount,
+                merchant: merchant.name,
+                category: merchant.category,
+                source
+            })
+        );
+
         // Execute all side effects and await them to ensure they complete in Serverless env
         // (Previously we didn't await, which caused Vercel to kill the process before completion)
         await Promise.allSettled(tasks);
@@ -343,6 +354,9 @@ class ExpenseService {
      * Delete an expense
      */
     async delete(userId: string, expenseId: string): Promise<void> {
+        // Audit FIRST
+        await AuditService.logAction(userId, 'EXPENSE_DELETE', 'expense', expenseId);
+
         await deleteDoc(doc(db, 'users', userId, 'expenses', expenseId));
 
         await eventBus.emit('expense:deleted', { expenseId, userId });
@@ -354,6 +368,9 @@ class ExpenseService {
      * Update an expense
      */
     async update(userId: string, expenseId: string, changes: Partial<Expense>): Promise<void> {
+        // Audit FIRST
+        await AuditService.logAction(userId, 'EXPENSE_UPDATE', 'expense', expenseId, changes);
+
         const ref = doc(db, 'users', userId, 'expenses', expenseId);
 
         await updateDoc(ref, {

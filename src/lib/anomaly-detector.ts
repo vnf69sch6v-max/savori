@@ -139,6 +139,18 @@ export async function detectAnomaly(
             };
         }
 
+        // Check 5: Late Night Spending (Behavioral Anomaly)
+        // Checks if expense is between 2 AM and 5 AM
+        const hour = newExpense.date.getHours();
+        if (hour >= 2 && hour < 5) {
+            return {
+                isAnomaly: true,
+                type: 'unusual_frequency', // Reusing type or add 'behavioral'
+                severity: 'medium',
+                reason: `Zakupy w środku nocy? (godzina ${hour}:00). Uważaj na impulsywne decyzje.`,
+            };
+        }
+
         // No anomaly detected
         return { isAnomaly: false, type: null, severity: 'low', reason: '' };
 

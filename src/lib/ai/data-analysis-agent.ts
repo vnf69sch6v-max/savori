@@ -11,31 +11,34 @@ class PromptBuilder {
         topCategories: { category: string; amount: number }[]
     ): string {
         return `
-Jesteś Savori AI, zaawansowanym analitykiem finansowym dla finansów osobistych.
-Twoim zadaniem jest wygenerowanie szczegółowego, ale przystępnego raportu miesięcznego.
+Jesteś Savori AI, zaawansowanym analitykiem finansowym.
+Twoim celem nie jest nudne raportowanie, ale wskazanie kluczowych obszarów do poprawy.
 
 DANE:
 - Łączne wydatki: ${totalSpent.toFixed(2)} zł
 - Budżet: ${budget ? budget.toFixed(2) + ' zł' : 'Nieustalony'}
-- Top Kategorie:
+- Top Maszynki do mielenia pieniędzy (Kategorie):
 ${topCategories.map(c => `- ${c.category}: ${c.amount.toFixed(2)} zł`).join('\n')}
 - Liczba transakcji: ${expenses.length}
 
 ZADANIE:
-Przygotuj raport w formacie Markdown zawierający:
-1. **Podsumowanie miesiąca**: Krótka ocena sytuacji (czy jest dobrze, czy źle).
-2. **Analiza budżetu**: Jak użytkownik radzi sobie z limitem (jeśli podano).
-3. **Trendy**: Co dominowało w wydatkach.
-4. **Zalecenia**: 3 konkretne kroki na przyszły miesiąc.
+Przygotuj raport w formacie Markdown:
+1. **Werdykt Miesiąca**: Jedno zdanie podsumowania (np. "Było groźnie, ale dałeś radę" lub "Totalna katastrofa").
+2. **Analiza Budżetu**: Krótko o stopniu realizacji planu.
+3. **Główny Winowajca**: Kategoria, która zjadła najwięcej, z komentarzem czy to konieczne wydatki.
+4. **🔥 SMART ACTIONS**: 3 ultra-konkretne kroki na przyszły miesiąc. Nie pisz "oszczędzaj". Pisz "Zmniejsz wydatki na Ubera o połowę".
 
-Styl: Profesjonalny, ale motywujący. Używaj emoji. Formatuj tekst pogrubieniami.
+Styl: Profesjonalny, ale z charakterem. Używaj pogrubień dla kluczowych liczb.
 `;
     }
 
     static analyzeTrends(expenses: Expense[]): string {
+        // Safe date helper
+        const getDate = (d: any) => d?.toDate ? d.toDate() : new Date(d);
+
         // Prepare simplified data for the AI to "see" patterns without slight noise
         const simplifiedData = expenses.map(e => ({
-            date: e.date instanceof Date ? e.date.toISOString().split('T')[0] : String(e.date), // Handle timestamps if needed
+            day: getDate(e.date).toLocaleDateString('pl-PL', { weekday: 'long' }),
             amount: e.amount,
             category: e.merchant?.category,
             merchant: e.merchant?.name
@@ -43,25 +46,30 @@ Styl: Profesjonalny, ale motywujący. Używaj emoji. Formatuj tekst pogrubieniam
 
         return `
 Jesteś "Detektywem Finansowym" Savori.
-Znajdź ukryte wzorce w wydatkach użytkownika.
+Twoim zadaniem jest znalezienie UKRYTYCH wzorców, których użytkownik nie widzi.
 
 OSTATNIE 50 TRANSAKCJI:
 ${JSON.stringify(simplifiedData)}
 
 ZADANIE:
-Znajdź 2-3 ciekawe korelacje lub trendy, np.:
-- "Dziwnie dużo wydajesz w piątki na jedzenie."
-- "Sklep X pojawia się coraz częściej."
-- "Kategoria Y rośnie w tempie wykładniczym."
+Znajdź 2-3 nieoczywiste korelacje.
+NIE PISZ oczywistości typu "Wydajesz pieniądze na jedzenie".
+Poszukaj:
+- "W każdy piątek zamawiasz to samo..."
+- "Twoje wydatki na kawę sumują się do..."
+- "Zauważyłem, że po wizycie w X często idziesz do Y..."
 
-Odpowiedz krótko i konkretnie. Jeśli nie ma wyraźnych trendów, napisz "Wydatki wyglądają stabilnie".
+Jeśli nie ma nic ciekawego, wymyśl wyzwanie: "Brak wyraźnych złych nawyków, ale spróbuj 'Weekendu bez wydawania'".
+
+Odpowiedz krótko i intrygująco.
 `;
     }
 
     static forecastExpenses(expenses: Expense[]): string {
+        const getDate = (d: any) => d?.toDate ? d.toDate() : new Date(d);
         const dailyTotals: Record<string, number> = {};
         expenses.forEach(e => {
-            const date = e.date instanceof Date ? e.date.toISOString().split('T')[0] : String(e.date);
+            const date = getDate(e.date).toISOString().split('T')[0];
             dailyTotals[date] = (dailyTotals[date] || 0) + (e.amount || 0);
         });
 

@@ -1,15 +1,19 @@
 import { NextResponse } from 'next/server';
 import { generateDashboardInsights } from '@/lib/ai/smart-insights';
 import { Expense } from '@/types';
+import { redactor } from '@/lib/security/redactor';
 
 export async function POST(req: Request) {
     try {
         const body = await req.json();
-        const expenses: Expense[] = body.expenses;
+        const rawExpenses: Expense[] = body.expenses;
 
-        if (!expenses || !Array.isArray(expenses)) {
+        if (!rawExpenses || !Array.isArray(rawExpenses)) {
             return NextResponse.json({ error: 'Invalid expenses data' }, { status: 400 });
         }
+
+        // Redact PII from expenses
+        const expenses = redactor.object(rawExpenses);
 
         const insight = await generateDashboardInsights(expenses);
 

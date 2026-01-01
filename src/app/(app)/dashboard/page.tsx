@@ -34,6 +34,8 @@ import GradientExpenseCard from '@/components/GradientExpenseCard';
 import ImpulseLockModal from '@/components/dashboard/ImpulseLockModal';
 import { recurringExpensesService, getMonthlyEquivalent } from '@/lib/subscriptions/recurring-service';
 
+import SmartSummary from '@/components/dashboard/SmartSummary';
+
 const MIN_EXPENSES_FOR_AI = 5;
 const MIN_EXPENSES_FOR_PREDICTIONS = 3;
 
@@ -202,16 +204,14 @@ export default function DashboardPage() {
                 </div>
             </div>
 
-            {/* Desktop Layout (Kept mostly similar but ensuring components work) */}
+            {/* Desktop Layout */}
             <div className="hidden lg:block">
-                <div className="mb-6">
-                    <h1 className="text-2xl md:text-3xl font-bold">
-                        {getGreeting()}, {userData?.displayName?.split(' ')[0] || 'tam'}! 👋
-                    </h1>
-                    <p className="text-slate-400 mt-1">
-                        Dziś wydałeś <span className="text-white font-medium">{formatMoney(monthlyExpensesTotal, userCurrency)}</span>. Trzymaj tak dalej!
-                    </p>
-                </div>
+                <SmartSummary
+                    expenses={expenses}
+                    userName={userData?.displayName?.split(' ')[0] || 'tam'}
+                    currency={userCurrency}
+                    budget={monthlyBudget}
+                />
 
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-8">
                     {/* For desktop we might want to use the same logic or the old card? 
