@@ -7,12 +7,15 @@ import { Button } from '@/components/ui';
 import {
   Sparkles,
   ArrowRight,
-  Play,
+  TrendingUp,
+  Target,
+  Brain,
+  Zap,
 } from 'lucide-react';
 
 // Live Animated Dashboard inside iPhone
 function LiveDashboard() {
-  const [balance, setBalance] = useState(4250);
+  const [balance, setBalance] = useState(4481);
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -32,7 +35,7 @@ function LiveDashboard() {
         <div className="text-[10px] text-slate-400 mb-1">Dostępne środki</div>
         <motion.div
           className="text-2xl font-bold text-white"
-          key={balance}
+          key={Math.floor(balance)}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
         >
@@ -96,14 +99,14 @@ function IPhoneMockup() {
   return (
     <div className="relative">
       {/* Glow effect */}
-      <div className="absolute inset-0 bg-gradient-to-b from-emerald-500/20 to-blue-500/20 blur-3xl scale-110" />
+      <div className="absolute inset-0 bg-gradient-to-b from-emerald-500/30 to-blue-500/30 blur-3xl scale-110" />
 
       {/* Phone frame */}
-      <div className="relative w-[320px] h-[650px] bg-black rounded-[60px] p-3 shadow-2xl ring-1 ring-white/10">
+      <div className="relative w-[300px] h-[610px] bg-black rounded-[55px] p-3 shadow-2xl ring-1 ring-white/10">
         {/* Screen */}
-        <div className="relative h-full bg-slate-900 rounded-[48px] overflow-hidden">
+        <div className="relative h-full bg-slate-900 rounded-[44px] overflow-hidden">
           {/* Dynamic Island */}
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[120px] h-[37px] bg-black rounded-b-[20px] z-10" />
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[110px] h-[34px] bg-black rounded-b-[18px] z-10" />
 
           {/* Screen Content */}
           <div className="absolute inset-0 pt-12">
@@ -118,38 +121,38 @@ function IPhoneMockup() {
   );
 }
 
-// Feature Section (scroll-triggered)
-function FeatureSection({ title, description, visual, reverse = false }: {
+// Floating Feature Card
+function FloatingCard({ icon: Icon, title, value, color, delay }: {
+  icon: React.ElementType;
   title: string;
-  description: string;
-  visual: React.ReactNode;
-  reverse?: boolean;
+  value: string;
+  color: string;
+  delay: number;
 }) {
-  const ref = useRef(null);
-  const { scrollYProgress } = useScroll({
-    target: ref,
-    offset: ["start end", "end start"]
-  });
-
-  const opacity = useTransform(scrollYProgress, [0, 0.3, 0.7, 1], [0, 1, 1, 0]);
-  const y = useTransform(scrollYProgress, [0, 0.3, 0.7, 1], [100, 0, 0, -100]);
-
   return (
     <motion.div
-      ref={ref}
-      style={{ opacity, y }}
-      className={`flex flex-col ${reverse ? 'md:flex-row-reverse' : 'md:flex-row'} items-center gap-16 my-40`}
+      initial={{ opacity: 0, y: 20, scale: 0.9 }}
+      animate={{
+        opacity: 1,
+        y: 0,
+        scale: 1,
+      }}
+      transition={{
+        delay,
+        duration: 0.5,
+        type: "spring",
+        stiffness: 100
+      }}
+      className={`bg-gradient-to-br ${color} backdrop-blur-xl p-4 rounded-2xl border border-white/10 shadow-2xl`}
     >
-      <div className="flex-1 text-center md:text-left">
-        <h2 className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-br from-white to-slate-400 bg-clip-text text-transparent">
-          {title}
-        </h2>
-        <p className="text-xl text-slate-400 leading-relaxed max-w-md">
-          {description}
-        </p>
-      </div>
-      <div className="flex-1 flex justify-center">
-        {visual}
+      <div className="flex items-center gap-3">
+        <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center">
+          <Icon className="w-5 h-5 text-white" />
+        </div>
+        <div>
+          <p className="text-xs text-white/70">{title}</p>
+          <p className="text-lg font-bold text-white">{value}</p>
+        </div>
       </div>
     </motion.div>
   );
@@ -166,7 +169,7 @@ export default function LandingPage() {
   const heroScale = useTransform(scrollYProgress, [0, 0.5], [1, 0.8]);
 
   return (
-    <div className="min-h-screen bg-black text-white">
+    <div className="min-h-screen bg-black text-white overflow-hidden">
       {/* Minimal Nav */}
       <nav className="fixed top-0 inset-x-0 z-50 bg-black/50 backdrop-blur-xl border-b border-white/5">
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
@@ -176,64 +179,119 @@ export default function LandingPage() {
           </div>
           <Link href="/login">
             <Button variant="ghost" className="text-slate-300 hover:text-white">
-              Sign in
+              Zaloguj się
             </Button>
           </Link>
         </div>
       </nav>
 
-      {/* Hero Section - Full Screen */}
-      <section ref={heroRef} className="min-h-screen flex items-center justify-center px-6 relative overflow-hidden">
-        {/* Background gradient orbs */}
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl" />
-        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl" />
+      {/* Hero Section - Enhanced */}
+      <section ref={heroRef} className="min-h-screen flex items-center justify-center px-6 relative">
+        {/* Enhanced background */}
+        <div className="absolute inset-0">
+          <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-emerald-500/20 rounded-full blur-3xl animate-pulse" />
+          <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-blue-500/20 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-purple-500/10 rounded-full blur-3xl" />
+        </div>
 
         <motion.div
           style={{ opacity: heroOpacity, scale: heroScale }}
-          className="text-center"
+          className="text-center relative z-10 max-w-6xl mx-auto"
         >
-          {/* Headline */}
+          {/* Badge */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-sm font-medium mb-8"
+          >
+            <Sparkles className="w-4 h-4" />
+            <span>Powered by AI</span>
+          </motion.div>
+
+          {/* Improved Headline */}
           <motion.h1
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-            className="text-5xl md:text-7xl lg:text-8xl font-bold mb-6 tracking-tight"
+            transition={{ delay: 0.1, duration: 0.8 }}
+            className="text-5xl md:text-7xl lg:text-8xl font-bold mb-6 tracking-tight leading-[1.1]"
           >
-            Savori.
+            Przestań się<br />
+            <span className="bg-gradient-to-r from-emerald-400 via-cyan-400 to-blue-400 bg-clip-text text-transparent">
+              martwić o pieniądze
+            </span>
           </motion.h1>
 
           <motion.p
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.3, duration: 0.8 }}
-            className="text-2xl md:text-3xl text-slate-400 mb-12"
+            className="text-xl md:text-2xl text-slate-400 mb-12 max-w-2xl mx-auto"
           >
-            Oszczędzaj mądrzej.
+            AI automatycznie analizuje wydatki i podpowiada gdzie zaoszczędzić.
+            <br className="hidden md:block" />
+            <span className="text-emerald-400 font-medium">Średnio 847 zł miesięcznie więcej w kieszeni.</span>
           </motion.p>
 
-          {/* iPhone Mockup */}
-          <motion.div
-            initial={{ opacity: 0, y: 50 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.5, duration: 1 }}
-            className="mb-12 flex justify-center"
-          >
-            <IPhoneMockup />
-          </motion.div>
+          {/* iPhone + Floating Cards */}
+          <div className="relative mb-12">
+            {/* Center iPhone */}
+            <motion.div
+              initial={{ opacity: 0, y: 50 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.5, duration: 1 }}
+              className="flex justify-center"
+            >
+              <IPhoneMockup />
+            </motion.div>
+
+            {/* Floating Cards - positioned around iPhone */}
+            <div className="absolute top-1/4 -left-4 md:left-0">
+              <FloatingCard
+                icon={Brain}
+                title="AI Insights"
+                value="99% dokładność"
+                color="from-purple-600/90 to-purple-500/90"
+                delay={1.2}
+              />
+            </div>
+
+            <div className="absolute top-1/2 -right-4 md:right-0">
+              <FloatingCard
+                icon={TrendingUp}
+                title="Oszczędności"
+                value="+847 zł/msc"
+                color="from-emerald-600/90 to-emerald-500/90"
+                delay={1.4}
+              />
+            </div>
+
+            <div className="absolute bottom-1/4 left-0 md:left-8">
+              <FloatingCard
+                icon={Target}
+                title="Cele osiągnięte"
+                value="2,450+"
+                color="from-amber-600/90 to-amber-500/90"
+                delay={1.6}
+              />
+            </div>
+          </div>
 
           {/* CTA */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ delay: 1, duration: 0.8 }}
+            transition={{ delay: 1.8, duration: 0.8 }}
+            className="flex flex-col sm:flex-row gap-4 justify-center items-center"
           >
             <Link href="/register">
-              <Button className="h-14 px-8 text-base font-medium rounded-full bg-white text-black hover:bg-slate-100 transition-all hover:scale-105">
-                Start saving
+              <Button className="h-14 px-8 text-base font-medium rounded-full bg-white text-black hover:bg-slate-100 transition-all hover:scale-105 shadow-2xl shadow-white/20">
+                Zacznij oszczędzać za darmo
                 <ArrowRight className="w-4 h-4 ml-2" />
               </Button>
             </Link>
-            <p className="text-sm text-slate-500 mt-4">Free to start. No credit card required.</p>
+            <p className="text-sm text-slate-500">
+              ✓ Bez karty kredytowej &nbsp;•&nbsp; ✓ 10,000+ użytkowników
+            </p>
           </motion.div>
         </motion.div>
 
@@ -241,7 +299,7 @@ export default function LandingPage() {
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ delay: 2 }}
+          transition={{ delay: 2.5 }}
           className="absolute bottom-8 left-1/2 -translate-x-1/2"
         >
           <motion.div
@@ -254,50 +312,30 @@ export default function LandingPage() {
         </motion.div>
       </section>
 
-      {/* Features - Scrollytelling */}
-      <div className="max-w-7xl mx-auto px-6 py-20">
-        <FeatureSection
-          title="AI that understands you"
-          description="Automatically categorizes transactions, detects patterns, and gives you personalized insights to save more."
-          visual={
-            <div className="w-72 h-72 rounded-3xl bg-gradient-to-br from-purple-900/50 to-slate-900 border border-purple-500/20 flex items-center justify-center">
-              <Sparkles className="w-24 h-24 text-purple-400" />
-            </div>
-          }
-        />
-
-        <FeatureSection
-          title="Scan any receipt"
-          description="Just point your camera. Our AI extracts every detail in seconds."
-          visual={
-            <div className="w-72 h-72 rounded-3xl bg-gradient-to-br from-emerald-900/50 to-slate-900 border border-emerald-500/20 flex items-center justify-center">
-              <div className="text-6xl">📸</div>
-            </div>
-          }
-          reverse
-        />
-
-        <FeatureSection
-          title="Reach your goals"
-          description="Set targets. Track progress. Get there faster with smart recommendations."
-          visual={
-            <div className="w-72 h-72 rounded-3xl bg-gradient-to-br from-amber-900/50 to-slate-900 border border-amber-500/20 flex items-center justify-center">
-              <div className="text-6xl">🎯</div>
-            </div>
-          }
-        />
-      </div>
-
-      {/* Final CTA */}
-      <div className="text-center py-32 px-6">
-        <h2 className="text-4xl md:text-6xl font-bold mb-8">
-          Ready to save smarter?
-        </h2>
-        <Link href="/register">
-          <Button className="h-14 px-8 text-base font-medium rounded-full bg-white text-black hover:bg-slate-100">
-            Get started for free
-          </Button>
-        </Link>
+      {/* Simple Features Section */}
+      <div className="max-w-5xl mx-auto px-6 py-32">
+        <div className="grid md:grid-cols-3 gap-8">
+          {[
+            { icon: Brain, title: 'AI analizuje za Ciebie', desc: 'Automatyczna kategoryzacja i wykrywanie anomalii' },
+            { icon: Target, title: 'Osiągnij cele szybciej', desc: 'Inteligentne rekomendacje oszczędności' },
+            { icon: Zap, title: 'Skanuj paragony', desc: 'Wystarczy zdjęcie - resztę zrobi AI' },
+          ].map((feature, i) => (
+            <motion.div
+              key={feature.title}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: i * 0.1 }}
+              className="text-center"
+            >
+              <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-slate-800 to-slate-900 border border-slate-700 flex items-center justify-center mx-auto mb-4">
+                <feature.icon className="w-8 h-8 text-emerald-400" />
+              </div>
+              <h3 className="text-xl font-bold mb-2">{feature.title}</h3>
+              <p className="text-slate-400">{feature.desc}</p>
+            </motion.div>
+          ))}
+        </div>
       </div>
 
       {/* Footer */}
@@ -305,9 +343,9 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-slate-600">
           <p>© 2026 Savori Inc.</p>
           <div className="flex gap-8">
-            <Link href="#" className="hover:text-slate-400">Privacy</Link>
-            <Link href="#" className="hover:text-slate-400">Terms</Link>
-            <Link href="#" className="hover:text-slate-400">Contact</Link>
+            <Link href="#" className="hover:text-slate-400">Prywatność</Link>
+            <Link href="#" className="hover:text-slate-400">Regulamin</Link>
+            <Link href="#" className="hover:text-slate-400">Kontakt</Link>
           </div>
         </div>
       </footer>
