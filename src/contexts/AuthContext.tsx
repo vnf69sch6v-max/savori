@@ -10,6 +10,9 @@ import {
     GoogleAuthProvider,
     signOut as firebaseSignOut,
     updateProfile,
+    setPersistence,
+    browserLocalPersistence,
+    browserSessionPersistence,
 } from 'firebase/auth';
 import { doc, getDoc, setDoc, Timestamp, onSnapshot, writeBatch } from 'firebase/firestore';
 import { auth, db } from '@/lib/firebase';
@@ -21,7 +24,7 @@ interface AuthContextType {
     userData: User | null;
     loading: boolean;
     error: string | null;
-    signIn: (email: string, password: string) => Promise<void>;
+    signIn: (email: string, password: string, rememberMe?: boolean) => Promise<void>;
     signUp: (email: string, password: string, displayName: string) => Promise<void>;
     signInWithGoogle: () => Promise<void>;
     signOut: () => Promise<void>;
@@ -172,10 +175,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }, [userData?.settings?.darkMode]);
 
     // Logowanie email/hasło
-    const signIn = async (email: string, password: string) => {
+    const signIn = async (email: string, password: string, rememberMe: boolean = true) => {
         try {
             setError(null);
             setLoading(true);
+
+            // Set persistence based on remember me option
+            // LOCAL = persists until explicitly signed out (remember me)
+            // SESSION = clears when browser/tab closes
+            await setPersistence(auth, rememberMe ? browserLocalPersistence : browserSessionPersistence);
+
             const { user: firebaseUser } = await signInWithEmailAndPassword(auth, email, password);
             // Log security event
             await logSecurityEvent(firebaseUser.uid, SecurityEvents.login('email'));

@@ -226,8 +226,8 @@ export default function SettingsPage() {
                     <div className="flex items-center justify-between bg-slate-900/40 p-4 rounded-xl border border-slate-800">
                         <div className="flex items-center gap-4">
                             <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${currentPlan === 'free' ? 'bg-slate-700/50 text-slate-400' :
-                                    currentPlan === 'pro' ? 'bg-blue-500/20 text-blue-400' :
-                                        'bg-purple-500/20 text-purple-400'
+                                currentPlan === 'pro' ? 'bg-blue-500/20 text-blue-400' :
+                                    'bg-purple-500/20 text-purple-400'
                                 }`}>
                                 {currentPlan === 'free' ? <Sparkles className="w-6 h-6" /> :
                                     currentPlan === 'pro' ? <Zap className="w-6 h-6" /> :
@@ -246,7 +246,7 @@ export default function SettingsPage() {
                             onClick={() => router.push('/settings/billing')}
                             variant={currentPlan === 'free' ? 'primary' : 'outline'}
                         >
-                            {currentPlan === 'free' ? t('subscription.upgrade') : t('subscription.manage')}
+                            {currentPlan === 'free' ? 'Ulepsz plan' : 'Zarządzaj planem'}
                         </Button>
                     </div>
                 </div>
