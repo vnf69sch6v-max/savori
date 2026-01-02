@@ -41,7 +41,7 @@ export default function BillingPage() {
                 try {
                     await subscriptionService.upgradeSubscription(userData.id, 'free');
                     toast.success(t('settings.planUpdated'), { id: toastId });
-                    window.location.reload();
+                    router.push('/dashboard');
                 } catch (error) {
                     toast.error(t('common.error'), { id: toastId });
                 }
@@ -49,13 +49,24 @@ export default function BillingPage() {
             return;
         }
 
-        // For Pro/Ultra, we would normally integration with Stripe here
-        // For now, we simulate upgrade
-        const toastId = toast.loading(t('settings.updating'));
+        // For Pro/Ultra upgrade
+        const toastId = toast.loading('Aktywowanie planu...');
         try {
             await subscriptionService.upgradeSubscription(userData.id, plan);
-            toast.success(t('settings.planUpdated'), { id: toastId });
-            router.push('/settings/billing/success');
+
+            // Show success with details about what was unlocked
+            const planLabel = plan === 'pro' ? 'Pro' : 'Ultra';
+            toast.success(
+                `🎉 Plan ${planLabel} aktywowany! Masz teraz dostęp do wszystkich funkcji premium.`,
+                {
+                    id: toastId,
+                    duration: 5000,
+                    icon: '✨'
+                }
+            );
+
+            // Redirect to dashboard
+            router.push('/dashboard');
         } catch (error) {
             toast.error(t('common.error'), { id: toastId });
         }
