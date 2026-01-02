@@ -24,7 +24,8 @@ import { collection, doc, getDoc, setDoc, onSnapshot, query, where, Timestamp } 
 import { db } from '@/lib/firebase';
 import { Budget, ExpenseCategory, Expense } from '@/types';
 import { format, startOfMonth, endOfMonth, addMonths, subMonths } from 'date-fns';
-import { pl } from 'date-fns/locale';
+import { pl, enUS } from 'date-fns/locale';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 const CATEGORIES: ExpenseCategory[] = [
     'groceries', 'restaurants', 'transport', 'utilities', 'entertainment',
@@ -33,6 +34,8 @@ const CATEGORIES: ExpenseCategory[] = [
 
 export default function BudgetsPage() {
     const { userData } = useAuth();
+    const { t, language } = useLanguage();
+    const dateLocale = language === 'en' ? enUS : pl;
     const [currentMonth, setCurrentMonth] = useState(new Date());
     const [budget, setBudget] = useState<Budget | null>(null);
     const [expenses, setExpenses] = useState<Expense[]>([]);
@@ -130,8 +133,8 @@ export default function BudgetsPage() {
                         <Wallet className="w-6 h-6 text-amber-400" />
                     </div>
                     <div>
-                        <h1 className="text-2xl md:text-3xl font-bold">Twoje Budżety</h1>
-                        <p className="text-slate-400">Kontroluj finanse</p>
+                        <h1 className="text-2xl md:text-3xl font-bold">{t('budgets.title')}</h1>
+                        <p className="text-slate-400">{t('budgets.subtitle')}</p>
                     </div>
                 </div>
 
@@ -145,7 +148,7 @@ export default function BudgetsPage() {
                             <ChevronLeft className="w-5 h-5" />
                         </button>
                         <div className="px-4 py-2 min-w-[160px] text-center font-medium capitalize text-emerald-400">
-                            {format(currentMonth, 'LLLL yyyy', { locale: pl })}
+                            {format(currentMonth, 'LLLL yyyy', { locale: dateLocale })}
                         </div>
                         <button
                             onClick={nextMonth}
@@ -165,12 +168,12 @@ export default function BudgetsPage() {
                 // No budget set
                 <Card className="p-12 text-center bg-slate-900/30 border-slate-800/50 border-dashed">
                     <Wallet className="w-16 h-16 text-slate-700 mx-auto mb-4" />
-                    <h3 className="text-xl font-semibold mb-2">Brak budżetu na ten miesiąc</h3>
+                    <h3 className="text-xl font-semibold mb-2">{t('budgets.noBudget')}</h3>
                     <p className="text-slate-400 mb-6 max-w-md mx-auto">
-                        Ustal miesięczny limit wydatków, aby lepiej kontrolować swoje finanse i otrzymywać alerty przy przekroczeniu.
+                        {t('budgets.noBudgetDesc')}
                     </p>
                     <Button onClick={() => setShowEditModal(true)} icon={<Plus className="w-5 h-5" />}>
-                        Utwórz budżet
+                        {t('budgets.createBudget')}
                     </Button>
                 </Card>
             ) : (
@@ -184,7 +187,7 @@ export default function BudgetsPage() {
                             <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                                 <div className="flex-1">
                                     <div className="flex items-center justify-between mb-2">
-                                        <span className="text-slate-400 font-medium">Całkowity budżet</span>
+                                        <span className="text-slate-400 font-medium">{t('budgets.totalBudget')}</span>
                                         <button
                                             onClick={() => setShowEditModal(true)}
                                             className="p-2 hover:bg-slate-800 rounded-lg transition-colors"
@@ -227,11 +230,11 @@ export default function BudgetsPage() {
                                 <div className="flex gap-4 md:gap-8 border-t md:border-t-0 md:border-l border-slate-800 pt-4 md:pt-0 md:pl-8">
                                     <div className="text-center">
                                         <p className="text-2xl font-bold text-emerald-400">{formatMoney(budget.totalLimit - totalSpent)}</p>
-                                        <p className="text-xs text-slate-500 uppercase tracking-wider font-medium">Zostało</p>
+                                        <p className="text-xs text-slate-500 uppercase tracking-wider font-medium">{t('budgets.remaining')}</p>
                                     </div>
                                     <div className="text-center">
                                         <p className="text-2xl font-bold text-white">{daysRemaining > 0 ? daysRemaining : 0}</p>
-                                        <p className="text-xs text-slate-500 uppercase tracking-wider font-medium">Dni</p>
+                                        <p className="text-xs text-slate-500 uppercase tracking-wider font-medium">{t('budgets.days')}</p>
                                     </div>
                                 </div>
                             </div>
@@ -245,7 +248,7 @@ export default function BudgetsPage() {
                                 >
                                     <AlertTriangle className="w-5 h-5 text-red-400 flex-shrink-0" />
                                     <p className="text-sm text-red-200">
-                                        Przekroczono budżet o <strong className="text-red-100">{formatMoney(totalSpent - budget.totalLimit)}</strong>!
+                                        {t('budgets.exceededBy')} <strong className="text-red-100">{formatMoney(totalSpent - budget.totalLimit)}</strong>!
                                     </p>
                                 </motion.div>
                             )}
@@ -254,7 +257,7 @@ export default function BudgetsPage() {
 
                     {/* Category Budgets */}
                     <div className="flex items-center justify-between mb-4">
-                        <h2 className="text-lg font-semibold text-slate-200">Wydatki według kategorii</h2>
+                        <h2 className="text-lg font-semibold text-slate-200">{t('budgets.categoryExpenses')}</h2>
                     </div>
 
                     <div className="grid gap-3">

@@ -28,7 +28,11 @@ import GamificationHub from '@/components/GamificationHub';
 import ActionGrid from '@/components/dashboard/ActionGrid';
 import DashboardHeader from '@/components/dashboard/DashboardHeader';
 import HookChallengeWidget from '@/components/dashboard/HookChallengeWidget';
-import AIChatSheet from '@/components/AIChatSheet';
+import dynamic from 'next/dynamic';
+const AIChatSheet = dynamic(() => import('@/components/AIChatSheet'), {
+    ssr: false,
+    loading: () => null, // No loading skeleton - chat opens with animation
+});
 import AddExpenseModal from '@/components/AddExpenseModal';
 import GradientExpenseCard from '@/components/GradientExpenseCard';
 import ImpulseLockModal from '@/components/dashboard/ImpulseLockModal';

@@ -25,9 +25,11 @@ import { Expense, ExpenseCategory } from '@/types';
 import AddExpenseModal from '@/components/AddExpenseModal';
 // Using GradientExpenseCard for consistency with Dashboard
 import GradientExpenseCard from '@/components/GradientExpenseCard';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 export default function ExpensesPage() {
     const { userData } = useAuth();
+    const { t, language } = useLanguage();
     const [expenses, setExpenses] = useState<Expense[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
@@ -118,8 +120,8 @@ export default function ExpensesPage() {
             yesterday.setDate(yesterday.getDate() - 1);
 
             let dateLabel = formatDate(dateObj);
-            if (dateObj.toDateString() === today.toDateString()) dateLabel = 'Dzisiaj';
-            else if (dateObj.toDateString() === yesterday.toDateString()) dateLabel = 'Wczoraj';
+            if (dateObj.toDateString() === today.toDateString()) dateLabel = t('common.today');
+            else if (dateObj.toDateString() === yesterday.toDateString()) dateLabel = t('common.yesterday');
 
             if (!groups[dateLabel]) {
                 groups[dateLabel] = [];
@@ -135,10 +137,10 @@ export default function ExpensesPage() {
 
         try {
             await deleteDoc(doc(db, 'users', userData.id, 'expenses', expenseId));
-            toast.success('Wydatek usunięty');
+            toast.success(t('expenses.expenseDeleted'));
         } catch (error) {
             console.error(error);
-            toast.error('Nie udało się usunąć wydatku');
+            toast.error(t('expenses.deleteError'));
         }
     };
 
@@ -152,7 +154,7 @@ export default function ExpensesPage() {
                             <ArrowLeft className="w-6 h-6" />
                         </Link>
                         <div>
-                            <h1 className="text-xl md:text-2xl font-bold text-slate-300">Twoje Wydatki</h1>
+                            <h1 className="text-xl md:text-2xl font-bold text-slate-300">{t('expenses.title')}</h1>
                         </div>
                     </div>
                     <div className="flex gap-3">
@@ -198,7 +200,7 @@ export default function ExpensesPage() {
                             {formatMoney(totalAmount).replace('zł', '')}
                             <span className="text-2xl text-slate-500 font-medium ml-2">zł</span>
                         </motion.h2>
-                        <p className="text-slate-500 text-sm mt-2 font-medium uppercase tracking-widest opacity-60">Suma wydatków</p>
+                        <p className="text-slate-500 text-sm mt-2 font-medium uppercase tracking-widest opacity-60">{t('expenses.totalSum')}</p>
                     </div>
                 </div>
             </div>
@@ -210,7 +212,7 @@ export default function ExpensesPage() {
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
                         <input
                             type="text"
-                            placeholder="Szukaj wydatków..."
+                            placeholder={t('expenses.searchPlaceholder')}
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                             className="w-full pl-10 pr-4 py-2.5 bg-slate-800/50 border border-slate-700/50 rounded-xl text-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 placeholder:text-slate-500"
@@ -223,7 +225,7 @@ export default function ExpensesPage() {
                             onChange={(e) => setSelectedCategory(e.target.value)}
                             className="w-full md:w-auto pl-10 pr-10 py-2.5 bg-slate-800/50 border border-slate-700/50 rounded-xl text-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 appearance-none cursor-pointer"
                         >
-                            <option value="all">Wszystkie kategorie</option>
+                            <option value="all">{t('expenses.allCategories')}</option>
                             {Object.entries(CATEGORY_LABELS).map(([key, label]) => (
                                 <option key={key} value={key}>
                                     {label}
@@ -245,20 +247,20 @@ export default function ExpensesPage() {
             ) : filteredExpenses.length === 0 ? (
                 <div className="py-12 text-center bg-slate-900/30 rounded-3xl border border-slate-800/50 border-dashed">
                     <Receipt className="w-16 h-16 text-slate-600 mx-auto mb-4 opacity-50" />
-                    <h3 className="text-xl font-semibold mb-2 text-white">Brak wydatków</h3>
+                    <h3 className="text-xl font-semibold mb-2 text-white">{t('expenses.noExpenses')}</h3>
                     <p className="text-slate-400 mb-6 max-w-sm mx-auto">
                         {searchQuery || selectedCategory !== 'all'
-                            ? 'Nie znaleziono wydatków pasujących do filtrów'
-                            : 'Twoja historia wydatków jest pusta. Dodaj pierwszy wydatek!'}
+                            ? t('expenses.noMatchingExpenses')
+                            : t('expenses.noExpensesDesc')}
                     </p>
                     <div className="flex justify-center gap-3">
                         <Link href="/scan">
                             <Button variant="outline" icon={<Camera className="w-5 h-5" />}>
-                                Skanuj
+                                {t('common.scan')}
                             </Button>
                         </Link>
                         <Button icon={<Plus className="w-5 h-5" />} onClick={() => setShowAddModal(true)}>
-                            Dodaj ręcznie
+                            {t('expenses.addManually')}
                         </Button>
                     </div>
                 </div>

@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence, useDragControls, PanInfo } from 'framer-motion';
 import { X, Sparkles, Send, Mic, ArrowUp } from 'lucide-react';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface Message {
     id: string;
@@ -36,6 +37,23 @@ interface AIChatSheetProps {
 }
 
 export default function AIChatSheet({ isOpen, onClose, context }: AIChatSheetProps) {
+    const { t, language } = useLanguage();
+
+    // Dynamic suggestions based on language
+    const QUICK_SUGGESTIONS = [
+        t('aiChat.suggestions.afford'),
+        t('aiChat.suggestions.todaySpent'),
+        t('aiChat.suggestions.compare'),
+        t('aiChat.suggestions.whereSave'),
+    ];
+
+    const INITIAL_MESSAGE: Message = {
+        id: 'welcome',
+        role: 'assistant',
+        content: t('aiChat.welcome'),
+        timestamp: new Date(),
+    };
+
     const [messages, setMessages] = useState<Message[]>([INITIAL_MESSAGE]);
     const [inputValue, setInputValue] = useState('');
     const [isLoading, setIsLoading] = useState(false);
@@ -87,7 +105,7 @@ export default function AIChatSheet({ isOpen, onClose, context }: AIChatSheetPro
             const aiMessage: Message = {
                 id: `ai-${Date.now()}`,
                 role: 'assistant',
-                content: data.answer || 'Przepraszam, nie udało mi się wygenerować odpowiedzi.',
+                content: data.answer || t('aiChat.noResponse'),
                 timestamp: new Date(),
             };
 
@@ -97,7 +115,7 @@ export default function AIChatSheet({ isOpen, onClose, context }: AIChatSheetPro
             const errorMessage: Message = {
                 id: `error-${Date.now()}`,
                 role: 'assistant',
-                content: 'Wystąpił błąd połączenia z asystentem. Spróbuj ponownie później.',
+                content: t('aiChat.error'),
                 timestamp: new Date(),
             };
             setMessages(prev => [...prev, errorMessage]);
@@ -153,7 +171,7 @@ export default function AIChatSheet({ isOpen, onClose, context }: AIChatSheetPro
                                 <div className="w-8 h-8 rounded-full bg-purple-500/20 flex items-center justify-center">
                                     <Sparkles className="w-4 h-4 text-purple-400" />
                                 </div>
-                                <span className="font-semibold text-white">Czat AI</span>
+                                <span className="font-semibold text-white">{t('aiChat.title')}</span>
                             </div>
                             <button
                                 onClick={onClose}
@@ -225,7 +243,7 @@ export default function AIChatSheet({ isOpen, onClose, context }: AIChatSheetPro
                                     value={inputValue}
                                     onChange={(e) => setInputValue(e.target.value)}
                                     onKeyDown={(e) => e.key === 'Enter' && handleSend()}
-                                    placeholder="Zapytaj o swoje finanse..."
+                                    placeholder={t('aiChat.placeholder')}
                                     className="flex-1 h-12 px-4 bg-slate-800 border border-slate-700 rounded-xl text-white placeholder:text-slate-500 focus:outline-none focus:border-purple-500 transition-colors"
                                 />
                                 <button

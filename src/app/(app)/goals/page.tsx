@@ -28,11 +28,13 @@ import { useSubscription } from '@/hooks/useSubscription';
 import UpgradeModal from '@/components/UpgradeModal';
 import { fireGoalConfetti } from '@/hooks/useConfetti';
 import SmartGoalAdvisor from '@/components/goals/SmartGoalAdvisor';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 const GOAL_EMOJIS = ['🏠', '🚗', '✈️', '💻', '📱', '🎓', '💍', '🎯', '🎁', '🏝️', '🎸', '🐶'];
 
 export default function GoalsPage() {
     const { userData } = useAuth();
+    const { t, language } = useLanguage();
     const { getLimit, openUpgrade, showUpgradeModal, closeUpgrade, upgradeReason, isFree, isPro } = useSubscription();
     const [goals, setGoals] = useState<SavingGoal[]>([]);
     const [expenses, setExpenses] = useState<Expense[]>([]);
@@ -104,13 +106,13 @@ export default function GoalsPage() {
         // Check goal limit
         const activeGoals = goals.filter(g => g.status !== 'completed');
         if (activeGoals.length >= goalLimit) {
-            openUpgrade(`Osiągnąłeś limit ${goalLimit} ${goalLimit === 1 ? 'celu' : 'celów'}. Ulepsz plan, aby dodać więcej!`);
+            openUpgrade(`${t('goals.limitReached')} ${goalLimit} ${goalLimit === 1 ? t('goals.goalWord') : t('goals.goalsWord')}. ${t('goals.upgradeToAddMore')}`);
             setShowAddModal(false);
             return;
         }
 
         if (!newGoal.name || !newGoal.targetAmount) {
-            toast.error('Wypełnij nazwę i kwotę');
+            toast.error(t('goals.fillNameAndAmount'));
             return;
         }
 
@@ -131,12 +133,12 @@ export default function GoalsPage() {
             };
 
             await addDoc(collection(db, 'users', userData.id, 'goals'), goalData);
-            toast.success('Cel utworzony! 🎯');
+            toast.success(t('goals.goalCreated'));
             setShowAddModal(false);
             setNewGoal({ name: '', emoji: '🎯', targetAmount: '', deadline: '' });
         } catch (error) {
             console.error(error);
-            toast.error('Nie udało się utworzyć celu');
+            toast.error(t('goals.createError'));
         }
     };
 
@@ -158,18 +160,18 @@ export default function GoalsPage() {
             });
 
             if (isCompleted) {
-                toast.success('Gratulacje! Cel osiągnięty! 🎉');
+                toast.success(t('goals.goalReached'));
                 // Fire confetti celebration!
                 setTimeout(() => fireGoalConfetti(), 300);
             } else {
-                toast.success('Wpłata dodana!');
+                toast.success(t('goals.depositAdded'));
             }
 
             setShowContributeModal(null);
             setContributeAmount('');
         } catch (error) {
             console.error(error);
-            toast.error('Nie udało się dodać wpłaty');
+            toast.error(t('goals.contributeError'));
         }
     };
 
@@ -179,10 +181,10 @@ export default function GoalsPage() {
 
         try {
             await deleteDoc(doc(db, 'users', userData.id, 'goals', goalId));
-            toast.success('Cel usunięty');
+            toast.success(t('goals.goalDeleted'));
         } catch (error) {
             console.error(error);
-            toast.error('Nie udało się usunąć celu');
+            toast.error(t('goals.deleteError'));
         }
     };
 
@@ -194,7 +196,7 @@ export default function GoalsPage() {
             await updateDoc(doc(db, 'users', userData.id, 'goals', goalId), {
                 status: currentStatus === 'paused' ? 'active' : 'paused',
             });
-            toast.success(currentStatus === 'paused' ? 'Cel wznowiony' : 'Cel wstrzymany');
+            toast.success(currentStatus === 'paused' ? t('goals.goalResumed') : t('goals.goalPaused'));
         } catch (error) {
             console.error(error);
         }
@@ -220,26 +222,26 @@ export default function GoalsPage() {
                     </p>
                 </div>
                 <Button icon={<Plus className="w-5 h-5" />} onClick={() => setShowAddModal(true)}>
-                    Nowy cel
+                    {t('goals.newGoal')}
                 </Button>
             </div>
 
             {/* Stats */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
                 <Card className="p-4">
-                    <p className="text-sm text-slate-400 mb-1">Aktywne</p>
+                    <p className="text-sm text-slate-400 mb-1">{t('goals.active')}</p>
                     <p className="text-2xl font-bold text-emerald-400">{activeGoals}</p>
                 </Card>
                 <Card className="p-4">
-                    <p className="text-sm text-slate-400 mb-1">Ukończone</p>
+                    <p className="text-sm text-slate-400 mb-1">{t('goals.completed')}</p>
                     <p className="text-2xl font-bold text-amber-400">{completedGoals}</p>
                 </Card>
                 <Card className="p-4">
-                    <p className="text-sm text-slate-400 mb-1">Zaoszczędzone</p>
+                    <p className="text-sm text-slate-400 mb-1">{t('goals.saved')}</p>
                     <p className="text-xl font-bold">{formatMoney(totalSaved)}</p>
                 </Card>
                 <Card className="p-4">
-                    <p className="text-sm text-slate-400 mb-1">Postęp</p>
+                    <p className="text-sm text-slate-400 mb-1">{t('goals.progress')}</p>
                     <p className="text-xl font-bold">
                         {totalTarget > 0 ? Math.round((totalSaved / totalTarget) * 100) : 0}%
                     </p>

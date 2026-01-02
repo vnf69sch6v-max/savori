@@ -95,7 +95,7 @@ export default function SettingsPage() {
 
                     <div className="space-y-4">
                         <Input
-                            label="Imię i nazwisko"
+                            label={t('settings.profileName')}
                             value={displayName}
                             onChange={(e) => setDisplayName(e.target.value)}
                         // Assuming Input component handles styling, if not we might need to adjust props or component
@@ -188,9 +188,9 @@ export default function SettingsPage() {
 
                     <div className="space-y-4">
                         {[
-                            { key: 'daily', label: 'Codzienne podsumowanie' },
-                            { key: 'weekly', label: 'Raport tygodniowy' },
-                            { key: 'goals', label: 'Postęp celów' },
+                            { key: 'daily', label: t('settings.dailySummary') },
+                            { key: 'weekly', label: t('settings.weeklyReport') },
+                            { key: 'goals', label: t('settings.goalProgress') },
                         ].map(({ key, label }) => (
                             <div key={key} className="flex items-center justify-between p-3 bg-slate-900/40 rounded-xl">
                                 <span className="text-slate-200">{label}</span>
@@ -290,7 +290,7 @@ export default function SettingsPage() {
                                         <p className="text-slate-400">{selectedPlan.subtitle}</p>
                                         <div className="mt-4">
                                             <span className="text-4xl font-bold">{selectedPlan.price}</span>
-                                            <span className="text-slate-400"> zł/mies</span>
+                                            <span className="text-slate-400"> {t('settings.perMonth')}</span>
                                         </div>
                                     </div>
 
@@ -306,7 +306,7 @@ export default function SettingsPage() {
                                     {currentPlan === selectedPlan.id ? (
                                         <div className="text-center py-3 bg-emerald-500/10 rounded-xl border border-emerald-500/30">
                                             <span className="text-emerald-400 font-medium flex items-center justify-center gap-2">
-                                                <Check className="w-5 h-5" /> Aktualny plan
+                                                <Check className="w-5 h-5" /> {t('settings.currentPlan')}
                                             </span>
                                         </div>
                                     ) : (
@@ -314,25 +314,25 @@ export default function SettingsPage() {
                                             className="w-full"
                                             onClick={async () => {
                                                 if (!userData?.id) return;
-                                                const toastId = toast.loading('Aktualizacja...');
+                                                const toastId = toast.loading(t('settings.updating'));
                                                 try {
                                                     const result = await subscriptionService.upgradeSubscription(
                                                         userData.id,
                                                         selectedPlan.id
                                                     );
                                                     if (result.success) {
-                                                        toast.success('Plan zaktualizowany!', { id: toastId });
+                                                        toast.success(t('settings.planUpdated'), { id: toastId });
                                                         setSelectedPlan(null);
                                                         window.location.reload();
                                                     } else {
-                                                        toast.error(result.error || 'Błąd', { id: toastId });
+                                                        toast.error(result.error || t('common.error'), { id: toastId });
                                                     }
                                                 } catch (e) {
-                                                    toast.error('Błąd połączenia', { id: toastId });
+                                                    toast.error(t('common.error'), { id: toastId });
                                                 }
                                             }}
                                         >
-                                            {selectedPlan.price === 0 ? 'Przejdź na Free' : `Wybierz ${selectedPlan.name}`}
+                                            {selectedPlan.price === 0 ? t('settings.switchToFree') : `${t('settings.selectPlan')} ${selectedPlan.name}`}
                                         </Button>
                                     )}
                                 </motion.div>
@@ -348,7 +348,7 @@ export default function SettingsPage() {
                     onClick={handleSignOut}
                     icon={<LogOut className="w-5 h-5" />}
                 >
-                    {t('common.delete')} / Wyloguj
+                    {t('common.signOut')}
                 </Button>
             </div>
         </div>
