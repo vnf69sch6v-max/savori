@@ -241,9 +241,11 @@ class ExpenseService {
                 const monthKey = `${dateObj.getFullYear()}-${String(dateObj.getMonth() + 1).padStart(2, '0')}`;
                 const budgetRef = doc(db, 'users', userId, 'budgets', monthKey);
 
-                // Ensure budget doc exists (upsert)
+                // Atomically update totalSpent AND categoryLimits[category].spent
+                const category = merchant.category || 'other';
                 await setDoc(budgetRef, {
                     totalSpent: increment(amount),
+                    [`categoryLimits.${category}.spent`]: increment(amount),
                     updatedAt: Timestamp.now()
                 }, { merge: true });
             })()
@@ -482,16 +484,37 @@ class ExpenseService {
         );
 
         const snapshot = await getDocs(q);
-        const total = snapshot.docs.reduce((sum, doc) => sum + (doc.data().amount || 0), 0);
+
+        // Calculate total and per-category sums
+        const categoryTotals: Record<string, number> = {};
+        let total = 0;
+
+        snapshot.docs.forEach(doc => {
+            const data = doc.data();
+            const amount = data.amount || 0;
+            const category = data.merchant?.category || 'other';
+
+            total += amount;
+            categoryTotals[category] = (categoryTotals[category] || 0) + amount;
+        });
+
         const monthKey = `${range.start.getFullYear()}-${String(range.start.getMonth() + 1).padStart(2, '0')}`;
         const budgetRef = doc(db, 'users', userId, 'budgets', monthKey);
 
-        await setDoc(budgetRef, {
+        // Build update object with category spent values
+        const updateData: Record<string, any> = {
             totalSpent: total,
             updatedAt: Timestamp.now()
-        }, { merge: true });
+        };
 
-        console.log(`Recalculated budget for ${monthKey}: ${total}`);
+        // Add per-category spent values
+        Object.entries(categoryTotals).forEach(([category, spent]) => {
+            updateData[`categoryLimits.${category}.spent`] = spent;
+        });
+
+        await setDoc(budgetRef, updateData, { merge: true });
+
+        console.log(`Recalculated budget for ${monthKey}: total=${total}, categories=`, categoryTotals);
         cache.invalidate(`stats:${userId}`);
     }
 }

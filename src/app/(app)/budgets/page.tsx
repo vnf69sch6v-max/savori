@@ -262,8 +262,9 @@ export default function BudgetsPage() {
 
                     <div className="grid gap-3">
                         {CATEGORIES.map((cat, i) => {
-                            const spent = spentByCategory[cat] || 0;
                             const categoryBudget = budget.categoryLimits[cat];
+                            // Use pre-aggregated spent from budget doc, fallback to calculated
+                            const spent = categoryBudget?.spent || spentByCategory[cat] || 0;
                             const limit = categoryBudget?.limit || 0;
                             const percent = limit > 0 ? Math.min(100, (spent / limit) * 100) : 0;
                             const isOver = spent > limit && limit > 0;
