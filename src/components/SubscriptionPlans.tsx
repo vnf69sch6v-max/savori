@@ -113,8 +113,9 @@ export default function SubscriptionPlans({ onSelect }: SubscriptionPlansProps) 
                             variant={currentPlan === 'free' ? 'outline' : 'secondary'}
                             className="w-full"
                             disabled={currentPlan === 'free'}
+                            onClick={() => onSelect?.('free')}
                         >
-                            {currentPlan === 'free' ? t('subscription.currentPlan') : t('subscription.downgrade')}
+                            {currentPlan === 'free' ? t('subscription.currentPlan') : 'Zmień na Free'}
                         </Button>
 
                         <ul className="space-y-3 pt-4 border-t border-slate-700">

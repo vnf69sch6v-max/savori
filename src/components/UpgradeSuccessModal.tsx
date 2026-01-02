@@ -127,20 +127,21 @@ export default function UpgradeSuccessModal({ isOpen, plan, onComplete }: Upgrad
                 >
                     {/* Background gradient */}
                     <div className={`absolute inset-0 bg-gradient-to-b ${plan === 'pro'
-                            ? 'from-emerald-600/20 via-transparent to-transparent'
-                            : 'from-purple-600/20 via-transparent to-transparent'
+                        ? 'from-emerald-600/20 via-transparent to-transparent'
+                        : 'from-purple-600/20 via-transparent to-transparent'
                         }`} />
 
-                    {/* Content */}
-                    <div className="relative flex-1 flex flex-col items-center justify-center px-6 py-12 overflow-hidden">
+                    {/* Content - scrollable with safe area */}
+                    <div className="relative flex-1 flex flex-col items-center px-6 pt-16 pb-8 overflow-y-auto safe-area-inset"
+                        style={{ paddingTop: 'max(4rem, env(safe-area-inset-top))' }}>
                         {/* Celebration icon */}
                         <motion.div
                             initial={{ scale: 0, rotate: -180 }}
                             animate={{ scale: 1, rotate: 0 }}
                             transition={{ type: 'spring', stiffness: 200, damping: 15, delay: 0.2 }}
                             className={`w-24 h-24 rounded-3xl flex items-center justify-center mb-8 ${plan === 'pro'
-                                    ? 'bg-gradient-to-br from-emerald-500 to-teal-600 shadow-lg shadow-emerald-500/30'
-                                    : 'bg-gradient-to-br from-purple-500 to-pink-600 shadow-lg shadow-purple-500/30'
+                                ? 'bg-gradient-to-br from-emerald-500 to-teal-600 shadow-lg shadow-emerald-500/30'
+                                : 'bg-gradient-to-br from-purple-500 to-pink-600 shadow-lg shadow-purple-500/30'
                                 }`}
                         >
                             {plan === 'pro' ? (
@@ -184,17 +185,17 @@ export default function UpgradeSuccessModal({ isOpen, plan, onComplete }: Upgrad
                                         delay: index * 0.1 + 0.6,
                                     }}
                                     className={`flex items-center gap-4 p-4 rounded-2xl ${currentStep > index
-                                            ? `bg-${planColor}-500/10 border border-${planColor}-500/20`
-                                            : 'bg-slate-800/30'
+                                        ? `bg-${planColor}-500/10 border border-${planColor}-500/20`
+                                        : 'bg-slate-800/30'
                                         }`}
                                 >
                                     <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${currentStep > index
-                                            ? `bg-${planColor}-500/20`
-                                            : 'bg-slate-700/50'
+                                        ? `bg-${planColor}-500/20`
+                                        : 'bg-slate-700/50'
                                         }`}>
                                         <feature.icon className={`w-5 h-5 ${currentStep > index
-                                                ? `text-${planColor}-400`
-                                                : 'text-slate-500'
+                                            ? `text-${planColor}-400`
+                                            : 'text-slate-500'
                                             }`} />
                                     </div>
                                     <div className="flex-1">
@@ -227,10 +228,10 @@ export default function UpgradeSuccessModal({ isOpen, plan, onComplete }: Upgrad
                             onClick={handleContinue}
                             disabled={currentStep < features.length}
                             className={`w-full max-w-md py-4 rounded-2xl font-semibold text-white flex items-center justify-center gap-2 transition-all ${currentStep >= features.length
-                                    ? plan === 'pro'
-                                        ? 'bg-gradient-to-r from-emerald-500 to-teal-500 shadow-lg shadow-emerald-500/30 hover:shadow-xl'
-                                        : 'bg-gradient-to-r from-purple-500 to-pink-500 shadow-lg shadow-purple-500/30 hover:shadow-xl'
-                                    : 'bg-slate-700 cursor-not-allowed'
+                                ? plan === 'pro'
+                                    ? 'bg-gradient-to-r from-emerald-500 to-teal-500 shadow-lg shadow-emerald-500/30 hover:shadow-xl'
+                                    : 'bg-gradient-to-r from-purple-500 to-pink-500 shadow-lg shadow-purple-500/30 hover:shadow-xl'
+                                : 'bg-slate-700 cursor-not-allowed'
                                 }`}
                         >
                             Przejdź do pulpitu
