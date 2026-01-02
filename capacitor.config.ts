@@ -5,15 +5,14 @@ const config: CapacitorConfig = {
   appName: 'Savori',
   webDir: 'out',
 
-  // Server configuration - load from hosted URL (Vercel)
-  // For development, comment out server block and use webDir
+  // Server configuration - load from dev server
   server: {
-    // Production: your Vercel URL
-    // url: 'https://your-app.vercel.app',
+    // For development: use local Next.js dev server
+    url: 'http://localhost:3000',
+    cleartext: true, // Allow HTTP for local dev
 
-    // Development: use local dev server
-    // url: 'http://localhost:3000',
-    // cleartext: true,
+    // For production (uncomment and replace):
+    // url: 'https://your-app.vercel.app',
 
     androidScheme: 'https',
   },

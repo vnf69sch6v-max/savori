@@ -262,7 +262,7 @@ export default function BudgetsPage() {
 
                     <div className="grid gap-3">
                         {CATEGORIES.map((cat, i) => {
-                            const categoryBudget = budget.categoryLimits[cat];
+                            const categoryBudget = budget.categoryLimits?.[cat];
                             // Use pre-aggregated spent from budget doc, fallback to calculated
                             const spent = categoryBudget?.spent || spentByCategory[cat] || 0;
                             const limit = categoryBudget?.limit || 0;
@@ -345,7 +345,7 @@ function BudgetModal({ isOpen, onClose, existingBudget, monthKey }: BudgetModalP
             setTotalLimit((existingBudget.totalLimit / 100).toString());
             const limits: Record<string, string> = {};
             const enabled = new Set<string>();
-            Object.entries(existingBudget.categoryLimits).forEach(([cat, data]) => {
+            Object.entries(existingBudget.categoryLimits || {}).forEach(([cat, data]) => {
                 if (data?.limit) {
                     limits[cat] = (data.limit / 100).toString();
                     enabled.add(cat);
@@ -410,7 +410,7 @@ function BudgetModal({ isOpen, onClose, existingBudget, monthKey }: BudgetModalP
                 if (limit > 0) {
                     budgetData.categoryLimits[cat as ExpenseCategory] = {
                         limit,
-                        spent: existingBudget?.categoryLimits[cat as ExpenseCategory]?.spent || 0,
+                        spent: existingBudget?.categoryLimits?.[cat as ExpenseCategory]?.spent || 0,
                         alertThreshold: 0.8,
                     };
                 }
