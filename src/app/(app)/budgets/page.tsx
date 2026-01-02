@@ -50,15 +50,18 @@ export default function BudgetsPage() {
 
     useEffect(() => {
         if (!userData?.id) {
-            const timer = setTimeout(() => setLoading(false), 0);
-            return () => clearTimeout(timer);
+            setLoading(false);
+            return;
         }
 
         // Reset recalc flag when month changes
         hasTriggeredRecalc.current = false;
 
         const budgetRef = doc(db, 'users', userData.id, 'budgets', monthKey);
+        const monthStart = startOfMonth(currentMonth);
+        const monthEnd = endOfMonth(currentMonth);
 
+        // Budget listener
         const unsubscribeBudget = onSnapshot(budgetRef, async (docSnap) => {
             if (docSnap.exists()) {
                 const budgetData = { id: docSnap.id, ...docSnap.data() } as Budget;
@@ -73,8 +76,6 @@ export default function BudgetsPage() {
                         expenseService.recalculateMonthlyStats(userData.id);
                     });
                 }
-
-                setExpenses([]);
             } else {
                 setBudget(null);
                 // No budget doc - trigger creation ONCE
@@ -88,8 +89,22 @@ export default function BudgetsPage() {
             setLoading(false);
         });
 
+        // Expenses listener for category calculation
+        const expensesRef = collection(db, 'users', userData.id, 'expenses');
+        const expensesQuery = query(
+            expensesRef,
+            where('date', '>=', Timestamp.fromDate(monthStart)),
+            where('date', '<=', Timestamp.fromDate(monthEnd))
+        );
+
+        const unsubscribeExpenses = onSnapshot(expensesQuery, (snapshot) => {
+            const expensesList = snapshot.docs.map(d => ({ id: d.id, ...d.data() })) as Expense[];
+            setExpenses(expensesList);
+        });
+
         return () => {
             unsubscribeBudget();
+            unsubscribeExpenses();
         };
     }, [userData?.id, monthKey, currentMonth]);
 
