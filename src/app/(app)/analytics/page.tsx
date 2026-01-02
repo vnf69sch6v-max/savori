@@ -27,6 +27,7 @@ import CategoryRing from '@/components/analytics/CategoryRing';
 import SpendingTrendChart from '@/components/analytics/SpendingTrendChart';
 import BenchmarkCard from '@/components/engagement/BenchmarkCard';
 import { benchmarkService } from '@/lib/engagement/benchmarks';
+import PremiumFeatureGate from '@/components/PremiumFeatureGate';
 
 type Period = 'week' | 'month' | 'quarter' | 'year';
 
@@ -499,9 +500,11 @@ export default function AnalyticsPage() {
                     {/* Anonymous Benchmarks Section */}
                     {expenses.length >= 5 && (
                         <div className="mb-6">
-                            <BenchmarkCard
-                                benchmark={benchmarkService.calculateBenchmarks(expenses)}
-                            />
+                            <PremiumFeatureGate requiredPlan="pro" featureName="Anonimowe Benchmarki">
+                                <BenchmarkCard
+                                    benchmark={benchmarkService.calculateBenchmarks(expenses)}
+                                />
+                            </PremiumFeatureGate>
                         </div>
                     )}
 

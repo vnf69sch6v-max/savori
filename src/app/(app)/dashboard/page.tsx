@@ -55,6 +55,7 @@ import DailyBonusWidget from '@/components/engagement/DailyBonusWidget';
 import FinancialWeatherWidget from '@/components/engagement/FinancialWeatherWidget';
 import MoneyWrappedCard from '@/components/engagement/MoneyWrappedCard';
 import PendingPurchasesWidget from '@/components/engagement/PendingPurchasesWidget';
+import PremiumFeatureGate from '@/components/PremiumFeatureGate';
 
 const MIN_EXPENSES_FOR_AI = 5;
 const MIN_EXPENSES_FOR_PREDICTIONS = 3;
@@ -257,15 +258,21 @@ export default function DashboardPage() {
 
                 {/* Daily Bonus Widget */}
                 <div className="mb-6 grid md:grid-cols-2 gap-4">
-                    <FinancialWeatherWidget
-                        expenses={expenses}
-                        budgets={[{ totalLimit: monthlyBudget, totalSpent: monthlySpent } as any]}
-                    />
-                    <MoneyWrappedCard expenses={expenses} />
+                    <PremiumFeatureGate requiredPlan="pro" featureName="Pogoda Finansowa">
+                        <FinancialWeatherWidget
+                            expenses={expenses}
+                            budgets={[{ totalLimit: monthlyBudget, totalSpent: monthlySpent } as any]}
+                        />
+                    </PremiumFeatureGate>
+                    <PremiumFeatureGate requiredPlan="pro" featureName="Money Wrapped">
+                        <MoneyWrappedCard expenses={expenses} />
+                    </PremiumFeatureGate>
                 </div>
 
                 {/* Pending Purchases (Pre-Purchase Pause) */}
-                <PendingPurchasesWidget className="mb-6" />
+                <PremiumFeatureGate requiredPlan="pro" featureName="Pre-Purchase Pause">
+                    <PendingPurchasesWidget className="mb-6" />
+                </PremiumFeatureGate>
 
                 {/* High Priority Section (Desktop) */}
                 {(isPredictionCritical || isAICritical) && (
