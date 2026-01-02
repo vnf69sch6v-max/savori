@@ -1,5 +1,4 @@
 'use client';
-
 import Link from 'next/link';
 import { motion, useScroll, useTransform } from 'framer-motion';
 import { useRef, useState, useEffect } from 'react';
@@ -49,14 +48,14 @@ function LiveDashboard() {
           <motion.path
             d="M0,60 Q40,30 80,35 T160,25 T240,40"
             fill="none"
-            stroke="url(#chartGradient)"
+            stroke="url(#dashboardChartGradient)"
             strokeWidth="2"
             initial={{ pathLength: 0 }}
             animate={{ pathLength: 1 }}
             transition={{ duration: 2, ease: "easeOut" }}
           />
           <defs>
-            <linearGradient id="chartGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+            <linearGradient id="dashboardChartGradient" x1="0%" y1="0%" x2="100%" y2="0%">
               <stop offset="0%" stopColor="#10b981" />
               <stop offset="100%" stopColor="#06b6d4" />
             </linearGradient>
@@ -255,7 +254,6 @@ export default function LandingPage() {
                 delay={1.0}
               />
             </div>
-
             <div className="absolute top-1/2 -right-8 md:right-4 z-10">
               <FloatingCard
                 icon={TrendingUp}
@@ -265,7 +263,6 @@ export default function LandingPage() {
                 delay={1.2}
               />
             </div>
-
             <div className="absolute bottom-1/4 left-4 md:left-16 z-10">
               <FloatingCard
                 icon={Target}

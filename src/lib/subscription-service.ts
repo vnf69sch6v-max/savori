@@ -33,6 +33,7 @@ export interface PlanFeatures {
     features: string[];
     limits: {
         monthlyScans: number;
+        dailyAiMessages: number;
         budgets: number;
         goals: number;
         voice: boolean;
@@ -56,11 +57,13 @@ export const SUBSCRIPTION_PLANS: PlanFeatures[] = [
         features: [
             '1 cel oszczędnościowy',
             '10 skanów/miesiąc',
+            '5 wiadomości AI/dzień',
             'Podstawowe statystyki',
             'Śledzenie wydatków',
         ],
         limits: {
             monthlyScans: 10,
+            dailyAiMessages: 5,
             budgets: 1,
             goals: 1,
             voice: true,
@@ -75,17 +78,19 @@ export const SUBSCRIPTION_PLANS: PlanFeatures[] = [
         id: 'pro',
         name: 'Pro',
         subtitle: 'Dla regularnych oszczędzaczy',
-        price: 25,
-        yearlyPrice: 199,  // ~16.60/mies
+        price: 2499,
+        yearlyPrice: 19900,  // ~16.60/mies
         features: [
             'Wszystko z Free',
             '5 celów oszczędnościowych',
             '50 skanów/miesiąc',
+            '50 wiadomości AI/dzień',
             'Automatyczne reguły',
             'Tygodniowe raporty',
         ],
         limits: {
             monthlyScans: 50,
+            dailyAiMessages: 50,
             budgets: 5,
             goals: 5,
             voice: true,
@@ -100,14 +105,15 @@ export const SUBSCRIPTION_PLANS: PlanFeatures[] = [
         id: 'ultra',
         name: 'Ultimate',
         subtitle: 'Pełna kontrola finansów',
-        price: 30,
-        yearlyPrice: 249,  // ~20.75/mies
+        price: 3999,
+        yearlyPrice: 34900,  // ~29.00/mies
         isHighlighted: true,
-        highlightBadge: 'Tylko 5 zł więcej!',
+        highlightBadge: 'Tylko 15 zł więcej!',
         features: [
             'Wszystko z Pro',
             'Nieograniczone cele',
             'Nieograniczone skany',
+            'Nieograniczone wiadomości AI',
             'AI Financial Coach',
             'Predykcje wydatków',
             'Eksport danych',
@@ -115,6 +121,7 @@ export const SUBSCRIPTION_PLANS: PlanFeatures[] = [
         ],
         limits: {
             monthlyScans: Infinity,
+            dailyAiMessages: Infinity,
             budgets: Infinity,
             goals: Infinity,
             voice: true,
@@ -159,65 +166,143 @@ class SubscriptionService {
      */
     getLimit(
         subscription: Subscription | undefined,
-        feature: 'monthlyScans' | 'budgets' | 'goals'
+        feature: 'monthlyScans' | 'budgets' | 'goals' | 'dailyAiMessages'
     ): number {
         const planId = subscription?.plan || 'free';
         const plan = this.getPlan(planId);
         return plan?.limits[feature] || 0;
     }
 
-    /**
-     * Check if user can scan more receipts this month
-     */
-    async canScanMore(userId: string, subscription: Subscription | undefined): Promise<boolean> {
-        const limit = this.getLimit(subscription, 'monthlyScans');
-        if (limit === Infinity) return true;
+    // ============ USAGE TRACKING ============
 
-        const usage = await this.getMonthlyUsage(userId);
-        return usage.scans < limit;
+    /**
+     * Get current usage from user object
+     * Normalizes defaults if fields are missing
+     */
+    getCurrentUsage(userUsage: any): {
+        scans: number;
+        aiMessages: number;
+        scansRemaining: number;
+        aiMessagesRemaining: number;
+    } {
+        // This is a helper for UI, but logic should be separate
+        return {
+            scans: userUsage?.scanCount || 0,
+            aiMessages: userUsage?.aiChatCount || 0,
+            scansRemaining: 0, // Placeholder
+            aiMessagesRemaining: 0 // Placeholder
+        };
     }
 
     /**
-     * Get monthly usage for a user
+     * Check if user can scan more receipts this month
      */
-    async getMonthlyUsage(userId: string): Promise<{ scans: number; month: string }> {
-        const monthKey = new Date().toISOString().slice(0, 7); // YYYY-MM
-        const usageRef = doc(db, 'users', userId, 'usage', monthKey);
+    async canScanMore(userId: string, subscription: Subscription | undefined, currentUsage?: { scanCount: number, scanMonth: string }): Promise<boolean> {
+        const limit = this.getLimit(subscription, 'monthlyScans');
+        if (limit === Infinity) return true;
 
-        try {
-            const snap = await getDoc(usageRef);
-            if (snap.exists()) {
-                return { scans: snap.data().scans || 0, month: monthKey };
-            }
-        } catch (e) {
-            console.error('Error getting usage:', e);
-        }
+        const currentMonth = new Date().toISOString().slice(0, 7); // YYYY-MM
 
-        return { scans: 0, month: monthKey };
+        // If usage data is stale (previous month), allow
+        if (currentUsage?.scanMonth !== currentMonth) return true;
+
+        return (currentUsage?.scanCount || 0) < limit;
     }
 
     /**
      * Increment scan count for current month
+     * Resets if new month
      */
-    async incrementScanCount(userId: string): Promise<void> {
-        const monthKey = new Date().toISOString().slice(0, 7);
-        const usageRef = doc(db, 'users', userId, 'usage', monthKey);
+    async incrementScanCount(userId: string, currentUsage?: { scanCount: number, scanMonth: string }): Promise<void> {
+        const currentMonth = new Date().toISOString().slice(0, 7);
+        const userRef = doc(db, 'users', userId);
 
-        await setDoc(usageRef, {
-            scans: increment(1),
+        let newCount = 1;
+        if (currentUsage?.scanMonth === currentMonth) {
+            newCount = (currentUsage.scanCount || 0) + 1;
+        }
+
+        await updateDoc(userRef, {
+            'usage.scanCount': newCount,
+            'usage.scanMonth': currentMonth,
             updatedAt: Timestamp.now(),
-        }, { merge: true });
+        });
     }
 
     /**
-     * Get remaining scans for free users
+     * Check if user can send more AI messages today
      */
-    async getRemainingScans(userId: string, subscription: Subscription | undefined): Promise<number> {
+    async canChatMore(userId: string, subscription: Subscription | undefined, currentUsage?: { aiChatCount: number, lastAiChatDate: Timestamp }): Promise<boolean> {
+        const limit = this.getLimit(subscription, 'dailyAiMessages');
+        if (limit === Infinity) return true;
+
+        const today = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
+
+        let lastDate = '';
+        if (currentUsage?.lastAiChatDate) {
+            lastDate = currentUsage.lastAiChatDate.toDate().toISOString().slice(0, 10);
+        }
+
+        // If usage data is stale (previous day), allow
+        if (lastDate !== today) return true;
+
+        return (currentUsage?.aiChatCount || 0) < limit;
+    }
+
+    /**
+     * Increment AI chat message count
+     * Resets if new day
+     */
+    async incrementAiChatCount(userId: string, currentUsage?: { aiChatCount: number, lastAiChatDate: Timestamp }): Promise<void> {
+        const today = new Date().toISOString().slice(0, 10);
+        const userRef = doc(db, 'users', userId);
+
+        let lastDate = '';
+        if (currentUsage?.lastAiChatDate) {
+            lastDate = currentUsage.lastAiChatDate.toDate().toISOString().slice(0, 10);
+        }
+
+        let newCount = 1;
+        if (lastDate === today) {
+            newCount = (currentUsage?.aiChatCount || 0) + 1;
+        }
+
+        await updateDoc(userRef, {
+            'usage.aiChatCount': newCount,
+            'usage.lastAiChatDate': Timestamp.now(),
+            updatedAt: Timestamp.now(),
+        });
+    }
+
+    /**
+     * Get remaining scans for user
+     */
+    getRemainingScans(subscription: Subscription | undefined, currentUsage?: { scanCount: number, scanMonth: string }): number {
         const limit = this.getLimit(subscription, 'monthlyScans');
         if (limit === Infinity) return Infinity;
 
-        const usage = await this.getMonthlyUsage(userId);
-        return Math.max(0, limit - usage.scans);
+        const currentMonth = new Date().toISOString().slice(0, 7);
+        if (currentUsage?.scanMonth !== currentMonth) return limit; // New month = full limit
+
+        return Math.max(0, limit - (currentUsage?.scanCount || 0));
+    }
+
+    /**
+    * Get remaining AI messages for today
+    */
+    getRemainingAiMessages(subscription: Subscription | undefined, currentUsage?: { aiChatCount: number, lastAiChatDate: Timestamp }): number {
+        const limit = this.getLimit(subscription, 'dailyAiMessages');
+        if (limit === Infinity) return Infinity;
+
+        const today = new Date().toISOString().slice(0, 10);
+        let lastDate = '';
+        if (currentUsage?.lastAiChatDate) {
+            lastDate = currentUsage.lastAiChatDate.toDate().toISOString().slice(0, 10);
+        }
+
+        if (lastDate !== today) return limit; // New day = full limit
+
+        return Math.max(0, limit - (currentUsage?.aiChatCount || 0));
     }
 
     /**

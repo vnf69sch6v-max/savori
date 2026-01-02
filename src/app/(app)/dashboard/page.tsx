@@ -52,6 +52,9 @@ import { recurringExpensesService, getMonthlyEquivalent } from '@/lib/subscripti
 
 import SmartSummary from '@/components/dashboard/SmartSummary';
 import DailyBonusWidget from '@/components/engagement/DailyBonusWidget';
+import FinancialWeatherWidget from '@/components/engagement/FinancialWeatherWidget';
+import MoneyWrappedCard from '@/components/engagement/MoneyWrappedCard';
+import PendingPurchasesWidget from '@/components/engagement/PendingPurchasesWidget';
 
 const MIN_EXPENSES_FOR_AI = 5;
 const MIN_EXPENSES_FOR_PREDICTIONS = 3;
@@ -253,9 +256,16 @@ export default function DashboardPage() {
                 />
 
                 {/* Daily Bonus Widget */}
-                <div className="mb-6">
-                    <DailyBonusWidget />
+                <div className="mb-6 grid md:grid-cols-2 gap-4">
+                    <FinancialWeatherWidget
+                        expenses={expenses}
+                        budgets={[{ totalLimit: monthlyBudget, totalSpent: monthlySpent } as any]}
+                    />
+                    <MoneyWrappedCard expenses={expenses} />
                 </div>
+
+                {/* Pending Purchases (Pre-Purchase Pause) */}
+                <PendingPurchasesWidget className="mb-6" />
 
                 {/* High Priority Section (Desktop) */}
                 {(isPredictionCritical || isAICritical) && (

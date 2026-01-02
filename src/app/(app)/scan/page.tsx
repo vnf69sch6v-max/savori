@@ -27,6 +27,7 @@ import { db, storage } from '@/lib/firebase';
 import { checkForDuplicate, FraudCheckResult } from '@/lib/fraud-detection';
 import { logSecurityEvent, SecurityEvents } from '@/lib/security';
 import { useSubscription } from '@/hooks/useSubscription';
+import { subscriptionService } from '@/lib/subscription-service';
 import UpgradeModal from '@/components/UpgradeModal';
 
 type Step = 'capture' | 'processing' | 'review' | 'saving';
@@ -197,8 +198,29 @@ export default function ScanPage() {
             const expensesRef = collection(db, 'users', userData.id, 'expenses');
             await addDoc(expensesRef, expenseData);
 
-            // Increment scan counter for free users
-            await incrementScan();
+            // Increment scan counter for users using the subscription service
+            // Note: useSubscription hook's incrementScan might be a wrapper around this, 
+            // but for safety/directness we ensure it updates the usage subcollection structure we defined.
+            // If incrementScan comes from the hook, it likely uses the service. Let's verify.
+
+            // Actually, we should just use incrementScan() from the useSubscription hook if it is correctly implemented
+            // OR use subscriptionService directly if we want to be sure it matches our new logic.
+            // Looking at the imports: `import { useSubscription } from '@/hooks/useSubscription';`
+            // Let's assume the hook is a wrapper. We'll use the hook's method but if we need to ensure the NEW logic (UserUsage vs Usage subcollection)
+            // we might need to update the hook later. For now, let's assume the component code is correct in intent.
+
+            // Wait, I updated subscriptionService to use `usage` field in User doc OR subcollection?
+            // I updated `incrementScanCount` in `subscriptionService.ts` to use `usage` map in User doc (UserUsage type).
+            // But `useSubscription` hook probably still uses the old logic if I haven't updated it yet.
+            // To be safe, let's use subscriptionService DIRECTLY here to ensure the new `UserUsage` schema is respecting.
+            // Actually, I can just update the hook later. 
+            // BUT this file `ScanPage` already imports `useSubscription`.
+
+            // Let's stick with `incrementScan()` from the hook for now, BUT I need to make sure I update the hook next to use the new service method.
+            // OR I can use `subscriptionService.incrementScanCount(userData.id, userData.usage)` here.
+
+            // Let's use subscriptionService explicitly to be safe and remove ambiguity.
+            await subscriptionService.incrementScanCount(userData.id, userData.usage);
 
             // Log security event
             await logSecurityEvent(userData.id, SecurityEvents.receiptScan(editedData.merchant, expenseData.amount));

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import {
     BarChart3,
@@ -25,6 +25,8 @@ import AICommentary from '@/components/AICommentary';
 import AnalystWidget from '@/components/analytics/AnalystWidget';
 import CategoryRing from '@/components/analytics/CategoryRing';
 import SpendingTrendChart from '@/components/analytics/SpendingTrendChart';
+import BenchmarkCard from '@/components/engagement/BenchmarkCard';
+import { benchmarkService } from '@/lib/engagement/benchmarks';
 
 type Period = 'week' | 'month' | 'quarter' | 'year';
 
@@ -493,6 +495,15 @@ export default function AnalyticsPage() {
                             </Card>
                         </motion.div>
                     </div>
+
+                    {/* Anonymous Benchmarks Section */}
+                    {expenses.length >= 5 && (
+                        <div className="mb-6">
+                            <BenchmarkCard
+                                benchmark={benchmarkService.calculateBenchmarks(expenses)}
+                            />
+                        </div>
+                    )}
 
                     {/* Achievement-style Insights Row */}
                     <div className="grid md:grid-cols-3 gap-4 mb-6">

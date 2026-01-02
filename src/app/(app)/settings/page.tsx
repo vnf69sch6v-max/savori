@@ -223,122 +223,32 @@ export default function SettingsPage() {
                         <h2 className="text-xl font-semibold text-slate-100">{t('settings.subscription')}</h2>
                     </div>
 
-                    <div className="grid grid-cols-3 gap-3">
-                        {SUBSCRIPTION_PLANS.map((plan) => {
-                            const isCurrent = currentPlan === plan.id;
-                            const PlanIcon = plan.id === 'free' ? Sparkles : plan.id === 'pro' ? Zap : Crown;
-                            return (
-                                <button
-                                    key={plan.id}
-                                    onClick={() => setSelectedPlan(plan)}
-                                    className={`p-4 rounded-xl text-center transition-all ${isCurrent
-                                        ? 'bg-emerald-500/10 border-2 border-emerald-500'
-                                        : plan.isHighlighted
-                                            ? 'bg-emerald-500/5 border-2 border-emerald-500/50 hover:border-emerald-500'
-                                            : 'bg-slate-900/50 border border-slate-700 hover:border-emerald-500/50 cursor-pointer hover:bg-slate-800'
-                                        }`}
-                                >
-                                    <PlanIcon className={`w-5 h-5 mx-auto mb-2 ${isCurrent ? 'text-emerald-400' : plan.isHighlighted ? 'text-emerald-400' : 'text-slate-400'}`} />
-                                    <p className="font-semibold mb-1 text-slate-200">{plan.name}</p>
-                                    <p className="text-sm text-slate-400">{plan.price} zł</p>
-                                    {isCurrent && (
-                                        <div className="flex items-center justify-center gap-1 mt-2 text-xs text-emerald-400 font-medium">
-                                            <Check className="w-3 h-3" /> Aktywny
-                                        </div>
-                                    )}
-                                    {plan.isHighlighted && !isCurrent && (
-                                        <div className="mt-2 text-xs text-emerald-400 font-medium">
-                                            {plan.highlightBadge}
-                                        </div>
-                                    )}
-                                </button>
-                            );
-                        })}
-                    </div>
-
-                    {/* Plan Preview Modal */}
-                    <AnimatePresence>
-                        {selectedPlan && (
-                            <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-                                <motion.div
-                                    initial={{ opacity: 0 }}
-                                    animate={{ opacity: 1 }}
-                                    exit={{ opacity: 0 }}
-                                    className="absolute inset-0 bg-black/70 backdrop-blur-sm"
-                                    onClick={() => setSelectedPlan(null)}
-                                />
-                                <motion.div
-                                    initial={{ opacity: 0, scale: 0.95, y: 20 }}
-                                    animate={{ opacity: 1, scale: 1, y: 0 }}
-                                    exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                                    className="relative w-full max-w-md bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl p-6"
-                                >
-                                    <button
-                                        onClick={() => setSelectedPlan(null)}
-                                        className="absolute right-4 top-4 p-2 text-slate-400 hover:text-white rounded-lg"
-                                    >
-                                        <X className="w-5 h-5" />
-                                    </button>
-
-                                    <div className="text-center mb-6">
-                                        <div className={`w-16 h-16 rounded-2xl ${selectedPlan.isHighlighted ? 'bg-emerald-500/20' : 'bg-slate-800'} flex items-center justify-center mx-auto mb-4`}>
-                                            {selectedPlan.id === 'free' ? <Sparkles className="w-8 h-8 text-slate-400" /> :
-                                                selectedPlan.id === 'pro' ? <Zap className="w-8 h-8 text-blue-400" /> :
-                                                    <Crown className="w-8 h-8 text-emerald-400" />}
-                                        </div>
-                                        <h3 className="text-2xl font-bold">{selectedPlan.name}</h3>
-                                        <p className="text-slate-400">{selectedPlan.subtitle}</p>
-                                        <div className="mt-4">
-                                            <span className="text-4xl font-bold">{selectedPlan.price}</span>
-                                            <span className="text-slate-400"> {t('settings.perMonth')}</span>
-                                        </div>
-                                    </div>
-
-                                    <ul className="space-y-3 mb-6">
-                                        {selectedPlan.features.map((feature, i) => (
-                                            <li key={i} className="flex items-center gap-3">
-                                                <Check className={`w-5 h-5 flex-shrink-0 ${selectedPlan.isHighlighted ? 'text-emerald-400' : 'text-slate-500'}`} />
-                                                <span className="text-slate-200">{feature}</span>
-                                            </li>
-                                        ))}
-                                    </ul>
-
-                                    {currentPlan === selectedPlan.id ? (
-                                        <div className="text-center py-3 bg-emerald-500/10 rounded-xl border border-emerald-500/30">
-                                            <span className="text-emerald-400 font-medium flex items-center justify-center gap-2">
-                                                <Check className="w-5 h-5" /> {t('settings.currentPlan')}
-                                            </span>
-                                        </div>
-                                    ) : (
-                                        <Button
-                                            className="w-full"
-                                            onClick={async () => {
-                                                if (!userData?.id) return;
-                                                const toastId = toast.loading(t('settings.updating'));
-                                                try {
-                                                    const result = await subscriptionService.upgradeSubscription(
-                                                        userData.id,
-                                                        selectedPlan.id
-                                                    );
-                                                    if (result.success) {
-                                                        toast.success(t('settings.planUpdated'), { id: toastId });
-                                                        setSelectedPlan(null);
-                                                        window.location.reload();
-                                                    } else {
-                                                        toast.error(result.error || t('common.error'), { id: toastId });
-                                                    }
-                                                } catch (e) {
-                                                    toast.error(t('common.error'), { id: toastId });
-                                                }
-                                            }}
-                                        >
-                                            {selectedPlan.price === 0 ? t('settings.switchToFree') : `${t('settings.selectPlan')} ${selectedPlan.name}`}
-                                        </Button>
-                                    )}
-                                </motion.div>
+                    <div className="flex items-center justify-between bg-slate-900/40 p-4 rounded-xl border border-slate-800">
+                        <div className="flex items-center gap-4">
+                            <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${currentPlan === 'free' ? 'bg-slate-700/50 text-slate-400' :
+                                    currentPlan === 'pro' ? 'bg-blue-500/20 text-blue-400' :
+                                        'bg-purple-500/20 text-purple-400'
+                                }`}>
+                                {currentPlan === 'free' ? <Sparkles className="w-6 h-6" /> :
+                                    currentPlan === 'pro' ? <Zap className="w-6 h-6" /> :
+                                        <Crown className="w-6 h-6" />}
                             </div>
-                        )}
-                    </AnimatePresence>
+                            <div>
+                                <h3 className="font-semibold text-white capitalize">{currentPlan} Plan</h3>
+                                <p className="text-sm text-slate-400">
+                                    {currentPlan === 'free' ? t('subscription.free.description') :
+                                        currentPlan === 'pro' ? t('subscription.pro.description') :
+                                            t('subscription.ultra.description')}
+                                </p>
+                            </div>
+                        </div>
+                        <Button
+                            onClick={() => router.push('/settings/billing')}
+                            variant={currentPlan === 'free' ? 'primary' : 'outline'}
+                        >
+                            {currentPlan === 'free' ? t('subscription.upgrade') : t('subscription.manage')}
+                        </Button>
+                    </div>
                 </div>
 
                 {/* Sign Out */}

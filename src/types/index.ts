@@ -37,6 +37,14 @@ export interface User {
     stats: UserStats;
     gamification?: UserGamification;
     onboardingComplete?: boolean;
+    usage?: UserUsage;
+}
+
+export interface UserUsage {
+    aiChatCount: number;
+    lastAiChatDate: Timestamp;
+    scanCount: number;
+    scanMonth: string; // Format: 'YYYY-MM'
 }
 
 export interface Subscription {

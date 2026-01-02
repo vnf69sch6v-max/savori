@@ -43,13 +43,20 @@ export function useSubscription(): UseSubscriptionReturn {
     const isValid = subscriptionService.isSubscriptionValid(subscription);
 
     // Load remaining scans on mount
+    // Load remaining scans on mount and when usage updates
     useEffect(() => {
         if (userData?.id) {
-            subscriptionService.getRemainingScans(userData.id, subscription)
-                .then(setRemainingScans)
-                .catch(() => setRemainingScans(0));
+            // Updated to pass subscription and usage data directly to synchronous helper if possible, 
+            // or async if the service requires it. 
+            // NOTE: The service method getRemainingScans is now synchronous/helper based on passed usage, 
+            // but we might want to refactor it to accept just the data we have.
+            // Wait, looking at my previous edit to SubscriptionService, `getRemainingScans` takes (subscription, currentUsage) and checks usage vs limit.
+            // It is synchronous.
+
+            const remaining = subscriptionService.getRemainingScans(subscription, userData?.usage);
+            setRemainingScans(remaining);
         }
-    }, [userData?.id, subscription]);
+    }, [userData?.id, subscription, userData?.usage]);
 
     const canUse = useCallback((feature: keyof PlanFeatures['limits']): boolean => {
         return subscriptionService.canUseFeature(subscription, feature);
@@ -61,14 +68,16 @@ export function useSubscription(): UseSubscriptionReturn {
 
     const checkCanScan = useCallback(async (): Promise<boolean> => {
         if (!userData?.id) return false;
-        return subscriptionService.canScanMore(userData.id, subscription);
-    }, [userData?.id, subscription]);
+        // Updated service method: canScanMore(userId, subscription, currentUsage)
+        return subscriptionService.canScanMore(userData.id, subscription, userData?.usage);
+    }, [userData?.id, subscription, userData?.usage]);
 
     const incrementScan = useCallback(async (): Promise<void> => {
         if (!userData?.id) return;
-        await subscriptionService.incrementScanCount(userData.id);
+        // Updated service method: incrementScanCount(userId, currentUsage)
+        await subscriptionService.incrementScanCount(userData.id, userData.usage);
         setRemainingScans(prev => Math.max(0, prev - 1));
-    }, [userData?.id]);
+    }, [userData?.id, userData?.usage]);
 
     const openUpgrade = useCallback((reason: string) => {
         setUpgradeReason(reason);

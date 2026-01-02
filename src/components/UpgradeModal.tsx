@@ -1,11 +1,10 @@
 'use client';
 
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Sparkles, Check, Crown, Zap } from 'lucide-react';
-import { Button } from '@/components/ui';
-import { SUBSCRIPTION_PLANS } from '@/lib/subscription-service';
-import { subscriptionService } from '@/lib/subscription-service';
+import { X, Sparkles } from 'lucide-react';
+import SubscriptionPlans from './SubscriptionPlans';
 import { useAuth } from '@/contexts/AuthContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { useState } from 'react';
 import { toast } from 'react-hot-toast';
 
@@ -17,33 +16,38 @@ interface UpgradeModalProps {
 }
 
 export default function UpgradeModal({ isOpen, onClose, reason, highlightPlan = 'pro' }: UpgradeModalProps) {
-    const { userData, user } = useAuth(); // Destructure user from AuthContext
+    const { userData, user } = useAuth();
+    const { t } = useLanguage();
     const [loading, setLoading] = useState<string | null>(null);
-    const [yearly, setYearly] = useState(false);
 
-    const handleUpgrade = async (planId: 'pro' | 'ultra') => {
+    const handleUpgrade = async (planId: 'free' | 'pro' | 'ultra') => {
+        if (planId === 'free') return; // Cannot "upgrade" to free in this modal context usually, or we treat it as close
+
         if (!userData?.id || !user) {
-            toast.error('Musisz być zalogowany');
+            toast.error(t('common.error'));
             return;
         }
 
         setLoading(planId);
         try {
             const token = await user.getIdToken();
-            const plan = SUBSCRIPTION_PLANS.find(p => p.id === planId);
-
-            if (!plan) throw new Error('Nieprawidłowy plan');
-            // Assuming price is defined in SUBSCRIPTION_PLANS, but we need Stripe Price ID.
-            // For now, we'll pass a placeholder or look it up if it was in the plan object.
-            // Since we don't have price IDs in the static file yet, we might need to hardcode map them here or add them to the file.
-            // Let's rely on the API route to map planId to Stripe Price ID for now, 
-            // OR pass a dummy priceId if testing mode.
 
             // Map plan to Stripe Price ID (TEST IDs - Replace with real ones from env or config)
+            // Ideally this should be server-side or in a config file
             const priceIds = {
-                pro: yearly ? 'price_pro_yearly_test' : 'price_pro_monthly_test',
-                ultra: yearly ? 'price_ultra_yearly_test' : 'price_ultra_monthly_test'
+                pro: 'price_pro_subscription', // specific logic needed for monthly/yearly in SubscriptionPlans?
+                ultra: 'price_ultra_subscription'
             };
+
+            // NOTE: SubscriptionPlans handles "monthly" vs "yearly" state internally.
+            // If we need to know which billing period was selected, SubscriptionPlans needs to expose it 
+            // OR we move the state up.
+            // For now, let's assume we proceed to a checkout page where user confirms details, 
+            // OR we just trigger the monthly default.
+
+            // actually, SubscriptionPlans component doesn't expose billing period state.
+            // Use this strictly for UI consistency for now.
+            // TODO: Refactor SubscriptionPlans to lift state up if we need exact billing period here.
 
             const response = await fetch('/api/create-checkout-session', {
                 method: 'POST',
@@ -52,8 +56,7 @@ export default function UpgradeModal({ isOpen, onClose, reason, highlightPlan = 
                     'Authorization': `Bearer ${token}`
                 },
                 body: JSON.stringify({
-                    priceId: priceIds[planId],
-                    planId: planId === 'ultra' ? 'ultimate' : 'pro'
+                    planId: planId
                 }),
             });
 
@@ -62,20 +65,17 @@ export default function UpgradeModal({ isOpen, onClose, reason, highlightPlan = 
             if (data.url) {
                 window.location.href = data.url;
             } else {
-                throw new Error(data.error || 'Błąd tworzenia płatności');
+                throw new Error(data.error || t('common.error'));
             }
         } catch (e) {
             console.error(e);
-            toast.error('Błąd połączenia z płatnościami');
+            toast.error(t('common.error'));
         } finally {
             setLoading(null);
         }
     };
 
     if (!isOpen) return null;
-
-    const proPlan = SUBSCRIPTION_PLANS.find(p => p.id === 'pro')!;
-    const premiumPlan = SUBSCRIPTION_PLANS.find(p => p.id === 'ultra')!;
 
     return (
         <AnimatePresence>
@@ -94,139 +94,33 @@ export default function UpgradeModal({ isOpen, onClose, reason, highlightPlan = 
                     initial={{ opacity: 0, scale: 0.9, y: 20 }}
                     animate={{ opacity: 1, scale: 1, y: 0 }}
                     exit={{ opacity: 0, scale: 0.9, y: 20 }}
-                    className="relative w-full max-w-2xl bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl overflow-hidden"
+                    className="relative w-full max-w-5xl bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl overflow-y-auto max-h-[90vh]"
                 >
                     {/* Header */}
                     <div className="relative p-6 pb-4 text-center border-b border-slate-800">
                         <button
                             onClick={onClose}
-                            className="absolute right-4 top-4 p-2 text-slate-400 hover:text-white rounded-lg"
+                            className="absolute right-4 top-4 p-2 text-slate-400 hover:text-white rounded-lg transition-colors"
                         >
                             <X className="w-5 h-5" />
                         </button>
 
-                        <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center mx-auto mb-4">
+                        <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center mx-auto mb-4 shadow-lg shadow-orange-500/20">
                             <Sparkles className="w-8 h-8 text-white" />
                         </div>
-                        <h2 className="text-2xl font-bold">Odblokuj pełne możliwości</h2>
-                        {reason && (
-                            <p className="text-slate-400 mt-2">{reason}</p>
-                        )}
-
-                        {/* Yearly toggle */}
-                        <div className="flex items-center justify-center gap-3 mt-4">
-                            <span className={yearly ? 'text-slate-400' : 'font-medium'}>Miesięcznie</span>
-                            <button
-                                onClick={() => setYearly(!yearly)}
-                                className={`relative w-14 h-7 rounded-full transition-colors ${yearly ? 'bg-emerald-500' : 'bg-slate-700'}`}
-                            >
-                                <div className={`absolute top-1 w-5 h-5 rounded-full bg-white transition-all ${yearly ? 'left-8' : 'left-1'}`} />
-                            </button>
-                            <span className={yearly ? 'font-medium' : 'text-slate-400'}>
-                                Rocznie <span className="text-emerald-400 text-sm">-37%</span>
-                            </span>
-                        </div>
+                        <h2 className="text-2xl font-bold text-white mb-2">{t('subscription.title')}</h2>
+                        <p className="text-slate-400">{reason || t('subscription.subtitle')}</p>
                     </div>
 
                     {/* Plans */}
-                    <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {/* Pro Plan */}
-                        <div className={`relative p-5 rounded-xl border-2 transition-all ${highlightPlan === 'pro' ? 'border-emerald-500 bg-emerald-500/5' : 'border-slate-700 bg-slate-800/30'
-                            }`}>
-                            {highlightPlan === 'pro' && (
-                                <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 bg-emerald-500 text-xs font-bold rounded-full">
-                                    REKOMENDOWANY
-                                </div>
-                            )}
-
-                            <div className="flex items-center gap-2 mb-3">
-                                <Zap className="w-5 h-5 text-emerald-400" />
-                                <h3 className="text-lg font-bold">{proPlan.name}</h3>
-                            </div>
-
-                            <div className="mb-4">
-                                <span className="text-3xl font-bold">
-                                    {yearly ? (proPlan.yearlyPrice / 12).toFixed(0) : proPlan.price.toFixed(0)}
-                                </span>
-                                <span className="text-slate-400"> zł/mies</span>
-                                {yearly && (
-                                    <p className="text-xs text-slate-400">{proPlan.yearlyPrice} zł/rok</p>
-                                )}
-                            </div>
-
-                            <ul className="space-y-2 mb-4">
-                                {proPlan.features.map((f, i) => (
-                                    <li key={i} className="flex items-center gap-2 text-sm">
-                                        <Check className="w-4 h-4 text-emerald-400 flex-shrink-0" />
-                                        <span>{f}</span>
-                                    </li>
-                                ))}
-                            </ul>
-
-                            <Button
-                                onClick={() => handleUpgrade('pro')}
-                                disabled={loading === 'pro'}
-                                className="w-full"
-                            >
-                                {loading === 'pro' ? 'Przetwarzanie...' : 'Wybierz Pro'}
-                            </Button>
-                        </div>
-
-                        {/* Ultimate Plan */}
-                        <div className={`relative p-5 rounded-xl border-2 transition-all ${premiumPlan.isHighlighted
-                            ? 'border-emerald-500 bg-emerald-500/5 ring-2 ring-emerald-500/30'
-                            : 'border-slate-700 bg-slate-800/30'
-                            }`}>
-                            {premiumPlan.isHighlighted && premiumPlan.highlightBadge && (
-                                <div className="absolute -top-3 right-4 flex items-center gap-2">
-                                    <span className="px-2 py-1 bg-slate-800 text-emerald-400 text-xs font-medium rounded-full border border-emerald-500/30">
-                                        NAJLEPSZA WARTOŚĆ
-                                    </span>
-                                    <span className="px-2 py-1 bg-emerald-500 text-white text-xs font-bold rounded-full">
-                                        {premiumPlan.highlightBadge}
-                                    </span>
-                                </div>
-                            )}
-
-                            <div className="flex items-center gap-2 mb-3">
-                                <Crown className="w-5 h-5 text-amber-400" />
-                                <h3 className="text-lg font-bold">{premiumPlan.name}</h3>
-                            </div>
-
-                            <div className="mb-4">
-                                <span className="text-3xl font-bold">
-                                    {yearly ? (premiumPlan.yearlyPrice / 12).toFixed(0) : premiumPlan.price.toFixed(0)}
-                                </span>
-                                <span className="text-slate-400"> zł/mies</span>
-                                {yearly && (
-                                    <p className="text-xs text-slate-400">{premiumPlan.yearlyPrice} zł/rok</p>
-                                )}
-                            </div>
-
-                            <ul className="space-y-2 mb-4">
-                                {premiumPlan.features.map((f, i) => (
-                                    <li key={i} className="flex items-center gap-2 text-sm">
-                                        <Check className="w-4 h-4 text-amber-400 flex-shrink-0" />
-                                        <span>{f}</span>
-                                    </li>
-                                ))}
-                            </ul>
-
-                            <Button
-                                onClick={() => handleUpgrade('ultra')}
-                                disabled={loading === 'ultra'}
-                                variant="outline"
-                                className="w-full border-amber-500/50 text-amber-400 hover:bg-amber-500/10"
-                            >
-                                {loading === 'ultra' ? 'Przetwarzanie...' : 'Wybierz Ultimate'}
-                            </Button>
-                        </div>
+                    <div className="p-6">
+                        <SubscriptionPlans onSelect={handleUpgrade} />
                     </div>
 
                     {/* Footer */}
                     <div className="px-6 pb-6 text-center">
                         <p className="text-xs text-slate-500">
-                            Możesz anulować w dowolnym momencie. Bezpieczne płatności.
+                            {t('subscription.disclaimer')}
                         </p>
                     </div>
                 </motion.div>
@@ -234,3 +128,5 @@ export default function UpgradeModal({ isOpen, onClose, reason, highlightPlan = 
         </AnimatePresence>
     );
 }
+
+

@@ -4,6 +4,9 @@ import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence, useDragControls, PanInfo } from 'framer-motion';
 import { X, Sparkles, Send, Mic, ArrowUp } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useAuth } from '@/contexts/AuthContext';
+import { subscriptionService } from '@/lib/subscription-service';
+import UpgradeModal from './UpgradeModal';
 
 interface Message {
     id: string;
@@ -73,9 +76,20 @@ export default function AIChatSheet({ isOpen, onClose, context }: AIChatSheetPro
         }
     }, [isOpen]);
 
+    const { userData } = useAuth();
+    const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+
     const handleSend = async (text?: string) => {
+        if (!userData?.id) return;
         const messageText = text || inputValue.trim();
         if (!messageText || isLoading) return;
+
+        // Check limits
+        const canChat = await subscriptionService.canChatMore(userData.id, userData.subscription, userData.usage);
+        if (!canChat) {
+            setShowUpgradeModal(true);
+            return;
+        }
 
         const userMessage: Message = {
             id: `user-${Date.now()}`,
@@ -110,6 +124,10 @@ export default function AIChatSheet({ isOpen, onClose, context }: AIChatSheetPro
             };
 
             setMessages(prev => [...prev, aiMessage]);
+
+            // Increment usage
+            await subscriptionService.incrementAiChatCount(userData.id, userData.usage);
+
         } catch (error) {
             console.error('Chat Error:', error);
             const errorMessage: Message = {
@@ -258,6 +276,12 @@ export default function AIChatSheet({ isOpen, onClose, context }: AIChatSheetPro
                     </motion.div>
                 </>
             )}
+
+            <UpgradeModal
+                isOpen={showUpgradeModal}
+                onClose={() => setShowUpgradeModal(false)}
+                reason={t('subscription.aiLimitReached')}
+            />
         </AnimatePresence>
     );
 }
