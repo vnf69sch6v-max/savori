@@ -8,6 +8,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { formatMoney as formatMoneyBase, CATEGORY_LABELS, CATEGORY_ICONS } from '@/lib/utils';
 import { predictMonthlySpending, SpendingPrediction, getPredictionStatus } from '@/lib/spending-predictor';
 import { useCurrency } from '@/hooks/use-language';
+import ProLockedFeature from './ProLockedFeature';
 
 interface PredictiveSpendingWidgetProps {
     lastUpdate?: number;
@@ -20,6 +21,20 @@ export default function PredictiveSpendingWidget({ lastUpdate, onPriorityChange 
     const [prediction, setPrediction] = useState<SpendingPrediction | null>(null);
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
+
+    // Check Pro subscription
+    const isPro = userData?.subscription?.plan === 'pro' || userData?.subscription?.plan === 'premium';
+
+    // If not Pro, show locked state
+    if (!isPro) {
+        return (
+            <ProLockedFeature
+                title="Prognoza wydatków"
+                description="Dostępna w planie Pro"
+                icon={<Target className="w-6 h-6 text-amber-400" />}
+            />
+        );
+    }
 
     const fetchPrediction = useCallback(async () => {
         if (!userData?.id) return;

@@ -10,6 +10,7 @@ import { db } from '@/lib/firebase';
 import { Expense, Budget, ExpenseCategory, CategoryBudget } from '@/types';
 import { insightsEngine, AIInsight } from '@/lib/ai/insights-engine';
 import InsightCard from './ai/InsightCard';
+import ProLockedFeature from './ProLockedFeature';
 
 interface AIInsightsWidgetProps {
     onPriorityChange?: (priority: 'critical' | 'high' | 'medium' | 'low') => void;
@@ -20,6 +21,20 @@ export default function AIInsightsWidget({ onPriorityChange }: AIInsightsWidgetP
     const [insights, setInsights] = useState<AIInsight[]>([]);
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
+
+    // Check Pro subscription
+    const isPro = userData?.subscription?.plan === 'pro' || userData?.subscription?.plan === 'premium';
+
+    // If not Pro, show locked state
+    if (!isPro) {
+        return (
+            <ProLockedFeature
+                title="AI Analiza"
+                description="Dostępna w planie Pro"
+                icon={<Sparkles className="w-6 h-6 text-amber-400" />}
+            />
+        );
+    }
 
     // Notify parent about priority changes
     useEffect(() => {
