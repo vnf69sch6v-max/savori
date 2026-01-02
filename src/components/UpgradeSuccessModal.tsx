@@ -123,10 +123,17 @@ export default function UpgradeSuccessModal({ isOpen, plan, onComplete }: Upgrad
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
                     transition={{ duration: 0.3 }}
-                    className="fixed inset-0 z-[100] bg-slate-950 flex flex-col"
+                    className="fixed z-[100] bg-slate-950 flex flex-col"
+                    style={{
+                        top: '-50px',
+                        left: 0,
+                        right: 0,
+                        bottom: 0,
+                        paddingTop: '50px'
+                    }}
                 >
-                    {/* Solid background to cover everything */}
-                    <div className="absolute inset-0 bg-slate-950" />
+                    {/* Solid background to cover everything including iOS status bar */}
+                    <div className="absolute bg-slate-950" style={{ top: '-50px', left: 0, right: 0, bottom: 0 }} />
 
                     {/* Background gradient on top */}
                     <div className={`absolute inset-0 bg-gradient-to-b ${plan === 'pro'
