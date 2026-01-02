@@ -9,9 +9,12 @@ import {
     Zap,
     Lock,
     TrendingUp,
+    Crown,
 } from 'lucide-react';
-import { Card, CardContent } from '@/components/ui';
+import { Card, CardContent, Button } from '@/components/ui';
 import { useAuth } from '@/contexts/AuthContext';
+import { useSubscription } from '@/hooks/useSubscription';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { UserGamification } from '@/types';
 import {
     BADGES,
@@ -20,6 +23,8 @@ import {
 
 export default function AchievementsPage() {
     const { userData } = useAuth();
+    const { t } = useLanguage();
+    const { isFree, openUpgrade } = useSubscription();
     const [selectedRarity, setSelectedRarity] = useState<string>('all');
 
     if (!userData) {
@@ -89,8 +94,8 @@ export default function AchievementsPage() {
                     <Trophy className="w-6 h-6 text-amber-400" />
                 </div>
                 <div>
-                    <h1 className="text-2xl md:text-3xl font-bold">Osiągnięcia</h1>
-                    <p className="text-slate-400">Zdobywaj punkty i odznaki</p>
+                    <h1 className="text-2xl md:text-3xl font-bold">{t('achievements.title')}</h1>
+                    <p className="text-slate-400">{t('achievements.subtitle')}</p>
                 </div>
             </div>
 
@@ -203,6 +208,18 @@ export default function AchievementsPage() {
                                             <span className={`text-[10px] px-2 py-0.5 rounded-full ${getRarityColor(badge.rarity)}`}>
                                                 {getRarityLabel(badge.rarity)}
                                             </span>
+                                            {/* Pro lock for epic/legendary */}
+                                            {isFree && (badge.rarity === 'epic' || badge.rarity === 'legendary') && (
+                                                <Button
+                                                    size="sm"
+                                                    variant="secondary"
+                                                    className="h-5 text-[10px] px-2 bg-purple-500/20 text-purple-400"
+                                                    onClick={() => openUpgrade('achievements')}
+                                                >
+                                                    <Crown className="w-2.5 h-2.5 mr-0.5" />
+                                                    Pro
+                                                </Button>
+                                            )}
                                         </div>
                                         <p className="text-sm text-slate-400 mt-1 line-clamp-2">{badge.description}</p>
                                     </div>

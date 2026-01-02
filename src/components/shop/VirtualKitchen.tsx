@@ -3,16 +3,20 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { toast } from 'react-hot-toast';
-import { ShoppingBag, Sparkles, Lock, Check, Coins } from 'lucide-react';
+import { ShoppingBag, Sparkles, Lock, Check, Coins, Crown } from 'lucide-react';
 import { Card, CardContent, Button } from '@/components/ui';
 import { useAuth } from '@/contexts/AuthContext';
+import { useSubscription } from '@/hooks/useSubscription';
 import { doc, getDoc, updateDoc, setDoc, arrayUnion, increment } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { KITCHEN_ITEMS, getRarityColor, getRarityLabel, getCategoryLabel, getCategoryEmoji, calculateKitchenValue } from '@/lib/game-data';
 import { KitchenItem } from '@/types';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 export default function VirtualKitchen() {
     const { userData } = useAuth();
+    const { t } = useLanguage();
+    const { isFree, openUpgrade } = useSubscription();
     const userPoints = userData?.gamification?.points || 0;
     const [ownedItems, setOwnedItems] = useState<string[]>([]);
     const [loading, setLoading] = useState(true);
@@ -107,8 +111,8 @@ export default function VirtualKitchen() {
             {/* Header Stats */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
                 <div>
-                    <h2 className="text-xl font-bold">Twoja Kuchnia</h2>
-                    <p className="text-slate-400 text-sm">Wydawaj punkty XP na ulepszenia</p>
+                    <h2 className="text-xl font-bold">{t('shop.title')}</h2>
+                    <p className="text-slate-400 text-sm">{t('shop.subtitle')}</p>
                 </div>
 
                 {/* Points Balance */}
@@ -221,7 +225,17 @@ export default function VirtualKitchen() {
                                         </div>
 
                                         {owned ? (
-                                            <span className="text-xs font-medium text-emerald-500">Posiadane</span>
+                                            <span className="text-xs font-medium text-emerald-500">{t('shop.owned')}</span>
+                                        ) : isFree ? (
+                                            <Button
+                                                size="sm"
+                                                variant="secondary"
+                                                className="h-7 text-xs px-3 bg-purple-500/20 text-purple-400 hover:bg-purple-500/30"
+                                                onClick={() => openUpgrade('shop')}
+                                            >
+                                                <Crown className="w-3 h-3 mr-1" />
+                                                Pro
+                                            </Button>
                                         ) : (
                                             <Button
                                                 size="sm"
@@ -235,7 +249,7 @@ export default function VirtualKitchen() {
                                                 ) : !canAfford ? (
                                                     <Lock className="w-3 h-3" />
                                                 ) : (
-                                                    'Kup'
+                                                    t('shop.buy')
                                                 )}
                                             </Button>
                                         )}
