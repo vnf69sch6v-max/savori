@@ -35,6 +35,7 @@ import NotificationCenter from '@/components/NotificationCenter';
 import PWAInstallPrompt from '@/components/PWAInstallPrompt';
 import ErrorBoundary from '@/components/ErrorBoundary';
 import { useUIStore } from '@/stores/uiStore';
+import LanguageSwitcher from '@/components/LanguageSwitcher';
 
 // Grouped navigation structure
 const navGroups = [
@@ -197,6 +198,9 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                         <LogOut className="w-4 h-4" />
                         Wyloguj się
                     </button>
+                    <div className="mt-4 pt-4 border-t border-slate-800/50 flex justify-center">
+                        <LanguageSwitcher />
+                    </div>
                 </div>
             </aside>
 
@@ -268,6 +272,10 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                             <LogOut className="w-5 h-5" />
                             Wyloguj się
                         </button>
+
+                        <div className="mt-6 pt-6 border-t border-slate-800/50 flex justify-center">
+                            <LanguageSwitcher />
+                        </div>
                     </nav>
                 </motion.div>
             )}

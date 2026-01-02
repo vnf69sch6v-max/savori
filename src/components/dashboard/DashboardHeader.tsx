@@ -20,7 +20,7 @@ export default function DashboardHeader() {
                 <h1 className="font-bold text-2xl text-white tracking-wide">Savori</h1>
             </div>
             <div className="flex gap-3 items-center">
-                <LanguageSwitcher />
+
 
                 <div className="w-10 h-10 flex items-center justify-center">
                     <OmniSearch />
