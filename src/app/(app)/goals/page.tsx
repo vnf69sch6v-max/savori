@@ -88,7 +88,7 @@ export default function GoalsPage() {
         startOfMonth.setHours(0, 0, 0, 0);
 
         const expensesRef = collection(db, 'users', userData.id, 'expenses');
-        const q = query(expensesRef, where('date', '>=', Timestamp.fromDate(startOfMonth)), orderBy('date', 'desc'), limit(50));
+        const q = query(expensesRef, where('date', '>=', Timestamp.fromDate(startOfMonth)), orderBy('date', 'desc'), limit(30));
 
         const unsubscribe = onSnapshot(q, (snapshot) => {
             const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }) as Expense);

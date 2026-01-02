@@ -1,44 +1,21 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Wallet, TrendingUp, ArrowRight, Sparkles } from 'lucide-react';
-import { useAuth } from '@/contexts/AuthContext';
-import { collection, query, where, onSnapshot, orderBy, doc } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
-import { startOfMonth, endOfMonth } from 'date-fns';
 import { useCurrency } from '@/hooks/use-language';
 
-export default function SafeToSpendCard() {
-    const { user } = useAuth();
+interface SafeToSpendCardProps {
+    spent: number;      // in cents/grosze
+    limit: number;      // in cents/grosze
+    loading?: boolean;
+}
+
+export default function SafeToSpendCard({ spent, limit, loading = false }: SafeToSpendCardProps) {
     const { format: formatMoney } = useCurrency();
-    const [limit, setLimit] = useState(300000); // Default 3000 PLN in grosze
-    const [spent, setSpent] = useState(0); // in grosze
-    const [loading, setLoading] = useState(true);
-
-    useEffect(() => {
-        if (!user) return;
-        // ... budget fetching logic same as before ... 
-        const now = new Date();
-        const monthKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
-        const budgetRef = doc(db, 'users', user.uid, 'budgets', monthKey);
-        const unsubscribeBudget = onSnapshot(budgetRef, (doc) => {
-            if (doc.exists()) {
-                const data = doc.data();
-                if (data.totalLimit) setLimit(data.totalLimit);
-                setSpent(data.totalSpent || 0);
-            }
-            setLoading(false);
-        });
-
-        return () => {
-            unsubscribeBudget();
-        };
-    }, [user]);
 
     // Derived Stats (in cents)
-    const safeToSpend = limit - spent; // Keep in cents for formatMoney
-    const percentageUsed = (spent / limit) * 100;
+    const safeToSpend = limit - spent;
+    const percentageUsed = limit > 0 ? (spent / limit) * 100 : 0;
 
     // Days remaining
     const today = new Date();

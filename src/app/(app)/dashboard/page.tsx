@@ -199,7 +199,7 @@ export default function DashboardPage() {
             {/* Mobile Layout */}
             <div className="lg:hidden space-y-4 max-w-2xl mx-auto">
                 <DashboardHeader />
-                <SafeToSpendCard />
+                <SafeToSpendCard spent={monthlySpent} limit={monthlyBudget} loading={loading} />
 
                 {/* Dynamic Mobile Layout: Critical items first */}
                 {isAICritical && <AIInsightsWidget onPriorityChange={(p) => handlePriorityChange('ai', p)} />}
@@ -273,7 +273,7 @@ export default function DashboardPage() {
                 )}
 
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-8">
-                    <SafeToSpendCard />
+                    <SafeToSpendCard spent={monthlySpent} limit={monthlyBudget} loading={loading} />
                     <GamificationHub
                         xp={userData?.gamification?.xp || 0}
                         level={userData?.gamification?.level || 1}
