@@ -125,10 +125,13 @@ export default function UpgradeSuccessModal({ isOpen, plan, onComplete }: Upgrad
                     transition={{ duration: 0.3 }}
                     className="fixed inset-0 z-[100] bg-slate-950 flex flex-col"
                 >
-                    {/* Background gradient */}
+                    {/* Solid background to cover everything */}
+                    <div className="absolute inset-0 bg-slate-950" />
+
+                    {/* Background gradient on top */}
                     <div className={`absolute inset-0 bg-gradient-to-b ${plan === 'pro'
-                        ? 'from-emerald-600/20 via-transparent to-transparent'
-                        : 'from-purple-600/20 via-transparent to-transparent'
+                        ? 'from-emerald-600/20 via-slate-950 to-slate-950'
+                        : 'from-purple-600/20 via-slate-950 to-slate-950'
                         }`} />
 
                     {/* Content - scrollable with safe area */}
