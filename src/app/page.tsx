@@ -2,292 +2,315 @@
 
 import Link from 'next/link';
 import { motion, useScroll, useTransform } from 'framer-motion';
-import { useRef } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import { Button } from '@/components/ui';
 import {
   Sparkles,
-  Target,
-  Zap,
   ArrowRight,
-  Check,
-  Lock,
-  Smartphone,
-  ScanLine,
-  CreditCard,
-  ShieldCheck,
-  ChevronRight,
+  Play,
 } from 'lucide-react';
 
-// CSS-only iPhone Mockup showing Dashboard
-function PhoneMockup() {
+// Live Animated Dashboard inside iPhone
+function LiveDashboard() {
+  const [balance, setBalance] = useState(4250);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setBalance(prev => prev + Math.random() * 50 - 25);
+    }, 3000);
+    return () => clearInterval(timer);
+  }, []);
+
   return (
-    <div className="relative mx-auto w-[280px] h-[580px] bg-slate-900 rounded-[55px] border-8 border-slate-800 shadow-2xl overflow-hidden ring-1 ring-white/10">
-      {/* Dynamic Island */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[100px] h-[30px] bg-black rounded-b-2xl z-20" />
+    <div className="h-full w-full bg-[#0B0E14] p-4 overflow-hidden">
+      {/* Balance */}
+      <motion.div
+        className="mb-6"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+      >
+        <div className="text-[10px] text-slate-400 mb-1">Dostępne środki</div>
+        <motion.div
+          className="text-2xl font-bold text-white"
+          key={balance}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+        >
+          {balance.toFixed(2)} zł
+        </motion.div>
+      </motion.div>
 
-      {/* Screen Content */}
-      <div className="absolute inset-0 bg-[#0B0E14] flex flex-col pt-12 px-5">
-        {/* Header */}
-        <div className="flex justify-between items-center mb-6">
-          <div>
-            <div className="text-xs text-slate-400">Dostępne środki</div>
-            <div className="text-2xl font-bold text-white">4 250,00 zł</div>
-          </div>
-          <div className="w-8 h-8 rounded-full bg-slate-800" />
-        </div>
-
-        {/* Chart Area */}
-        <div className="h-32 mb-6 relative">
-          <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-emerald-500/20 to-transparent" />
-          <svg className="w-full h-full overflow-visible" preserveAspectRatio="none">
-            <path
-              d="M0,64 C40,64 40,32 80,32 C120,32 120,80 160,80 C200,80 200,10 240,10"
-              fill="none"
-              stroke="#10b981"
-              strokeWidth="3"
-              vectorEffect="non-scaling-stroke"
-            />
-          </svg>
-          <div className="absolute top-0 right-0 bg-emerald-500/20 text-emerald-400 text-xs px-2 py-1 rounded-full border border-emerald-500/20">
-            +12% vs ost. msc
-          </div>
-        </div>
-
-        {/* Quick Actions Grid */}
-        <div className="grid grid-cols-2 gap-3 mb-6">
-          <div className="bg-slate-800/50 p-3 rounded-2xl border border-slate-700/50">
-            <ScanLine className="w-5 h-5 text-purple-400 mb-2" />
-            <div className="text-xs font-medium text-slate-300">Skanuj</div>
-          </div>
-          <div className="bg-slate-800/50 p-3 rounded-2xl border border-slate-700/50">
-            <Target className="w-5 h-5 text-amber-400 mb-2" />
-            <div className="text-xs font-medium text-slate-300">Cele</div>
-          </div>
-        </div>
-
-        {/* Recent Transactions */}
-        <div className="space-y-3">
-          <div className="text-xs text-slate-500 font-medium uppercase tracking-wider">Dzisiaj</div>
-          {[
-            { name: 'Spotify Music', amount: '-19.99 zł', icon: '🎵', color: 'bg-green-500/20' },
-            { name: 'Uber Eats', amount: '-45.50 zł', icon: '🍔', color: 'bg-orange-500/20' },
-            { name: 'Żabka', amount: '-23.10 zł', icon: '🛒', color: 'bg-blue-500/20' },
-          ].map((tx, i) => (
-            <div key={i} className="flex items-center gap-3">
-              <div className={`w-10 h-10 rounded-xl ${tx.color} flex items-center justify-center text-sm`}>
-                {tx.icon}
-              </div>
-              <div className="flex-1">
-                <div className="text-sm font-medium text-white">{tx.name}</div>
-                <div className="text-xs text-slate-500">Rozrywka</div>
-              </div>
-              <div className="text-sm font-medium text-white">{tx.amount}</div>
-            </div>
-          ))}
-        </div>
+      {/* Chart */}
+      <div className="h-24 mb-6 relative">
+        <svg className="w-full h-full" preserveAspectRatio="none">
+          <motion.path
+            d="M0,60 Q40,30 80,35 T160,25 T240,40"
+            fill="none"
+            stroke="url(#chartGradient)"
+            strokeWidth="2"
+            initial={{ pathLength: 0 }}
+            animate={{ pathLength: 1 }}
+            transition={{ duration: 2, ease: "easeOut" }}
+          />
+          <defs>
+            <linearGradient id="chartGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stopColor="#10b981" />
+              <stop offset="100%" stopColor="#06b6d4" />
+            </linearGradient>
+          </defs>
+        </svg>
+        <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-emerald-500/10 to-transparent" />
       </div>
 
-      {/* Reflection Overlay */}
-      <div className="absolute inset-0 bg-gradient-to-tr from-white/0 via-white/5 to-white/0 pointer-events-none z-10" />
+      {/* Transactions */}
+      <div className="space-y-2">
+        {[
+          { name: 'Netflix', amount: '-19.99', icon: '🎬' },
+          { name: 'Żabka', amount: '-23.10', icon: '🛒' },
+          { name: 'Uber', amount: '-45.00', icon: '🚗' },
+        ].map((tx, i) => (
+          <motion.div
+            key={tx.name}
+            className="flex items-center gap-2 bg-slate-800/30 p-2 rounded-xl"
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.5 + i * 0.1 }}
+          >
+            <div className="w-8 h-8 rounded-lg bg-slate-700/50 flex items-center justify-center text-sm">
+              {tx.icon}
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="text-[10px] font-medium text-white truncate">{tx.name}</div>
+              <div className="text-[8px] text-slate-500">Dzisiaj</div>
+            </div>
+            <div className="text-[10px] font-medium text-white">{tx.amount} zł</div>
+          </motion.div>
+        ))}
+      </div>
     </div>
   );
 }
 
-// Bento Grid Item
-function BentoCard({ children, className = "", delay = 0 }: { children: React.ReactNode, className?: string, delay?: number }) {
+// iPhone 15 Pro Mockup
+function IPhoneMockup() {
+  return (
+    <div className="relative">
+      {/* Glow effect */}
+      <div className="absolute inset-0 bg-gradient-to-b from-emerald-500/20 to-blue-500/20 blur-3xl scale-110" />
+
+      {/* Phone frame */}
+      <div className="relative w-[320px] h-[650px] bg-black rounded-[60px] p-3 shadow-2xl ring-1 ring-white/10">
+        {/* Screen */}
+        <div className="relative h-full bg-slate-900 rounded-[48px] overflow-hidden">
+          {/* Dynamic Island */}
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[120px] h-[37px] bg-black rounded-b-[20px] z-10" />
+
+          {/* Screen Content */}
+          <div className="absolute inset-0 pt-12">
+            <LiveDashboard />
+          </div>
+
+          {/* Reflection */}
+          <div className="absolute inset-0 bg-gradient-to-tr from-white/0 via-white/5 to-white/0 pointer-events-none" />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Feature Section (scroll-triggered)
+function FeatureSection({ title, description, visual, reverse = false }: {
+  title: string;
+  description: string;
+  visual: React.ReactNode;
+  reverse?: boolean;
+}) {
+  const ref = useRef(null);
+  const { scrollYProgress } = useScroll({
+    target: ref,
+    offset: ["start end", "end start"]
+  });
+
+  const opacity = useTransform(scrollYProgress, [0, 0.3, 0.7, 1], [0, 1, 1, 0]);
+  const y = useTransform(scrollYProgress, [0, 0.3, 0.7, 1], [100, 0, 0, -100]);
+
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: "-50px" }}
-      transition={{ delay, duration: 0.5 }}
-      className={`bg-[#161b22] border border-slate-800/50 rounded-3xl overflow-hidden relative group hover:border-slate-700 transition-colors ${className}`}
+      ref={ref}
+      style={{ opacity, y }}
+      className={`flex flex-col ${reverse ? 'md:flex-row-reverse' : 'md:flex-row'} items-center gap-16 my-40`}
     >
-      {children}
+      <div className="flex-1 text-center md:text-left">
+        <h2 className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-br from-white to-slate-400 bg-clip-text text-transparent">
+          {title}
+        </h2>
+        <p className="text-xl text-slate-400 leading-relaxed max-w-md">
+          {description}
+        </p>
+      </div>
+      <div className="flex-1 flex justify-center">
+        {visual}
+      </div>
     </motion.div>
   );
 }
 
 export default function LandingPage() {
+  const heroRef = useRef(null);
+  const { scrollYProgress } = useScroll({
+    target: heroRef,
+    offset: ["start start", "end start"]
+  });
+
+  const heroOpacity = useTransform(scrollYProgress, [0, 0.5], [1, 0]);
+  const heroScale = useTransform(scrollYProgress, [0, 0.5], [1, 0.8]);
+
   return (
-    <div className="min-h-screen bg-[#0B0E14] text-white selection:bg-emerald-500/30">
-      {/* Nav */}
-      <nav className="fixed top-0 inset-x-0 z-50 bg-[#0B0E14]/80 backdrop-blur-md border-b border-slate-800/50">
-        <div className="max-w-6xl mx-auto px-6 h-14 flex items-center justify-between">
-          <div className="flex items-center gap-2 font-bold text-lg">
-            <div className="w-6 h-6 rounded bg-emerald-500 flex items-center justify-center">
-              <Sparkles className="w-3.5 h-3.5 text-black" />
-            </div>
+    <div className="min-h-screen bg-black text-white">
+      {/* Minimal Nav */}
+      <nav className="fixed top-0 inset-x-0 z-50 bg-black/50 backdrop-blur-xl border-b border-white/5">
+        <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+          <div className="flex items-center gap-2 font-bold text-xl">
+            <div className="w-6 h-6 rounded bg-gradient-to-br from-emerald-400 to-cyan-500" />
             Savori
           </div>
-          <div className="flex items-center gap-4">
-            <Link href="/login" className="text-sm text-slate-400 hover:text-white transition-colors">Logowanie</Link>
-            <Link href="/register">
-              <Button size="sm" className="bg-white text-black hover:bg-slate-200 rounded-full px-4 h-8 text-xs font-semibold">
-                Rozpocznij
-              </Button>
-            </Link>
-          </div>
+          <Link href="/login">
+            <Button variant="ghost" className="text-slate-300 hover:text-white">
+              Sign in
+            </Button>
+          </Link>
         </div>
       </nav>
 
-      <main className="pt-32 pb-20 px-6 max-w-6xl mx-auto">
-        {/* Hero Section */}
-        <div className="flex flex-col md:flex-row items-center gap-12 mb-32">
-          <div className="flex-1 text-center md:text-left">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-900 border border-slate-800 text-xs font-medium text-emerald-400 mb-6"
-            >
-              <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-              </span>
-              Savori 2.0 już dostępne
-            </motion.div>
+      {/* Hero Section - Full Screen */}
+      <section ref={heroRef} className="min-h-screen flex items-center justify-center px-6 relative overflow-hidden">
+        {/* Background gradient orbs */}
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl" />
+        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl" />
 
-            <h1 className="text-5xl md:text-7xl font-bold tracking-tight mb-6 bg-clip-text text-transparent bg-gradient-to-b from-white to-slate-400">
-              Twoje finanse.<br />
-              Uproszczone.
-            </h1>
+        <motion.div
+          style={{ opacity: heroOpacity, scale: heroScale }}
+          className="text-center"
+        >
+          {/* Headline */}
+          <motion.h1
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8 }}
+            className="text-5xl md:text-7xl lg:text-8xl font-bold mb-6 tracking-tight"
+          >
+            Savori.
+          </motion.h1>
 
-            <p className="text-lg text-slate-400 mb-8 max-w-lg mx-auto md:mx-0 leading-relaxed">
-              Savori to nie tylko aplikacja. To Twój osobisty asystent finansowy AI, który pomaga Ci oszczędzać bez wysiłku i stresu.
-            </p>
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.3, duration: 0.8 }}
+            className="text-2xl md:text-3xl text-slate-400 mb-12"
+          >
+            Oszczędzaj mądrzej.
+          </motion.p>
 
-            <div className="flex flex-col sm:flex-row items-center gap-4 justify-center md:justify-start">
-              <Link href="/register" className="w-full sm:w-auto">
-                <Button className="w-full h-12 rounded-full bg-blue-600 hover:bg-blue-500 text-white px-8 text-base font-medium transition-all hover:scale-105">
-                  Rozpocznij za darmo
-                </Button>
-              </Link>
-              <Link href="/demo" className="w-full sm:w-auto">
-                <Button variant="ghost" className="w-full h-12 rounded-full text-slate-300 hover:text-white hover:bg-slate-800 px-6 gap-2 group">
-                  Zobacz jak to działa
-                  <ChevronRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
-                </Button>
-              </Link>
+          {/* iPhone Mockup */}
+          <motion.div
+            initial={{ opacity: 0, y: 50 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5, duration: 1 }}
+            className="mb-12 flex justify-center"
+          >
+            <IPhoneMockup />
+          </motion.div>
+
+          {/* CTA */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 1, duration: 0.8 }}
+          >
+            <Link href="/register">
+              <Button className="h-14 px-8 text-base font-medium rounded-full bg-white text-black hover:bg-slate-100 transition-all hover:scale-105">
+                Start saving
+                <ArrowRight className="w-4 h-4 ml-2" />
+              </Button>
+            </Link>
+            <p className="text-sm text-slate-500 mt-4">Free to start. No credit card required.</p>
+          </motion.div>
+        </motion.div>
+
+        {/* Scroll indicator */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 2 }}
+          className="absolute bottom-8 left-1/2 -translate-x-1/2"
+        >
+          <motion.div
+            animate={{ y: [0, 10, 0] }}
+            transition={{ duration: 1.5, repeat: Infinity }}
+            className="w-6 h-10 border-2 border-white/20 rounded-full flex justify-center pt-2"
+          >
+            <div className="w-1 h-2 bg-white/50 rounded-full" />
+          </motion.div>
+        </motion.div>
+      </section>
+
+      {/* Features - Scrollytelling */}
+      <div className="max-w-7xl mx-auto px-6 py-20">
+        <FeatureSection
+          title="AI that understands you"
+          description="Automatically categorizes transactions, detects patterns, and gives you personalized insights to save more."
+          visual={
+            <div className="w-72 h-72 rounded-3xl bg-gradient-to-br from-purple-900/50 to-slate-900 border border-purple-500/20 flex items-center justify-center">
+              <Sparkles className="w-24 h-24 text-purple-400" />
             </div>
+          }
+        />
 
-            <div className="mt-8 flex items-center justify-center md:justify-start gap-4 text-xs text-slate-500">
-              <div className="flex items-center gap-1">
-                <Check className="w-3.5 h-3.5 text-emerald-500" />
-                Bezpłatny start
-              </div>
-              <div className="flex items-center gap-1">
-                <Check className="w-3.5 h-3.5 text-emerald-500" />
-                Bez karty kredytowej
-              </div>
+        <FeatureSection
+          title="Scan any receipt"
+          description="Just point your camera. Our AI extracts every detail in seconds."
+          visual={
+            <div className="w-72 h-72 rounded-3xl bg-gradient-to-br from-emerald-900/50 to-slate-900 border border-emerald-500/20 flex items-center justify-center">
+              <div className="text-6xl">📸</div>
             </div>
-          </div>
+          }
+          reverse
+        />
 
-          {/* Phone Mockup Hero Visual */}
-          <div className="flex-1 relative">
-            <motion.div
-              initial={{ opacity: 0, rotate: 10, y: 50 }}
-              animate={{ opacity: 1, rotate: -5, y: 0 }}
-              transition={{ duration: 0.8, ease: "easeOut" }}
-              className="relative z-10"
-            >
-              <PhoneMockup />
-            </motion.div>
+        <FeatureSection
+          title="Reach your goals"
+          description="Set targets. Track progress. Get there faster with smart recommendations."
+          visual={
+            <div className="w-72 h-72 rounded-3xl bg-gradient-to-br from-amber-900/50 to-slate-900 border border-amber-500/20 flex items-center justify-center">
+              <div className="text-6xl">🎯</div>
+            </div>
+          }
+        />
+      </div>
 
-            {/* Glow effect behind phone */}
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[350px] h-[600px] bg-blue-500/20 blur-[100px] -z-10 rounded-full" />
+      {/* Final CTA */}
+      <div className="text-center py-32 px-6">
+        <h2 className="text-4xl md:text-6xl font-bold mb-8">
+          Ready to save smarter?
+        </h2>
+        <Link href="/register">
+          <Button className="h-14 px-8 text-base font-medium rounded-full bg-white text-black hover:bg-slate-100">
+            Get started for free
+          </Button>
+        </Link>
+      </div>
+
+      {/* Footer */}
+      <footer className="border-t border-white/5 py-12 px-6">
+        <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-slate-600">
+          <p>© 2026 Savori Inc.</p>
+          <div className="flex gap-8">
+            <Link href="#" className="hover:text-slate-400">Privacy</Link>
+            <Link href="#" className="hover:text-slate-400">Terms</Link>
+            <Link href="#" className="hover:text-slate-400">Contact</Link>
           </div>
         </div>
-
-        {/* Bento Grid Features */}
-        <div className="mb-32">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl font-bold mb-4">Wszystko, czego potrzebujesz</h2>
-            <p className="text-slate-400">Kompletny zestaw narzędzi do kontroli Twoich pieniędzy.</p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 auto-rows-[300px]">
-            {/* Large Card - AI Analysis */}
-            <BentoCard className="md:col-span-2 p-8 flex flex-col justify-between bg-gradient-to-br from-slate-900 to-[#161b22]">
-              <div>
-                <div className="w-10 h-10 rounded-xl bg-purple-500/20 flex items-center justify-center mb-4">
-                  <Sparkles className="w-5 h-5 text-purple-400" />
-                </div>
-                <h3 className="text-2xl font-bold mb-2">Sztuczna Inteligencja</h3>
-                <p className="text-slate-400 max-w-md">Nasze AI automatycznie kategoryzuje 99% Twoich transakcji i wykrywa anomalie w wydatkach zanim stracisz pieniądze.</p>
-              </div>
-              <div className="mt-8 flex gap-4 overflow-hidden">
-                {['Netflix', 'Uber', 'Biedronka', 'Orlen'].map((m, i) => (
-                  <div key={m} className="bg-slate-800 px-4 py-2 rounded-lg text-xs text-slate-300 border border-slate-700 whitespace-nowrap animate-in fade-in slide-in-from-right-4" style={{ animationDelay: `${i * 100}ms` }}>
-                    {m}
-                  </div>
-                ))}
-              </div>
-            </BentoCard>
-
-            {/* Tall Card - Scanning */}
-            <BentoCard className="bg-gradient-to-b from-[#1a202c] to-slate-900 md:row-span-2 relative group-hover:border-emerald-500/30">
-              <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-20" />
-              <div className="p-8 relative z-10 h-full flex flex-col">
-                <div className="w-10 h-10 rounded-xl bg-emerald-500/20 flex items-center justify-center mb-4">
-                  <ScanLine className="w-5 h-5 text-emerald-400" />
-                </div>
-                <h3 className="text-2xl font-bold mb-2">Skaner Paragonów</h3>
-                <p className="text-slate-400 text-sm mb-8">Zrób zdjęcie. My zajmiemy się resztą.</p>
-
-                <div className="flex-1 flex items-center justify-center">
-                  <div className="w-32 h-44 bg-white rounded-lg shadow-xl rotate-3 transition-transform group-hover:rotate-0 duration-500 flex flex-col items-center justify-center gap-2 p-4">
-                    <div className="w-full h-2 bg-slate-200 rounded-full" />
-                    <div className="w-3/4 h-2 bg-slate-200 rounded-full" />
-                    <div className="w-full h-px bg-slate-200 my-2" />
-                    <div className="w-full flex justify-between text-[6px] text-slate-400">
-                      <span>Mleko</span>
-                      <span>3.50</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </BentoCard>
-
-            {/* Small Card - Security */}
-            <BentoCard className="p-8 flex flex-col justify-center items-center text-center">
-              <ShieldCheck className="w-12 h-12 text-emerald-400 mb-4" />
-              <h3 className="text-lg font-bold mb-1">Bankowe Bezpieczeństwo</h3>
-              <p className="text-xs text-slate-400">Szyfrowanie AES-256 i pełna prywatność danych.</p>
-            </BentoCard>
-
-            {/* Small Card - Gamification */}
-            <BentoCard className="p-8 bg-gradient-to-br from-orange-900/20 to-slate-900 border-orange-500/20">
-              <div className="flex items-center gap-3 mb-4">
-                <Zap className="w-6 h-6 text-orange-400" />
-                <div className="text-sm font-bold text-orange-400">Gamifikacja</div>
-              </div>
-              <h3 className="text-xl font-bold mb-2">Zarabiaj oszczędzając</h3>
-              <p className="text-sm text-slate-400">Zdobywaj punkty XP i odznaki za realizację celów.</p>
-            </BentoCard>
-          </div>
-        </div>
-
-        {/* Trust/Footer Section */}
-        <div className="text-center py-20 border-t border-slate-800">
-          <p className="text-slate-500 mb-6">Zaufali nam użytkownicy, którzy oszczędzili już łącznie ponad 5 mln zł</p>
-          <div className="flex justify-center flex-wrap gap-8 opacity-50 grayscale hover:grayscale-0 transition-all duration-500">
-            {/* Placeholder logos */}
-            <span className="text-lg font-bold">TechCrunch</span>
-            <span className="text-lg font-bold">Forbes</span>
-            <span className="text-lg font-bold">ProductHunt</span>
-            <span className="text-lg font-bold">Wired</span>
-          </div>
-
-          <div className="mt-20 flex flex-col md:flex-row justify-between items-center text-sm text-slate-600 gap-4">
-            <p>© 2026 Savori Inc.</p>
-            <div className="flex gap-6">
-              <Link href="#" className="hover:text-slate-400">Prywatność</Link>
-              <Link href="#" className="hover:text-slate-400">Regulamin</Link>
-              <Link href="#" className="hover:text-slate-400">Twitter</Link>
-            </div>
-          </div>
-        </div>
-      </main>
+      </footer>
     </div>
   );
 }
