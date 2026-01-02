@@ -20,25 +20,38 @@ import { formatMoney, CATEGORY_LABELS, CATEGORY_ICONS } from '@/lib/utils';
 import { collection, query, orderBy, limit, onSnapshot, doc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Expense, Budget, SavingGoal } from '@/types';
-import AIInsightsWidget from '@/components/AIInsightsWidget';
-import PredictiveSpendingWidget from '@/components/PredictiveSpendingWidget';
+import dynamic from 'next/dynamic';
+
+// Lazy load heavy components for better initial load performance
+const AIInsightsWidget = dynamic(() => import('@/components/AIInsightsWidget'), {
+    ssr: false,
+    loading: () => <div className="h-48 bg-slate-800/50 rounded-2xl animate-pulse" />,
+});
+const PredictiveSpendingWidget = dynamic(() => import('@/components/PredictiveSpendingWidget'), {
+    ssr: false,
+    loading: () => <div className="h-48 bg-slate-800/50 rounded-2xl animate-pulse" />,
+});
+const GamificationHub = dynamic(() => import('@/components/GamificationHub'), {
+    ssr: false,
+    loading: () => <div className="h-32 bg-slate-800/50 rounded-2xl animate-pulse" />,
+});
+const AIChatSheet = dynamic(() => import('@/components/AIChatSheet'), {
+    ssr: false,
+    loading: () => null,
+});
+
 import EmptyDashboard from '@/components/EmptyDashboard';
 import SafeToSpendCard from '@/components/SafeToSpendCard';
-import GamificationHub from '@/components/GamificationHub';
 import ActionGrid from '@/components/dashboard/ActionGrid';
 import DashboardHeader from '@/components/dashboard/DashboardHeader';
 import HookChallengeWidget from '@/components/dashboard/HookChallengeWidget';
-import dynamic from 'next/dynamic';
-const AIChatSheet = dynamic(() => import('@/components/AIChatSheet'), {
-    ssr: false,
-    loading: () => null, // No loading skeleton - chat opens with animation
-});
 import AddExpenseModal from '@/components/AddExpenseModal';
 import GradientExpenseCard from '@/components/GradientExpenseCard';
 import ImpulseLockModal from '@/components/dashboard/ImpulseLockModal';
 import { recurringExpensesService, getMonthlyEquivalent } from '@/lib/subscriptions/recurring-service';
 
 import SmartSummary from '@/components/dashboard/SmartSummary';
+import DailyBonusWidget from '@/components/engagement/DailyBonusWidget';
 
 const MIN_EXPENSES_FOR_AI = 5;
 const MIN_EXPENSES_FOR_PREDICTIONS = 3;
@@ -238,6 +251,11 @@ export default function DashboardPage() {
                     currency={currency}
                     budget={monthlyBudget}
                 />
+
+                {/* Daily Bonus Widget */}
+                <div className="mb-6">
+                    <DailyBonusWidget />
+                </div>
 
                 {/* High Priority Section (Desktop) */}
                 {(isPredictionCritical || isAICritical) && (

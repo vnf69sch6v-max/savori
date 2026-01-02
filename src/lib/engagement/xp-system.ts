@@ -83,6 +83,9 @@ export const XP_ACTIONS: Record<string, XPAction> = {
     no_spend_day: { action: 'no_spend_day', xp: 15, description: 'Dzień bez wydatków' },
     no_spend_3: { action: 'no_spend_3', xp: 30, description: '3 dni bez wydatków z rzędu' },
     no_spend_7: { action: 'no_spend_7', xp: 75, description: 'Tydzień bez wydatków' },
+
+    // Daily bonus
+    daily_bonus: { action: 'daily_bonus', xp: 10, description: 'Dzienny bonus', cooldown: 1440 },
 };
 
 // ============ LEVELS ============
