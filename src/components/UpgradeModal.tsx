@@ -13,7 +13,7 @@ interface UpgradeModalProps {
     isOpen: boolean;
     onClose: () => void;
     reason?: string;
-    highlightPlan?: 'pro' | 'premium';
+    highlightPlan?: 'pro' | 'ultra';
 }
 
 export default function UpgradeModal({ isOpen, onClose, reason, highlightPlan = 'pro' }: UpgradeModalProps) {
@@ -21,7 +21,7 @@ export default function UpgradeModal({ isOpen, onClose, reason, highlightPlan = 
     const [loading, setLoading] = useState<string | null>(null);
     const [yearly, setYearly] = useState(false);
 
-    const handleUpgrade = async (planId: 'pro' | 'premium') => {
+    const handleUpgrade = async (planId: 'pro' | 'ultra') => {
         if (!userData?.id || !user) {
             toast.error('Musisz być zalogowany');
             return;
@@ -42,7 +42,7 @@ export default function UpgradeModal({ isOpen, onClose, reason, highlightPlan = 
             // Map plan to Stripe Price ID (TEST IDs - Replace with real ones from env or config)
             const priceIds = {
                 pro: yearly ? 'price_pro_yearly_test' : 'price_pro_monthly_test',
-                premium: yearly ? 'price_premium_yearly_test' : 'price_premium_monthly_test' // premium is 'ultimate' in UI
+                ultra: yearly ? 'price_ultra_yearly_test' : 'price_ultra_monthly_test'
             };
 
             const response = await fetch('/api/create-checkout-session', {
@@ -53,7 +53,7 @@ export default function UpgradeModal({ isOpen, onClose, reason, highlightPlan = 
                 },
                 body: JSON.stringify({
                     priceId: priceIds[planId],
-                    planId: planId === 'premium' ? 'ultimate' : 'pro'
+                    planId: planId === 'ultra' ? 'ultimate' : 'pro'
                 }),
             });
 
@@ -75,7 +75,7 @@ export default function UpgradeModal({ isOpen, onClose, reason, highlightPlan = 
     if (!isOpen) return null;
 
     const proPlan = SUBSCRIPTION_PLANS.find(p => p.id === 'pro')!;
-    const premiumPlan = SUBSCRIPTION_PLANS.find(p => p.id === 'premium')!;
+    const premiumPlan = SUBSCRIPTION_PLANS.find(p => p.id === 'ultra')!;
 
     return (
         <AnimatePresence>
@@ -213,12 +213,12 @@ export default function UpgradeModal({ isOpen, onClose, reason, highlightPlan = 
                             </ul>
 
                             <Button
-                                onClick={() => handleUpgrade('premium')}
-                                disabled={loading === 'premium'}
+                                onClick={() => handleUpgrade('ultra')}
+                                disabled={loading === 'ultra'}
                                 variant="outline"
                                 className="w-full border-amber-500/50 text-amber-400 hover:bg-amber-500/10"
                             >
-                                {loading === 'premium' ? 'Przetwarzanie...' : 'Wybierz Ultimate'}
+                                {loading === 'ultra' ? 'Przetwarzanie...' : 'Wybierz Ultimate'}
                             </Button>
                         </div>
                     </div>

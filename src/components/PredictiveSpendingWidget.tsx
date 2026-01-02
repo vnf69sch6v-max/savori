@@ -23,7 +23,7 @@ export default function PredictiveSpendingWidget({ lastUpdate, onPriorityChange 
     const [refreshing, setRefreshing] = useState(false);
 
     // Check Pro subscription
-    const isPro = userData?.subscription?.plan === 'pro' || userData?.subscription?.plan === 'premium';
+    const isPro = userData?.subscription?.plan === 'pro' || userData?.subscription?.plan === 'ultra';
 
     // If not Pro, show locked state
     if (!isPro) {

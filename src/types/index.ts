@@ -40,7 +40,7 @@ export interface User {
 }
 
 export interface Subscription {
-    plan: 'free' | 'pro' | 'premium';
+    plan: 'free' | 'pro' | 'ultra';
     stripeCustomerId?: string;
     validUntil?: Timestamp;
 }

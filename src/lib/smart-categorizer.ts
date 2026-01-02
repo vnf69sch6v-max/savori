@@ -218,7 +218,7 @@ export class SmartCategorizer {
             shopping: ['zakup', 'ubrania', 'buty', 'elektronika', 'meble', 'wyposażenie'],
             health: ['leki', 'apteka', 'lekarz', 'wizyta', 'badanie', 'ubezpieczenie zdrowotne'],
             education: ['kurs', 'szkolenie', 'książka', 'nauka', 'studia', 'czesne'],
-            subscriptions: ['subskrypcja', 'premium', 'miesięczny', 'roczny'],
+            subscriptions: ['subskrypcja', 'ultra', 'miesięczny', 'roczny'],
             other: [],
         };
 

@@ -6,7 +6,7 @@ import { useState, useCallback, useEffect } from 'react';
 
 interface UseSubscriptionReturn {
     // Current plan info
-    plan: 'free' | 'pro' | 'premium';
+    plan: 'free' | 'pro' | 'ultra';
     planDetails: PlanFeatures | undefined;
     isValid: boolean;
 
@@ -93,8 +93,8 @@ export function useSubscription(): UseSubscriptionReturn {
         upgradeReason,
         openUpgrade,
         closeUpgrade,
-        isPro: plan === 'pro' || plan === 'premium',
-        isPremium: plan === 'premium',
+        isPro: plan === 'pro' || plan === 'ultra',
+        isPremium: plan === 'ultra',
         isFree: plan === 'free',
     };
 }

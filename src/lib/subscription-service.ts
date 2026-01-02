@@ -23,7 +23,7 @@ export type FeatureId =
     | 'unlimitedGoals';
 
 export interface PlanFeatures {
-    id: 'free' | 'pro' | 'premium';
+    id: 'free' | 'pro' | 'ultra';
     name: string;
     subtitle: string;
     price: number;
@@ -97,7 +97,7 @@ export const SUBSCRIPTION_PLANS: PlanFeatures[] = [
         },
     },
     {
-        id: 'premium',
+        id: 'ultra',
         name: 'Ultimate',
         subtitle: 'Pełna kontrola finansów',
         price: 30,
@@ -133,7 +133,7 @@ class SubscriptionService {
     /**
      * Get plan by ID
      */
-    getPlan(planId: 'free' | 'pro' | 'premium'): PlanFeatures | undefined {
+    getPlan(planId: 'free' | 'pro' | 'ultra'): PlanFeatures | undefined {
         return SUBSCRIPTION_PLANS.find(p => p.id === planId);
     }
 
@@ -225,7 +225,7 @@ class SubscriptionService {
      */
     async upgradeSubscription(
         userId: string,
-        newPlan: 'free' | 'pro' | 'premium',
+        newPlan: 'free' | 'pro' | 'ultra',
         yearly: boolean = false
     ): Promise<{ success: boolean; error?: string }> {
         try {
@@ -262,7 +262,7 @@ class SubscriptionService {
     /**
      * Get effective plan (considering expiry)
      */
-    getEffectivePlan(subscription: Subscription | undefined): 'free' | 'pro' | 'premium' {
+    getEffectivePlan(subscription: Subscription | undefined): 'free' | 'pro' | 'ultra' {
         if (!subscription) return 'free';
         if (!this.isSubscriptionValid(subscription)) return 'free';
         return subscription.plan;
