@@ -194,8 +194,8 @@ export default function BudgetsPage() {
                     <div className="flex-1">
                         <h3 className="font-semibold text-white flex items-center gap-2">
                             Budżet Behawioralny
-                            <span className="px-2 py-0.5 text-xs bg-purple-500/20 text-purple-300 rounded-full">
-                                BETA
+                            <span className="px-2 py-0.5 text-xs bg-purple-500/20 text-purple-300 rounded-full border border-purple-500/30 flex items-center gap-1">
+                                <span className="text-[10px]">👑</span> ULTRA
                             </span>
                         </h3>
                         <p className="text-sm text-slate-400">
