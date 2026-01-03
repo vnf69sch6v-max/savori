@@ -187,7 +187,7 @@ export default function SmartExpenseModal({ isOpen, onClose, onSuccess }: SmartE
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                className="fixed inset-0 z-50 flex items-end sm:items-center justify-center"
+                className="fixed inset-0 z-50 flex items-end sm:items-center justify-center pb-24 sm:pb-0"
                 onClick={onClose}
             >
                 {/* Backdrop */}
@@ -200,7 +200,7 @@ export default function SmartExpenseModal({ isOpen, onClose, onSuccess }: SmartE
                     exit={{ opacity: 0, y: 50, scale: 0.95 }}
                     transition={{ type: 'spring', damping: 25, stiffness: 300 }}
                     onClick={(e) => e.stopPropagation()}
-                    className="relative w-full max-w-md mx-4 mb-4 sm:mb-0"
+                    className="relative w-full max-w-md mx-4"
                 >
                     <div className="bg-gradient-to-b from-slate-800/95 to-slate-900/98 backdrop-blur-2xl border border-slate-700/50 rounded-3xl overflow-hidden shadow-2xl shadow-purple-500/10">
 

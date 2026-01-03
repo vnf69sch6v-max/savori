@@ -166,9 +166,9 @@ export default function DetailedExpenseModal({ isOpen, onClose, onSuccess, initi
                     initial={{ opacity: 0, scale: 0.95, y: 20 }}
                     animate={{ opacity: 1, scale: 1, y: 0 }}
                     exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                    className="relative w-full max-w-lg bg-slate-900/95 border border-slate-700/50 rounded-3xl shadow-2xl overflow-hidden"
+                    className="relative w-full max-w-lg max-h-[90vh] flex flex-col bg-slate-900/95 border border-slate-700/50 rounded-3xl shadow-2xl overflow-hidden"
                 >
-                    <div className="flex items-center justify-between p-6 border-b border-slate-800">
+                    <div className="flex items-center justify-between p-6 border-b border-slate-800 flex-shrink-0">
                         <div className="flex items-center gap-3">
                             <div className="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center">
                                 <Receipt className="w-5 h-5 text-emerald-400" />
@@ -180,7 +180,7 @@ export default function DetailedExpenseModal({ isOpen, onClose, onSuccess, initi
                         </button>
                     </div>
 
-                    <form onSubmit={handleSubmit} className="p-6 space-y-5">
+                    <form onSubmit={handleSubmit} className="p-6 space-y-5 overflow-y-auto custom-scrollbar">
                         <div>
                             <label className="block text-sm font-medium text-slate-300 mb-2">Kwota *</label>
                             <div className="relative">
