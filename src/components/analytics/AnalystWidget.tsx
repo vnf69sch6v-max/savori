@@ -15,8 +15,23 @@ interface AnalystWidgetProps {
 export default function AnalystWidget({ expenses, onRequestForecast }: AnalystWidgetProps) {
     const { userData } = useAuth();
     const messagesEndRef = useRef<HTMLDivElement>(null);
+
+    // Smart suggestions based on expense data
+    const getSuggestions = () => {
+        const hasExpenses = expenses.length > 0;
+        if (!hasExpenses) {
+            return ['Jak zacząć oszczędzać?', 'Ile powinienem odkładać?'];
+        }
+        return [
+            'Gdzie mogę oszczędzić?',
+            'Jaki mam trend wydatków?',
+            'Porównaj z poprzednim miesiącem',
+            'Daj mi 3 porady'
+        ];
+    };
+
     const [messages, setMessages] = useState<{ role: 'user' | 'agent', content: string }[]>([
-        { role: 'agent', content: 'Cześć! Jestem Twoim osobistym analitykiem finansowym. Zapytaj mnie o swoje wydatki, trendy lub porady!' }
+        { role: 'agent', content: `Cześć${userData?.displayName ? `, ${userData.displayName.split(' ')[0]}` : ''}! 👋 Jestem Twoim analitykiem finansowym. Zapytaj mnie o cokolwiek!` }
     ]);
     const [input, setInput] = useState('');
     const [loading, setLoading] = useState(false);
@@ -26,12 +41,12 @@ export default function AnalystWidget({ expenses, onRequestForecast }: AnalystWi
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     }, [messages, loading]);
 
-    const handleSend = async () => {
-        if (!input.trim() || loading) return;
+    const handleSend = async (text?: string) => {
+        const messageText = text || input.trim();
+        if (!messageText || loading) return;
 
-        const userMsg = input.trim();
         setInput('');
-        setMessages(prev => [...prev, { role: 'user', content: userMsg }]);
+        setMessages(prev => [...prev, { role: 'user', content: messageText }]);
         setLoading(true);
 
         try {
@@ -53,7 +68,7 @@ export default function AnalystWidget({ expenses, onRequestForecast }: AnalystWi
                 body: JSON.stringify({
                     type: 'agent_chat',
                     data: {
-                        question: userMsg,
+                        question: messageText,
                         context: contextData
                     }
                 })
@@ -199,6 +214,21 @@ export default function AnalystWidget({ expenses, onRequestForecast }: AnalystWi
                         </motion.button>
                     </div>
 
+                    {/* Quick Suggestions */}
+                    <div className="px-4 pb-3 flex gap-2 overflow-x-auto no-scrollbar">
+                        {getSuggestions().map((suggestion, idx) => (
+                            <motion.button
+                                key={idx}
+                                whileHover={{ scale: 1.02 }}
+                                whileTap={{ scale: 0.98 }}
+                                onClick={() => handleSend(suggestion)}
+                                className="shrink-0 px-3 py-1.5 rounded-full text-xs font-medium bg-white/5 text-slate-300 border border-white/10 hover:bg-white/10 transition-all"
+                            >
+                                {suggestion}
+                            </motion.button>
+                        ))}
+                    </div>
+
                     {/* Input Area */}
                     <div className="p-4 bg-black/20 border-t border-white/5 flex gap-2">
                         <Input
@@ -210,7 +240,7 @@ export default function AnalystWidget({ expenses, onRequestForecast }: AnalystWi
                         />
                         <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
                             <Button
-                                onClick={handleSend}
+                                onClick={() => handleSend()}
                                 disabled={loading || !input.trim()}
                                 className="bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white w-11 h-11 p-0 rounded-xl shadow-lg shadow-violet-500/25 disabled:opacity-50 disabled:shadow-none"
                             >
