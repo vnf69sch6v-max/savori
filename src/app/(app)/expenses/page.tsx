@@ -48,7 +48,7 @@ export default function ExpensesPage() {
 
         const expensesRef = collection(db, 'users', userData.id, 'expenses');
         // Limit to prevent excessive reads - most users won't have 300+ expenses in view
-        const q = query(expensesRef, orderBy('createdAt', 'desc'), limit(300));
+        const q = query(expensesRef, orderBy('createdAt', 'desc'), limit(100));
 
         const unsubscribe = onSnapshot(q, (snapshot) => {
             const data = snapshot.docs.map(doc => ({

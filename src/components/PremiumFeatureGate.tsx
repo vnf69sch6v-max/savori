@@ -17,8 +17,12 @@ interface PremiumFeatureGateProps {
     children: React.ReactNode;
     requiredPlan: RequiredPlan;
     featureName: string;
-    /** If true, show blurred preview of content. If false, show locked placeholder */
-    showPreview?: boolean;
+    /** 
+     * If true, render blurred preview of content for non-paying users.
+     * WARNING: This still executes the children! Use only for static content.
+     * Default: false (children are NOT rendered for non-paying users)
+     */
+    renderBlocked?: boolean;
     className?: string;
 }
 
@@ -45,7 +49,7 @@ export default function PremiumFeatureGate({
     children,
     requiredPlan,
     featureName,
-    showPreview = true,
+    renderBlocked = false,
     className = '',
 }: PremiumFeatureGateProps) {
     const { plan, isPro, isPremium } = useSubscription();
@@ -68,36 +72,39 @@ export default function PremiumFeatureGate({
         router.push('/settings/billing');
     };
 
+    // If renderBlocked is false (default), do NOT render children at all
+    // This prevents API calls from components that are gated
+    if (!renderBlocked) {
+        return (
+            <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className={`relative overflow-hidden rounded-2xl border ${config.borderColor} ${config.bgColor} p-8 ${className}`}
+            >
+                <UpgradePrompt
+                    config={config}
+                    Icon={Icon}
+                    featureName={featureName}
+                    onUpgrade={handleUpgrade}
+                />
+            </motion.div>
+        );
+    }
+
+    // Only render blurred preview if explicitly requested (for static content only!)
     return (
         <div className={`relative ${className}`}>
-            {/* Content - blurred or hidden */}
-            {showPreview ? (
-                <div className="relative overflow-hidden rounded-2xl">
-                    {/* Blurred content preview */}
-                    <div className="blur-sm pointer-events-none select-none opacity-60">
-                        {children}
-                    </div>
-
-                    {/* Overlay */}
-                    <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        className="absolute inset-0 bg-gradient-to-t from-slate-900/95 via-slate-900/80 to-slate-900/60 flex flex-col items-center justify-center p-6"
-                    >
-                        <UpgradePrompt
-                            config={config}
-                            Icon={Icon}
-                            featureName={featureName}
-                            onUpgrade={handleUpgrade}
-                        />
-                    </motion.div>
+            <div className="relative overflow-hidden rounded-2xl">
+                {/* Blurred content preview - WARNING: children still execute! */}
+                <div className="blur-sm pointer-events-none select-none opacity-60">
+                    {children}
                 </div>
-            ) : (
-                /* Placeholder card */
+
+                {/* Overlay */}
                 <motion.div
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className={`relative overflow-hidden rounded-2xl border ${config.borderColor} ${config.bgColor} p-8`}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className="absolute inset-0 bg-gradient-to-t from-slate-900/95 via-slate-900/80 to-slate-900/60 flex flex-col items-center justify-center p-6"
                 >
                     <UpgradePrompt
                         config={config}
@@ -106,7 +113,7 @@ export default function PremiumFeatureGate({
                         onUpgrade={handleUpgrade}
                     />
                 </motion.div>
-            )}
+            </div>
         </div>
     );
 }

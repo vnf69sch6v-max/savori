@@ -221,7 +221,7 @@ export default function AnalyticsPage() {
             expensesRef,
             where('date', '>=', Timestamp.fromDate(start)),
             orderBy('date', 'desc'),
-            limit(500) // Limit to prevent excessive reads
+            limit(100) // Reduced from 500 to save costs
         );
 
         const unsubscribe = onSnapshot(q, (snapshot) => {
@@ -379,21 +379,23 @@ export default function AnalyticsPage() {
                 </motion.div>
             ) : (
                 <>
-                    {/* AI Analyst Widget */}
-                    <div className="mb-6 grid lg:grid-cols-3 gap-6">
-                        <div className="lg:col-span-2">
-                            <AICommentary
-                                categoryData={categoryData}
-                                totalExpenses={totalExpenses}
-                                avgDaily={avgDaily}
-                                period={period}
-                                merchantData={merchantData}
-                            />
+                    {/* AI Analyst Widget - PRO ONLY */}
+                    <PremiumFeatureGate requiredPlan="pro" featureName="AI Analityk">
+                        <div className="mb-6 grid lg:grid-cols-3 gap-6">
+                            <div className="lg:col-span-2">
+                                <AICommentary
+                                    categoryData={categoryData}
+                                    totalExpenses={totalExpenses}
+                                    avgDaily={avgDaily}
+                                    period={period}
+                                    merchantData={merchantData}
+                                />
+                            </div>
+                            <div className="lg:col-span-1">
+                                <AnalystWidget expenses={expenses} onRequestForecast={handleRequestForecast} />
+                            </div>
                         </div>
-                        <div className="lg:col-span-1">
-                            <AnalystWidget expenses={expenses} onRequestForecast={handleRequestForecast} />
-                        </div>
-                    </div>
+                    </PremiumFeatureGate>
 
                     {/* Quick Stats Row with Stagger Animation */}
                     <motion.div

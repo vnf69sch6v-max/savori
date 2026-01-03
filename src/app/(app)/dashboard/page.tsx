@@ -205,15 +205,25 @@ export default function DashboardPage() {
                 <DashboardHeader />
                 <SafeToSpendCard spent={monthlySpent} limit={monthlyBudget} loading={loading} />
 
-                {/* Dynamic Mobile Layout: Critical items first */}
-                {isAICritical && <AIInsightsWidget onPriorityChange={(p) => handlePriorityChange('ai', p)} />}
-                {isPredictionCritical && showPredictions && <PredictiveSpendingWidget lastUpdate={expenses.length + monthlyExpenses} onPriorityChange={(p) => handlePriorityChange('prediction', p)} />}
+                {/* Dynamic Mobile Layout: Critical items first - PRO ONLY */}
+                <PremiumFeatureGate requiredPlan="pro" featureName="AI Insights">
+                    {isAICritical && <AIInsightsWidget onPriorityChange={(p) => handlePriorityChange('ai', p)} />}
+                </PremiumFeatureGate>
+                <PremiumFeatureGate requiredPlan="pro" featureName="Prognoza Wydatków">
+                    {isPredictionCritical && showPredictions && <PredictiveSpendingWidget lastUpdate={expenses.length + monthlyExpenses} onPriorityChange={(p) => handlePriorityChange('prediction', p)} />}
+                </PremiumFeatureGate>
 
-                {/* Normal order for non-critical */}
-                {!isPredictionCritical && showPredictions && <PredictiveSpendingWidget lastUpdate={expenses.length + monthlyExpenses} onPriorityChange={(p) => handlePriorityChange('prediction', p)} />}
-                {!isAICritical && showAI && <AIInsightsWidget onPriorityChange={(p) => handlePriorityChange('ai', p)} />}
+                {/* Normal order for non-critical - PRO ONLY */}
+                <PremiumFeatureGate requiredPlan="pro" featureName="Prognoza Wydatków">
+                    {!isPredictionCritical && showPredictions && <PredictiveSpendingWidget lastUpdate={expenses.length + monthlyExpenses} onPriorityChange={(p) => handlePriorityChange('prediction', p)} />}
+                </PremiumFeatureGate>
+                <PremiumFeatureGate requiredPlan="pro" featureName="AI Insights">
+                    {!isAICritical && showAI && <AIInsightsWidget onPriorityChange={(p) => handlePriorityChange('ai', p)} />}
+                </PremiumFeatureGate>
 
-                <HookChallengeWidget />
+                <PremiumFeatureGate requiredPlan="pro" featureName="AI Quiz">
+                    <HookChallengeWidget />
+                </PremiumFeatureGate>
 
                 <ActionGrid
                     onScanClick={() => router.push('/scan')}
@@ -307,17 +317,21 @@ export default function DashboardPage() {
                 </div>
 
                 <div className="mb-6">
-                    <HookChallengeWidget />
+                    <PremiumFeatureGate requiredPlan="pro" featureName="AI Quiz">
+                        <HookChallengeWidget />
+                    </PremiumFeatureGate>
                 </div>
 
                 <div className="grid lg:grid-cols-3 gap-6">
                     <div className="lg:col-span-2">
                         {/* Show Prediction here ONLY if NOT critical */}
                         {!isPredictionCritical && (showPredictions ? (
-                            <PredictiveSpendingWidget
-                                lastUpdate={expenses.length + monthlyExpenses}
-                                onPriorityChange={(p) => handlePriorityChange('prediction', p)}
-                            />
+                            <PremiumFeatureGate requiredPlan="pro" featureName="Prognoza Wydatków">
+                                <PredictiveSpendingWidget
+                                    lastUpdate={expenses.length + monthlyExpenses}
+                                    onPriorityChange={(p) => handlePriorityChange('prediction', p)}
+                                />
+                            </PremiumFeatureGate>
                         ) : (
                             <Card className="p-6">
                                 {/* Placeholder content */}
@@ -346,7 +360,9 @@ export default function DashboardPage() {
                     <div>
                         {/* Show AI here ONLY if NOT critical */}
                         {!isAICritical && (showAI ? (
-                            <AIInsightsWidget onPriorityChange={(p) => handlePriorityChange('ai', p)} />
+                            <PremiumFeatureGate requiredPlan="pro" featureName="AI Insights">
+                                <AIInsightsWidget onPriorityChange={(p) => handlePriorityChange('ai', p)} />
+                            </PremiumFeatureGate>
                         ) : (
                             <Card className="p-6">
                                 {/* Placeholder content */}
