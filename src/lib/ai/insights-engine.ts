@@ -6,6 +6,12 @@
 import { Timestamp } from 'firebase/firestore';
 import { ExpenseCategory, Expense } from '@/types';
 import { notificationService } from '@/lib/engagement/notifications';
+import {
+    calculateZScore,
+    calculateRobustZScore,
+    calculateStats,
+    calculateVolatility,
+} from '@/lib/math/statistics';
 
 // ============ TYPES ============
 
@@ -127,7 +133,7 @@ export class InsightsEngine {
         if (recurringInsight) partialInsights.push(recurringInsight);
 
         // 3. Overpaying Detection
-        const overpayingInsight = this.detectOverpaying(expense);
+        const overpayingInsight = this.detectOverpaying(expense, recentExpenses);
         if (overpayingInsight) partialInsights.push(overpayingInsight);
 
         // 4. Budget Warning
@@ -159,7 +165,9 @@ export class InsightsEngine {
     }
 
     /**
-     * Detect if today's spending is unusually high
+     * Detect if today's spending is unusually high using Z-Score
+     * Z > 2.0 = significant anomaly (95th percentile)
+     * Z > 3.0 = extreme anomaly (99.7th percentile)
      */
     private detectSpendingSpike(
         expense: Expense,
@@ -177,25 +185,67 @@ export class InsightsEngine {
 
         const todayTotal = todayExpenses.reduce((sum, e) => sum + e.amount, 0) + expense.amount;
 
-        // Get average or estimate
-        const avgDaily = userProfile?.avgDailySpending || 15000; // default 150 zł
+        // Build historical daily totals from recent expenses
+        const dailyTotals = this.getDailyTotalsFromExpenses(recentExpenses, 30);
 
-        // Spike if 2x average
-        if (todayTotal > avgDaily * 2) {
-            const percentage = Math.round((todayTotal / avgDaily) * 100);
+        if (dailyTotals.length < 5) {
+            // Fallback to simple multiplier if insufficient history
+            const avgDaily = userProfile?.avgDailySpending || 15000;
+            if (todayTotal > avgDaily * 2) {
+                return {
+                    userId: expense.userId,
+                    type: 'spending_spike',
+                    priority: 'medium',
+                    emoji: '📈',
+                    title: 'Wydatki wyższe niż zwykle',
+                    message: `Wydałeś ${this.formatMoney(todayTotal)} - więcej niż przeciętnie.`,
+                    confidence: 0.6,
+                    potentialSavings: todayTotal - avgDaily,
+                };
+            }
+            return null;
+        }
+
+        // Use Robust Z-Score (resistant to outliers in history)
+        const zScore = calculateRobustZScore(todayTotal, dailyTotals);
+        const stats = calculateStats(dailyTotals);
+
+        if (zScore >= 2.0) {
+            const severity = zScore >= 3.0 ? 'critical' : zScore >= 2.5 ? 'high' : 'medium';
+            const percentAbove = Math.round(((todayTotal - stats.mean) / stats.mean) * 100);
+
             return {
                 userId: expense.userId,
                 type: 'spending_spike',
-                priority: todayTotal > avgDaily * 3 ? 'high' : 'medium',
-                emoji: '📈',
-                title: 'Dzisiejsze wydatki wyższe niż zwykle',
-                message: `Wydałeś już ${this.formatMoney(todayTotal)} - to ${percentage}% Twojej średniej dziennej!`,
-                confidence: 0.85,
-                potentialSavings: todayTotal - avgDaily,
+                priority: severity,
+                emoji: severity === 'critical' ? '🔴' : '📈',
+                title: severity === 'critical' ? 'Ekstremalne wydatki!' : 'Dzisiejsze wydatki wyższe niż zwykle',
+                message: `Wydałeś ${this.formatMoney(todayTotal)} (+${percentAbove}% od średniej). Z-Score: ${zScore.toFixed(1)}`,
+                confidence: Math.min(0.95, 0.7 + (dailyTotals.length / 30) * 0.2),
+                potentialSavings: todayTotal - stats.mean,
             };
         }
 
         return null;
+    }
+
+    /**
+     * Get daily totals for the last N days
+     */
+    private getDailyTotalsFromExpenses(expenses: Expense[], days: number): number[] {
+        const dailyMap: Record<string, number> = {};
+        const now = new Date();
+        const cutoff = new Date(now.getTime() - days * 24 * 60 * 60 * 1000);
+
+        expenses.forEach(e => {
+            const date = e.date?.toDate ? e.date.toDate() : new Date(e.date as unknown as string);
+            if (date >= cutoff && date < now) {
+                const key = date.toISOString().split('T')[0];
+                dailyMap[key] = (dailyMap[key] || 0) + e.amount;
+            }
+        });
+
+        return Object.values(dailyMap);
     }
 
     /**
@@ -261,28 +311,60 @@ export class InsightsEngine {
     }
 
     /**
-     * Detect if user is overpaying compared to benchmarks
+     * Detect if user is overpaying compared to their own historical patterns
+     * Uses Z-Score against user's own transaction history in the category
      */
-    private detectOverpaying(expense: Expense): Partial<AIInsight> | null {
+    private detectOverpaying(
+        expense: Expense,
+        recentExpenses: Expense[]
+    ): Partial<AIInsight> | null {
         const category = expense.merchant?.category || 'other';
-        const benchmark = CATEGORY_BENCHMARKS[category];
 
-        if (!benchmark) return null;
+        // Get user's own history in this category
+        const categoryExpenses = recentExpenses.filter(
+            e => e.merchant?.category === category
+        );
 
-        // Check if single expense is unusually high
-        const avgTransaction = benchmark.avg / 10; // Assume ~10 transactions/month per category
+        if (categoryExpenses.length < 5) {
+            // Fallback to static benchmarks if insufficient history
+            const benchmark = CATEGORY_BENCHMARKS[category];
+            if (!benchmark) return null;
 
-        if (expense.amount > avgTransaction * 2) {
-            const percentile = Math.min(95, Math.round((expense.amount / avgTransaction) * 50));
+            const avgTransaction = benchmark.avg / 10;
+            if (expense.amount > avgTransaction * 2) {
+                return {
+                    userId: expense.userId,
+                    type: 'overpaying',
+                    priority: 'medium',
+                    emoji: '💸',
+                    title: 'Ten zakup jest droższy niż zwykle',
+                    message: `${this.formatMoney(expense.amount)} - to więcej niż typowy zakup w tej kategorii.`,
+                    confidence: 0.6,
+                    potentialSavings: expense.amount - avgTransaction,
+                };
+            }
+            return null;
+        }
+
+        // Use user's own history for personalized benchmarks
+        const amounts = categoryExpenses.map(e => e.amount);
+        const zScore = calculateZScore(expense.amount, amounts);
+        const stats = calculateStats(amounts);
+
+        if (zScore >= 2.0) {
+            const percentAbove = Math.round(((expense.amount - stats.mean) / stats.mean) * 100);
+            const severity = zScore >= 3.0 ? 'high' : 'medium';
+
             return {
                 userId: expense.userId,
                 type: 'overpaying',
-                priority: 'medium',
+                priority: severity,
                 emoji: '💸',
-                title: 'Ten zakup jest droższy niż zwykle',
-                message: `${this.formatMoney(expense.amount)} w kategorii "${this.getCategoryLabel(category)}" - to więcej niż ${percentile}% podobnych zakupów`,
-                confidence: 0.7,
-                potentialSavings: expense.amount - avgTransaction,
+                title: 'Wydatek wyższy od normy',
+                message: `${this.formatMoney(expense.amount)} to +${percentAbove}% od Twojej średniej w "${this.getCategoryLabel(category)}"`,
+                confidence: Math.min(0.9, 0.6 + (categoryExpenses.length / 30) * 0.3),
+                potentialSavings: expense.amount - stats.mean,
+                relatedCategory: category,
             };
         }
 
