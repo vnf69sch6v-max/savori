@@ -7,10 +7,11 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, Shield, Sparkles, Crown, ChevronDown, ChevronUp, Lock } from 'lucide-react';
+import { ArrowLeft, Shield, Sparkles, Crown, ChevronDown, ChevronUp, Settings, X, Check } from 'lucide-react';
 import Link from 'next/link';
+import { toast } from 'react-hot-toast';
 import { useAuth } from '@/contexts/AuthContext';
-import { collection, query, orderBy, getDocs, where, Timestamp } from 'firebase/firestore';
+import { collection, query, orderBy, getDocs, where, Timestamp, doc, getDoc, setDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Expense, BehavioralCategory } from '@/types';
 import {
@@ -20,7 +21,7 @@ import {
     BEHAVIORAL_CATEGORIES,
 } from '@/lib/behavioral-categories';
 
-// Demo budget limits (in grosze)
+// Default limits (in grosze) - fallback when no user settings
 const DEFAULT_LIMITS: Record<BehavioralCategory, number> = {
     fortress: 200000,
     shield: 50000,
@@ -52,7 +53,169 @@ const CATEGORY_COLORS: Record<BehavioralCategory, { gradient: string; bar: strin
     impulse_zone: { gradient: 'from-yellow-500 to-amber-600', bar: 'bg-yellow-500', bg: 'bg-yellow-500/20' },
 };
 
-// Compact Category Item
+// ============ Settings Modal ============
+function BehavioralSettingsModal({
+    isOpen,
+    onClose,
+    limits,
+    onSave,
+}: {
+    isOpen: boolean;
+    onClose: () => void;
+    limits: Record<BehavioralCategory, number>;
+    onSave: (newLimits: Record<BehavioralCategory, number>) => Promise<void>;
+}) {
+    const [editedLimits, setEditedLimits] = useState(limits);
+    const [saving, setSaving] = useState(false);
+
+    const fortressCategories = getFortressCategories();
+    const lifeCategories = getLifeCategories();
+
+    useEffect(() => {
+        setEditedLimits(limits);
+    }, [limits, isOpen]);
+
+    const handleSave = async () => {
+        setSaving(true);
+        try {
+            await onSave(editedLimits);
+            onClose();
+        } finally {
+            setSaving(false);
+        }
+    };
+
+    const totalLimit = Object.values(editedLimits).reduce((a, b) => a + b, 0);
+
+    if (!isOpen) return null;
+
+    return (
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center">
+            <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+                onClick={onClose}
+            />
+            <motion.div
+                initial={{ opacity: 0, y: 100 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 100 }}
+                className="relative w-full max-w-lg max-h-[85vh] overflow-y-auto bg-slate-900 border border-slate-700/50 rounded-t-3xl sm:rounded-3xl"
+            >
+                {/* Header */}
+                <div className="sticky top-0 bg-slate-900 flex items-center justify-between p-4 border-b border-slate-800 z-10">
+                    <div>
+                        <h2 className="text-lg font-semibold text-white">Ustaw limity</h2>
+                        <p className="text-xs text-slate-400">
+                            Suma: {(totalLimit / 100).toLocaleString('pl-PL')} zł/mies.
+                        </p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <button
+                            onClick={handleSave}
+                            disabled={saving}
+                            className="px-4 py-2 rounded-xl bg-purple-500 text-white text-sm font-medium 
+                                     hover:bg-purple-600 disabled:opacity-50 flex items-center gap-2"
+                        >
+                            {saving ? (
+                                <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                            ) : (
+                                <Check className="w-4 h-4" />
+                            )}
+                            Zapisz
+                        </button>
+                        <button onClick={onClose} className="p-2 rounded-xl hover:bg-slate-800">
+                            <X className="w-5 h-5 text-slate-400" />
+                        </button>
+                    </div>
+                </div>
+
+                <div className="p-4 space-y-6">
+                    {/* Fortress Section */}
+                    <div>
+                        <h3 className="text-sm font-medium text-slate-300 mb-3 flex items-center gap-2">
+                            <Shield className="w-4 h-4" /> 🏰 Twierdza
+                        </h3>
+                        <div className="space-y-2">
+                            {fortressCategories.map((cat) => (
+                                <LimitInput
+                                    key={cat.id}
+                                    categoryId={cat.id}
+                                    value={editedLimits[cat.id]}
+                                    onChange={(v) => setEditedLimits((prev) => ({ ...prev, [cat.id]: v }))}
+                                />
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* Life Section */}
+                    <div>
+                        <h3 className="text-sm font-medium text-slate-300 mb-3 flex items-center gap-2">
+                            <Sparkles className="w-4 h-4" /> 🌈 Życie
+                        </h3>
+                        <div className="space-y-2">
+                            {lifeCategories.map((cat) => (
+                                <LimitInput
+                                    key={cat.id}
+                                    categoryId={cat.id}
+                                    value={editedLimits[cat.id]}
+                                    onChange={(v) => setEditedLimits((prev) => ({ ...prev, [cat.id]: v }))}
+                                />
+                            ))}
+                        </div>
+                    </div>
+                </div>
+            </motion.div>
+        </div>
+    );
+}
+
+function LimitInput({
+    categoryId,
+    value,
+    onChange,
+}: {
+    categoryId: BehavioralCategory;
+    value: number;
+    onChange: (value: number) => void;
+}) {
+    const meta = BEHAVIORAL_CATEGORIES[categoryId];
+    const colors = CATEGORY_COLORS[categoryId];
+    const [inputValue, setInputValue] = useState((value / 100).toString());
+
+    const handleBlur = () => {
+        const parsed = parseFloat(inputValue) || 0;
+        onChange(Math.round(parsed * 100));
+    };
+
+    useEffect(() => {
+        setInputValue((value / 100).toString());
+    }, [value]);
+
+    return (
+        <div className={`flex items-center gap-3 p-3 rounded-xl ${colors.bg} border border-transparent`}>
+            <span className="text-lg">{meta.emoji}</span>
+            <span className="flex-1 text-sm text-white font-medium">{meta.name}</span>
+            <div className="relative w-24">
+                <input
+                    type="number"
+                    value={inputValue}
+                    onChange={(e) => setInputValue(e.target.value)}
+                    onBlur={handleBlur}
+                    className="w-full px-3 py-1.5 text-right text-sm bg-slate-800/80 border border-slate-600/50 
+                             rounded-lg text-white focus:outline-none focus:ring-1 focus:ring-purple-500/50"
+                />
+                <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-slate-500 pointer-events-none">
+                    zł
+                </span>
+            </div>
+        </div>
+    );
+}
+
+// ============ Category Item ============
 function CategoryItem({
     categoryId,
     spent,
@@ -82,12 +245,9 @@ function CategoryItem({
                 whileTap={{ scale: 0.98 }}
             >
                 <div className="flex items-center gap-3">
-                    {/* Emoji with colored bg */}
                     <div className={`w-10 h-10 rounded-xl ${isExpanded ? 'bg-white/20' : colors.bg} flex items-center justify-center text-xl`}>
                         {meta.emoji}
                     </div>
-
-                    {/* Content */}
                     <div className="flex-1 min-w-0 text-left">
                         <div className="flex items-center justify-between mb-0.5">
                             <span className={`font-medium text-sm ${isExpanded ? 'text-white' : 'text-slate-200'}`}>
@@ -98,8 +258,6 @@ function CategoryItem({
                                 <span className={`font-normal ${isExpanded ? 'text-white/60' : 'text-slate-500'}`}> / {(limit / 100).toFixed(0)}</span>
                             </span>
                         </div>
-
-                        {/* Progress Bar */}
                         <div className={`h-1 rounded-full overflow-hidden ${isExpanded ? 'bg-white/20' : 'bg-slate-700'}`}>
                             <motion.div
                                 initial={{ width: 0 }}
@@ -109,15 +267,12 @@ function CategoryItem({
                             />
                         </div>
                     </div>
-
-                    {/* Expand icon */}
                     <div className={isExpanded ? 'text-white/60' : 'text-slate-500'}>
                         {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
                     </div>
                 </div>
             </motion.button>
 
-            {/* Expanded Details */}
             <AnimatePresence>
                 {isExpanded && (
                     <motion.div
@@ -144,7 +299,7 @@ function CategoryItem({
     );
 }
 
-// Collapsible Section
+// ============ Collapsible Section ============
 function CollapsibleSection({
     title,
     emoji,
@@ -152,6 +307,7 @@ function CollapsibleSection({
     total,
     categories,
     spentByCategory,
+    limits,
     expandedCategory,
     onCategoryToggle,
     gradient,
@@ -162,6 +318,7 @@ function CollapsibleSection({
     total: number;
     categories: { id: BehavioralCategory }[];
     spentByCategory: Record<BehavioralCategory, number>;
+    limits: Record<BehavioralCategory, number>;
     expandedCategory: BehavioralCategory | null;
     onCategoryToggle: (id: BehavioralCategory) => void;
     gradient: string;
@@ -170,7 +327,6 @@ function CollapsibleSection({
 
     return (
         <motion.div layout className="overflow-hidden">
-            {/* Section Header */}
             <motion.button
                 onClick={() => setIsOpen(!isOpen)}
                 className={`w-full p-3 rounded-2xl mb-2 flex items-center gap-3 transition-all ${isOpen
@@ -195,7 +351,6 @@ function CollapsibleSection({
                 </div>
             </motion.button>
 
-            {/* Categories */}
             <AnimatePresence>
                 {isOpen && (
                     <motion.div
@@ -210,7 +365,7 @@ function CollapsibleSection({
                                 key={cat.id}
                                 categoryId={cat.id}
                                 spent={spentByCategory[cat.id] || 0}
-                                limit={DEFAULT_LIMITS[cat.id]}
+                                limit={limits[cat.id]}
                                 isExpanded={expandedCategory === cat.id}
                                 onToggle={() => onCategoryToggle(cat.id)}
                             />
@@ -222,16 +377,36 @@ function CollapsibleSection({
     );
 }
 
+// ============ Main Page ============
 export default function BehavioralBudgetPage() {
     const { userData } = useAuth();
     const [expenses, setExpenses] = useState<Expense[]>([]);
     const [loading, setLoading] = useState(true);
     const [expandedCategory, setExpandedCategory] = useState<BehavioralCategory | null>(null);
+    const [showSettings, setShowSettings] = useState(false);
+    const [limits, setLimits] = useState<Record<BehavioralCategory, number>>(DEFAULT_LIMITS);
 
     const isUltra = userData?.subscription?.plan === 'ultra';
     const fortressCategories = getFortressCategories();
     const lifeCategories = getLifeCategories();
 
+    // Fetch limits from Firestore
+    useEffect(() => {
+        if (!userData?.id || !isUltra) return;
+
+        const fetchLimits = async () => {
+            const limitsRef = doc(db, 'users', userData.id, 'settings', 'behavioralBudget');
+            const snap = await getDoc(limitsRef);
+            if (snap.exists()) {
+                const data = snap.data();
+                setLimits({ ...DEFAULT_LIMITS, ...data.limits });
+            }
+        };
+
+        fetchLimits();
+    }, [userData?.id, isUltra]);
+
+    // Fetch expenses
     useEffect(() => {
         if (!userData?.id || !isUltra) {
             setLoading(false);
@@ -250,9 +425,9 @@ export default function BehavioralBudgetPage() {
             );
 
             const snapshot = await getDocs(q);
-            const data = snapshot.docs.map(doc => ({
-                id: doc.id,
-                ...doc.data()
+            const data = snapshot.docs.map((d) => ({
+                id: d.id,
+                ...d.data(),
             })) as Expense[];
 
             setExpenses(data);
@@ -262,18 +437,28 @@ export default function BehavioralBudgetPage() {
         fetchExpenses();
     }, [userData?.id, isUltra]);
 
+    // Save limits to Firestore
+    const handleSaveLimits = async (newLimits: Record<BehavioralCategory, number>) => {
+        if (!userData?.id) return;
+
+        const limitsRef = doc(db, 'users', userData.id, 'settings', 'behavioralBudget');
+        await setDoc(limitsRef, { limits: newLimits, updatedAt: Timestamp.now() }, { merge: true });
+        setLimits(newLimits);
+        toast.success('Limity zapisane!');
+    };
+
     const spentByCategory = useMemo(() => {
         const result: Record<BehavioralCategory, number> = {} as Record<BehavioralCategory, number>;
-        Object.keys(DEFAULT_LIMITS).forEach(cat => {
+        Object.keys(limits).forEach((cat) => {
             result[cat as BehavioralCategory] = 0;
         });
-        expenses.forEach(expense => {
+        expenses.forEach((expense) => {
             const mccCategory = expense.merchant?.category || 'other';
             const behavioralCat = suggestBehavioralCategory(mccCategory);
             result[behavioralCat] = (result[behavioralCat] || 0) + expense.amount;
         });
         return result;
-    }, [expenses]);
+    }, [expenses, limits]);
 
     const fortressTotal = useMemo(() => {
         return fortressCategories.reduce((sum, cat) => sum + (spentByCategory[cat.id] || 0), 0);
@@ -283,13 +468,13 @@ export default function BehavioralBudgetPage() {
         return lifeCategories.reduce((sum, cat) => sum + (spentByCategory[cat.id] || 0), 0);
     }, [lifeCategories, spentByCategory]);
 
-    const totalBudget = Object.values(DEFAULT_LIMITS).reduce((a, b) => a + b, 0);
+    const totalBudget = Object.values(limits).reduce((a, b) => a + b, 0);
     const totalSpent = fortressTotal + lifeTotal;
     const remaining = totalBudget - totalSpent;
     const percentage = Math.min(100, (totalSpent / totalBudget) * 100);
 
     const handleCategoryToggle = (id: BehavioralCategory) => {
-        setExpandedCategory(prev => prev === id ? null : id);
+        setExpandedCategory((prev) => (prev === id ? null : id));
     };
 
     if (loading) {
@@ -319,7 +504,6 @@ export default function BehavioralBudgetPage() {
                 </div>
 
                 <div className="max-w-lg mx-auto px-4 py-6">
-                    {/* Blurred Preview */}
                     <div className="relative mb-6">
                         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-slate-950 z-10" />
                         <div className="blur-[2px] opacity-50 pointer-events-none space-y-2">
@@ -344,7 +528,6 @@ export default function BehavioralBudgetPage() {
                         </div>
                     </div>
 
-                    {/* Upgrade CTA */}
                     <motion.div
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
@@ -389,6 +572,12 @@ export default function BehavioralBudgetPage() {
                             <h1 className="text-lg font-bold text-white">Budżet Behawioralny</h1>
                             <p className="text-xs text-slate-400">Kakeibo 2.0</p>
                         </div>
+                        <button
+                            onClick={() => setShowSettings(true)}
+                            className="p-2 rounded-xl hover:bg-slate-800 transition-colors"
+                        >
+                            <Settings className="w-5 h-5 text-slate-400" />
+                        </button>
                         <span className="px-2 py-1 text-xs bg-gradient-to-r from-purple-500/20 to-pink-500/20 text-purple-300 rounded-full border border-purple-500/30">
                             👑 ULTRA
                         </span>
@@ -410,8 +599,7 @@ export default function BehavioralBudgetPage() {
                                 {(totalBudget / 100).toLocaleString('pl-PL')} zł
                             </p>
                         </div>
-                        <div className={`px-3 py-1.5 rounded-xl text-right ${remaining >= 0 ? 'bg-emerald-500/20' : 'bg-red-500/20'
-                            }`}>
+                        <div className={`px-3 py-1.5 rounded-xl text-right ${remaining >= 0 ? 'bg-emerald-500/20' : 'bg-red-500/20'}`}>
                             <p className={`text-xs ${remaining >= 0 ? 'text-emerald-300' : 'text-red-300'}`}>
                                 {remaining >= 0 ? 'Zostało' : 'Przekroczono'}
                             </p>
@@ -421,21 +609,16 @@ export default function BehavioralBudgetPage() {
                         </div>
                     </div>
 
-                    {/* Progress with gradient */}
                     <div className="h-2 bg-slate-700 rounded-full overflow-hidden">
                         <motion.div
                             initial={{ width: 0 }}
                             animate={{ width: `${percentage}%` }}
                             transition={{ duration: 0.8 }}
-                            className={`h-full rounded-full ${percentage > 100 ? 'bg-red-500' :
-                                    percentage > 80 ? 'bg-amber-500' :
-                                        'bg-gradient-to-r from-purple-500 to-pink-500'
+                            className={`h-full rounded-full ${percentage > 100 ? 'bg-red-500' : percentage > 80 ? 'bg-amber-500' : 'bg-gradient-to-r from-purple-500 to-pink-500'
                                 }`}
                         />
                     </div>
-                    <p className="text-xs text-slate-500 mt-1.5 text-center">
-                        {percentage.toFixed(0)}% wykorzystane
-                    </p>
+                    <p className="text-xs text-slate-500 mt-1.5 text-center">{percentage.toFixed(0)}% wykorzystane</p>
                 </motion.div>
 
                 {/* Collapsible Sections */}
@@ -446,6 +629,7 @@ export default function BehavioralBudgetPage() {
                     total={fortressTotal}
                     categories={fortressCategories}
                     spentByCategory={spentByCategory}
+                    limits={limits}
                     expandedCategory={expandedCategory}
                     onCategoryToggle={handleCategoryToggle}
                     gradient="from-slate-600 to-slate-800"
@@ -458,11 +642,24 @@ export default function BehavioralBudgetPage() {
                     total={lifeTotal}
                     categories={lifeCategories}
                     spentByCategory={spentByCategory}
+                    limits={limits}
                     expandedCategory={expandedCategory}
                     onCategoryToggle={handleCategoryToggle}
                     gradient="from-purple-600 to-pink-600"
                 />
             </div>
+
+            {/* Settings Modal */}
+            <AnimatePresence>
+                {showSettings && (
+                    <BehavioralSettingsModal
+                        isOpen={showSettings}
+                        onClose={() => setShowSettings(false)}
+                        limits={limits}
+                        onSave={handleSaveLimits}
+                    />
+                )}
+            </AnimatePresence>
         </div>
     );
 }
