@@ -4,8 +4,10 @@
   "private": true,
   "scripts": {
     "dev": "next dev --webpack",
+    "dev:local": "NEXT_PUBLIC_USE_EMULATORS=true next dev --webpack",
     "build": "next build --webpack",
     "start": "next start",
+    "emulators": "firebase emulators:start --import=./emulator-data --export-on-exit",
     "lint": "eslint"
   },
   "dependencies": {

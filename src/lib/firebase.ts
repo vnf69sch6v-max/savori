@@ -40,6 +40,28 @@ if (typeof window !== 'undefined') {
 // Storage
 export const storage = getStorage(app);
 
+// Connect to Emulators
+// Set NEXT_PUBLIC_USE_EMULATORS=true in .env.local to enable
+if (process.env.NEXT_PUBLIC_USE_EMULATORS === 'true' && typeof window !== 'undefined') {
+  // Only connect once
+  // @ts-ignore
+  if (!window._firebase_emulators_connected) {
+    console.log('🔧 Connecting to Firebase Emulators...');
+    import('firebase/auth').then(({ connectAuthEmulator }) => {
+      connectAuthEmulator(auth, 'http://127.0.0.1:9099');
+    });
+    import('firebase/firestore').then(({ connectFirestoreEmulator }) => {
+      connectFirestoreEmulator(db, '127.0.0.1', 8080);
+    });
+    import('firebase/storage').then(({ connectStorageEmulator }) => {
+      connectStorageEmulator(storage, '127.0.0.1', 9199);
+    });
+    // @ts-ignore
+    window._firebase_emulators_connected = true;
+    console.log('✅ Connected to Firebase Emulators');
+  }
+}
+
 // Firebase AI (Gemini via Firebase)
 export const firebaseAI = getAI(app);
 
@@ -57,4 +79,3 @@ export const initAnalytics = async () => {
 };
 
 export default app;
-
