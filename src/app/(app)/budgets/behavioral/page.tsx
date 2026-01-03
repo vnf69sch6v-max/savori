@@ -57,8 +57,8 @@ function CategoryRow({
         <motion.div
             whileTap={{ scale: 0.98 }}
             className={`p-4 rounded-2xl backdrop-blur-xl border transition-all ${isOver
-                    ? 'border-red-500/30 bg-red-500/5'
-                    : 'border-slate-700/50 bg-slate-800/40'
+                ? 'border-red-500/30 bg-red-500/5'
+                : 'border-slate-700/50 bg-slate-800/40'
                 }`}
         >
             <div className="flex items-center gap-4">
@@ -85,8 +85,8 @@ function CategoryRow({
                             animate={{ width: `${percentage}%` }}
                             transition={{ duration: 0.5, ease: 'easeOut' }}
                             className={`h-full rounded-full ${isOver ? 'bg-red-500' :
-                                    percentage >= 80 ? 'bg-amber-500' :
-                                        'bg-emerald-500'
+                                percentage >= 80 ? 'bg-amber-500' :
+                                    'bg-emerald-500'
                                 }`}
                         />
                     </div>
@@ -180,7 +180,7 @@ export default function BehavioralBudgetPage() {
     // ULTRA GATE - Show upgrade prompt if not Ultra
     if (!isUltra) {
         return (
-            <div className="min-h-screen bg-slate-950 pb-24">
+            <div className="min-h-screen bg-slate-950 pb-24 overflow-hidden">
                 {/* Header */}
                 <div className="sticky top-0 z-40 backdrop-blur-xl bg-slate-950/80 border-b border-slate-800/50">
                     <div className="max-w-lg mx-auto px-4 py-4">
@@ -196,44 +196,144 @@ export default function BehavioralBudgetPage() {
                     </div>
                 </div>
 
-                {/* Ultra Required */}
-                <div className="max-w-lg mx-auto px-4 py-12">
+                <div className="max-w-lg mx-auto px-4 py-6">
+                    {/* Animated Demo Preview (Blurred) */}
+                    <div className="relative mb-6">
+                        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-slate-950 z-10 pointer-events-none" />
+                        <div className="blur-[2px] opacity-60 pointer-events-none">
+                            {/* Fake Summary Card */}
+                            <motion.div
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                className="p-5 rounded-3xl bg-gradient-to-br from-slate-800/80 to-slate-900/80 
+                                          border border-slate-700/50 mb-4"
+                            >
+                                <div className="flex items-center justify-between mb-3">
+                                    <div>
+                                        <p className="text-xs text-slate-400">Budżet miesięczny</p>
+                                        <p className="text-2xl font-bold text-white">5 000 zł</p>
+                                    </div>
+                                    <div className="px-3 py-1.5 rounded-xl bg-emerald-500/20 text-emerald-400 text-sm">
+                                        💰 3 420 zł
+                                    </div>
+                                </div>
+                                <div className="h-2 bg-slate-700 rounded-full overflow-hidden">
+                                    <motion.div
+                                        initial={{ width: 0 }}
+                                        animate={{ width: '32%' }}
+                                        transition={{ duration: 1.5, ease: 'easeOut' }}
+                                        className="h-full rounded-full bg-gradient-to-r from-purple-500 to-pink-500"
+                                    />
+                                </div>
+                            </motion.div>
+
+                            {/* Fake Fortress Section */}
+                            <div className="space-y-2">
+                                {[
+                                    { emoji: '🏰', name: 'Twierdza', spent: 1200, limit: 2000, delay: 0.1 },
+                                    { emoji: '🛡️', name: 'Spokojny Sen', spent: 300, limit: 500, delay: 0.2 },
+                                    { emoji: '⛽', name: 'Paliwo', spent: 580, limit: 800, delay: 0.3 },
+                                ].map((item, i) => (
+                                    <motion.div
+                                        key={item.name}
+                                        initial={{ opacity: 0, x: -20 }}
+                                        animate={{ opacity: 1, x: 0 }}
+                                        transition={{ delay: item.delay }}
+                                        className="p-3 rounded-2xl bg-slate-800/40 border border-slate-700/50"
+                                    >
+                                        <div className="flex items-center gap-3">
+                                            <span className="text-xl">{item.emoji}</span>
+                                            <div className="flex-1">
+                                                <div className="flex justify-between mb-1">
+                                                    <span className="text-sm font-medium text-white">{item.name}</span>
+                                                    <span className="text-xs text-slate-400">{item.spent} / {item.limit} zł</span>
+                                                </div>
+                                                <div className="h-1 bg-slate-700 rounded-full overflow-hidden">
+                                                    <motion.div
+                                                        initial={{ width: 0 }}
+                                                        animate={{ width: `${(item.spent / item.limit) * 100}%` }}
+                                                        transition={{ duration: 1, delay: item.delay + 0.5 }}
+                                                        className="h-full rounded-full bg-emerald-500"
+                                                    />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </motion.div>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Upgrade Card */}
                     <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className="p-8 rounded-3xl bg-gradient-to-br from-purple-500/10 to-pink-500/10 
-                                  border border-purple-500/30 text-center"
+                        initial={{ opacity: 0, y: 30, scale: 0.95 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        transition={{ delay: 0.5, type: 'spring', damping: 20 }}
+                        className="relative p-6 rounded-3xl bg-gradient-to-br from-purple-500/20 to-pink-500/20 
+                                  border border-purple-500/40 backdrop-blur-xl overflow-hidden"
                     >
-                        <div className="w-20 h-20 rounded-full bg-purple-500/20 flex items-center justify-center mx-auto mb-6">
-                            <Crown className="w-10 h-10 text-purple-400" />
+                        {/* Animated glow */}
+                        <motion.div
+                            animate={{
+                                opacity: [0.3, 0.6, 0.3],
+                                scale: [1, 1.1, 1]
+                            }}
+                            transition={{ duration: 3, repeat: Infinity }}
+                            className="absolute -top-20 -right-20 w-40 h-40 bg-purple-500/30 rounded-full blur-3xl"
+                        />
+
+                        <div className="relative z-10 text-center">
+                            <motion.div
+                                initial={{ scale: 0 }}
+                                animate={{ scale: 1 }}
+                                transition={{ delay: 0.7, type: 'spring', damping: 15 }}
+                                className="w-16 h-16 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 
+                                          flex items-center justify-center mx-auto mb-4 shadow-lg shadow-purple-500/30"
+                            >
+                                <Crown className="w-8 h-8 text-white" />
+                            </motion.div>
+
+                            <h2 className="text-xl font-bold text-white mb-2">
+                                Odblokuj Budżet Behawioralny
+                            </h2>
+                            <p className="text-sm text-slate-300 mb-5">
+                                Psychologiczne kategorie, które pomagają zrozumieć <em>dlaczego</em> wydajesz
+                            </p>
+
+                            {/* Feature pills */}
+                            <div className="flex flex-wrap justify-center gap-2 mb-6">
+                                {['🏰 Twierdza vs Życie', '🧠 12 kategorii', '😊 Emocje'].map((feature, i) => (
+                                    <motion.span
+                                        key={feature}
+                                        initial={{ opacity: 0, y: 10 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        transition={{ delay: 0.8 + i * 0.1 }}
+                                        className="px-3 py-1.5 text-xs bg-slate-800/80 text-slate-300 
+                                                  rounded-full border border-slate-700/50"
+                                    >
+                                        {feature}
+                                    </motion.span>
+                                ))}
+                            </div>
+
+                            <Link href="/settings/billing">
+                                <motion.button
+                                    whileHover={{ scale: 1.02 }}
+                                    whileTap={{ scale: 0.98 }}
+                                    className="w-full py-3.5 px-6 rounded-2xl font-semibold text-white
+                                              bg-gradient-to-r from-purple-500 to-pink-500 
+                                              shadow-lg shadow-purple-500/25 
+                                              flex items-center justify-center gap-2"
+                                >
+                                    <Crown className="w-5 h-5" />
+                                    Ulepsz do Ultra
+                                </motion.button>
+                            </Link>
+
+                            <p className="text-xs text-slate-500 mt-3">
+                                Tylko 29 zł/mies. • Anuluj kiedy chcesz
+                            </p>
                         </div>
-                        <h2 className="text-2xl font-bold text-white mb-2">
-                            Funkcja Ultra
-                        </h2>
-                        <p className="text-slate-400 mb-6">
-                            Budżet Behawioralny z kategoriami psychologicznymi i śledzeniem emocji
-                            jest dostępny tylko w planie Ultra.
-                        </p>
-                        <div className="space-y-3 text-left mb-8 p-4 bg-slate-800/50 rounded-2xl">
-                            <div className="flex items-center gap-3 text-sm">
-                                <span>🏰</span>
-                                <span className="text-slate-300">Twierdza vs Życie - podział Kakeibo</span>
-                            </div>
-                            <div className="flex items-center gap-3 text-sm">
-                                <span>🧠</span>
-                                <span className="text-slate-300">12 kategorii psychologicznych</span>
-                            </div>
-                            <div className="flex items-center gap-3 text-sm">
-                                <span>😊</span>
-                                <span className="text-slate-300">Tagowanie emocji (HALT)</span>
-                            </div>
-                        </div>
-                        <Link href="/settings/billing">
-                            <Button className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:opacity-90">
-                                <Crown className="w-4 h-4 mr-2" />
-                                Ulepsz do Ultra
-                            </Button>
-                        </Link>
                     </motion.div>
                 </div>
             </div>
@@ -276,8 +376,8 @@ export default function BehavioralBudgetPage() {
                             </p>
                         </div>
                         <div className={`px-4 py-2 rounded-2xl ${remaining >= 0
-                                ? 'bg-emerald-500/20 text-emerald-400'
-                                : 'bg-red-500/20 text-red-400'
+                            ? 'bg-emerald-500/20 text-emerald-400'
+                            : 'bg-red-500/20 text-red-400'
                             }`}>
                             <p className="text-sm font-medium">
                                 {remaining >= 0 ? '💰 Zostało' : '⚠️ Przekroczono'}
@@ -295,8 +395,8 @@ export default function BehavioralBudgetPage() {
                             animate={{ width: `${Math.min(100, (totalSpent / totalBudget) * 100)}%` }}
                             transition={{ duration: 0.8, ease: 'easeOut' }}
                             className={`h-full rounded-full ${totalSpent > totalBudget
-                                    ? 'bg-red-500'
-                                    : 'bg-gradient-to-r from-purple-500 to-pink-500'
+                                ? 'bg-red-500'
+                                : 'bg-gradient-to-r from-purple-500 to-pink-500'
                                 }`}
                         />
                     </div>
