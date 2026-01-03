@@ -114,17 +114,41 @@ export default function InsightCard({ insight, onDismiss, onAction, compact = fa
                 </Link>
             )}
 
-            {/* Confidence indicator */}
-            <div className="flex items-center gap-2 mt-3 pt-3 border-t border-slate-700/50">
-                <div className="flex-1 h-1 bg-slate-700 rounded-full overflow-hidden">
-                    <div
-                        className="h-full bg-emerald-500 rounded-full"
-                        style={{ width: `${insight.confidence * 100}%` }}
+            {/* Enhanced Confidence Meter */}
+            <div className="mt-3 pt-3 border-t border-slate-700/50">
+                <div className="flex items-center justify-between mb-1.5">
+                    <span className="text-xs text-slate-500 flex items-center gap-1">
+                        <span className="w-2 h-2 rounded-full" style={{
+                            backgroundColor: insight.confidence >= 0.8 ? '#22c55e' :
+                                insight.confidence >= 0.6 ? '#f59e0b' : '#ef4444'
+                        }} />
+                        Pewność AI
+                    </span>
+                    <span className={`text-xs font-medium ${insight.confidence >= 0.8 ? 'text-emerald-400' :
+                            insight.confidence >= 0.6 ? 'text-amber-400' : 'text-red-400'
+                        }`}>
+                        {insight.confidence >= 0.8 ? 'Wysoka' :
+                            insight.confidence >= 0.6 ? 'Średnia' : 'Niska'} ({Math.round(insight.confidence * 100)}%)
+                    </span>
+                </div>
+                <div className="h-1.5 bg-slate-700 rounded-full overflow-hidden">
+                    <motion.div
+                        initial={{ width: 0 }}
+                        animate={{ width: `${insight.confidence * 100}%` }}
+                        transition={{ duration: 0.6, ease: 'easeOut' }}
+                        className={`h-full rounded-full ${insight.confidence >= 0.8 ? 'bg-gradient-to-r from-emerald-500 to-emerald-400' :
+                                insight.confidence >= 0.6 ? 'bg-gradient-to-r from-amber-500 to-amber-400' :
+                                    'bg-gradient-to-r from-red-500 to-red-400'
+                            }`}
                     />
                 </div>
-                <span className="text-xs text-slate-500">
-                    {Math.round(insight.confidence * 100)}% pewności
-                </span>
+                {/* Z-Score explanation for anomaly insights */}
+                {(insight.type === 'spending_spike' || insight.type === 'overpaying') &&
+                    insight.message?.includes('Z-Score') && (
+                        <p className="text-[10px] text-slate-500 mt-1.5 leading-tight">
+                            💡 Z-Score &gt; 2.0 oznacza statystycznie nietypowy wydatek (powyżej 95% Twoich zwykłych transakcji)
+                        </p>
+                    )}
             </div>
         </motion.div>
     );
