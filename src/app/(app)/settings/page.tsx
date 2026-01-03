@@ -79,6 +79,20 @@ export default function SettingsPage() {
 
     const notifications = userData?.settings?.notifications || { daily: true, weekly: true, goals: true };
 
+    // Show loading state while userData is being fetched
+    if (!userData) {
+        return (
+            <div className="max-w-2xl mx-auto pb-24 lg:pb-0">
+                <h1 className="text-2xl md:text-3xl font-bold mb-6 text-white">{t('settings.title')}</h1>
+                <div className="space-y-6">
+                    {[1, 2, 3, 4].map(i => (
+                        <div key={i} className="rounded-2xl bg-slate-800/50 h-40 animate-pulse" />
+                    ))}
+                </div>
+            </div>
+        );
+    }
+
     return (
         <div className="max-w-2xl mx-auto pb-24 lg:pb-0">
             <h1 className="text-2xl md:text-3xl font-bold mb-6 text-white">{t('settings.title')}</h1>
