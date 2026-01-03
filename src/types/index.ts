@@ -85,6 +85,38 @@ export type ExpenseCategory =
     | 'subscriptions'
     | 'other';
 
+// ============ BEHAVIORAL CATEGORIES (Kakeibo 2.0) ============
+export type BehavioralCategory =
+    // Grupa A: Twierdza (Stałe/Przetrwanie)
+    | 'fortress'        // 🏰 Czynsz, hipoteka, media
+    | 'shield'          // 🛡️ Fundusz awaryjny, ubezpieczenia
+    | 'fuel'            // ⛽ Podstawowa żywność, paliwo
+
+    // Grupa B: Dopamina (Radość/Szacunek)
+    | 'dopamine'        // 🎢 Gadżety, hobby, gry
+    | 'micro_joy'       // ☕ Kawa, przekąski, kosmetyki
+    | 'xp_points'       // 🎟️ Podróże, koncerty, kultura
+    | 'for_me'          // 🧘 Siłownia, terapia, self-care
+
+    // Grupa C: Więzi (Społeczne)
+    | 'social_glue'     // 🍷 Restauracje, bary, randki
+    | 'love_language'   // 🎁 Prezenty, darowizny
+    | 'tribe_tax'       // 👥 Wesela, składki grupowe
+
+    // Grupa D: Neuroatypowe/Chaos
+    | 'chaos_tax'       // 🧠 Opłaty za zwłokę, zgubione rzeczy
+    | 'impulse_zone';   // ⚡ Strefa bez winy
+
+// ============ EMOTION TAGS (HALT) ============
+export type EmotionTag =
+    | 'joy'         // 😊 Radość
+    | 'necessity'   // 😐 Konieczność
+    | 'tired'       // 😴 Zmęczenie
+    | 'regret'      // 😢 Żal
+    | 'bored'       // 😑 Nuda
+    | 'social'      // 🤝 Więzi
+    | 'reward';     // 🎁 Nagroda
+
 export interface Merchant {
     name: string;
     nip?: string;
