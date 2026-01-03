@@ -26,6 +26,23 @@ export function formatMoney(amountInCents: number, currency: string = 'PLN'): st
 }
 
 /**
+ * Formatuj kwotę bez groszy gdy są zerowe (czystrzy wygląd Apple-style)
+ * @param amountInCents - Kwota w groszach
+ * @returns Sformatowana kwota (np. "45 zł" lub "45,50 zł")
+ */
+export function formatMoneyShort(amountInCents: number): string {
+    const amount = amountInCents / 100;
+    const hasDecimals = amount % 1 !== 0;
+
+    return new Intl.NumberFormat('pl-PL', {
+        style: 'currency',
+        currency: 'PLN',
+        minimumFractionDigits: hasDecimals ? 2 : 0,
+        maximumFractionDigits: hasDecimals ? 2 : 0,
+    }).format(amount);
+}
+
+/**
  * Parsuj kwotę tekstową do groszy
  * @param text - Tekst z kwotą (np. "45,50", "45.50 zł")
  * @returns Kwota w groszach

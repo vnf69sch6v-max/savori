@@ -22,7 +22,7 @@ import {
 import Link from 'next/link';
 import { Card, CardHeader, CardTitle, CardContent, Button, Input } from '@/components/ui';
 import { useAuth } from '@/contexts/AuthContext';
-import { formatMoney, CATEGORY_LABELS, CATEGORY_ICONS, parseMoneyToCents } from '@/lib/utils';
+import { formatMoney, formatMoneyShort, CATEGORY_LABELS, CATEGORY_ICONS, parseMoneyToCents } from '@/lib/utils';
 import { collection, doc, getDoc, setDoc, onSnapshot, query, where, Timestamp } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Budget, ExpenseCategory, Expense } from '@/types';
@@ -331,8 +331,8 @@ export default function BudgetsPage() {
                                                     <span className="font-medium text-slate-200 truncate">{CATEGORY_LABELS[cat]}</span>
                                                     <div className="flex items-center gap-2 flex-shrink-0">
                                                         <span className="text-sm font-medium whitespace-nowrap">
-                                                            {formatMoney(spent)}
-                                                            {limit > 0 && <span className="text-slate-500"> / {formatMoney(limit)}</span>}
+                                                            {formatMoneyShort(spent)}
+                                                            {limit > 0 && <span className="text-slate-500"> / {formatMoneyShort(limit)}</span>}
                                                         </span>
                                                         {isOver && <AlertTriangle className="w-4 h-4 text-red-400" />}
                                                         {isWarning && <AlertTriangle className="w-4 h-4 text-amber-400" />}
