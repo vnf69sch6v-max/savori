@@ -16,7 +16,10 @@ import {
     Settings,
     Loader2,
     X,
+    Brain,
+    Sparkles,
 } from 'lucide-react';
+import Link from 'next/link';
 import { Card, CardHeader, CardTitle, CardContent, Button, Input } from '@/components/ui';
 import { useAuth } from '@/contexts/AuthContext';
 import { formatMoney, CATEGORY_LABELS, CATEGORY_ICONS, parseMoneyToCents } from '@/lib/utils';
@@ -174,6 +177,34 @@ export default function BudgetsPage() {
                     </div>
                 </div>
             </div>
+
+            {/* 🧠 Behavioral Budget Link */}
+            <Link href="/budgets/behavioral">
+                <motion.div
+                    whileHover={{ scale: 1.01 }}
+                    whileTap={{ scale: 0.99 }}
+                    className="mb-6 p-4 rounded-2xl bg-gradient-to-r from-purple-500/10 to-pink-500/10 
+                              border border-purple-500/30 flex items-center gap-4 cursor-pointer
+                              hover:border-purple-500/50 transition-colors"
+                >
+                    <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-purple-500/30 to-pink-500/30 
+                                  flex items-center justify-center">
+                        <Brain className="w-6 h-6 text-purple-400" />
+                    </div>
+                    <div className="flex-1">
+                        <h3 className="font-semibold text-white flex items-center gap-2">
+                            Budżet Behawioralny
+                            <span className="px-2 py-0.5 text-xs bg-purple-500/20 text-purple-300 rounded-full">
+                                BETA
+                            </span>
+                        </h3>
+                        <p className="text-sm text-slate-400">
+                            Kakeibo 2.0 • Twierdza vs Życie • Tagowanie emocji
+                        </p>
+                    </div>
+                    <Sparkles className="w-5 h-5 text-purple-400" />
+                </motion.div>
+            </Link>
 
             {loading ? (
                 <div className="flex items-center justify-center py-20">
