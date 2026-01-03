@@ -11,8 +11,6 @@ import {
     Moon,
     Globe,
     Coins,
-    Check,
-    X,
     Sparkles,
     Zap,
     Crown,
@@ -21,9 +19,7 @@ import { Card, CardHeader, CardTitle, CardContent, Button, Input } from '@/compo
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useRouter } from 'next/navigation';
-import { subscriptionService, SUBSCRIPTION_PLANS, PlanFeatures } from '@/lib/subscription-service';
 import { formatMoney } from '@/lib/utils';
-import { motion, AnimatePresence } from 'framer-motion';
 
 export default function SettingsPage() {
     const router = useRouter();
@@ -72,8 +68,6 @@ export default function SettingsPage() {
         await signOut();
         router.push('/');
     };
-
-    const [selectedPlan, setSelectedPlan] = useState<PlanFeatures | null>(null);
 
     const currentPlan = userData?.subscription?.plan || 'free';
 
