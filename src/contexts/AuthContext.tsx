@@ -123,23 +123,28 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
                         // Self-healing: Check if public profile exists, if not create it (Migration for old users)
                         // Verify once per session to avoid spamming
+                        // Self-healing: Check if public profile exists (Migration for old users)
+                        // Use a session-persisted flag but check safely
                         if (!sessionStorage.getItem('public_profile_checked')) {
-                            const publicRef = doc(db, 'public_profiles', firebaseUser.uid);
-                            const publicSnap = await getDoc(publicRef);
+                            // Only check once per session load
+                            sessionStorage.setItem('public_profile_checked', 'true'); // Set immediately to prevent loops
 
-                            if (!publicSnap.exists()) {
-                                console.log('Migrating user to public_profiles...');
-                                await setDoc(publicRef, {
-                                    id: data.id,
-                                    displayName: data.displayName,
-                                    photoURL: data.photoURL,
-                                    stats: data.stats || DEFAULT_STATS,
-                                    xp: 0,
-                                    level: 1,
-                                    badges: []
-                                }, { merge: true });
-                            }
-                            sessionStorage.setItem('public_profile_checked', 'true');
+                            const publicRef = doc(db, 'public_profiles', firebaseUser.uid);
+                            // We use getDoc here, but only ONCE per session.
+                            getDoc(publicRef).then((publicSnap) => {
+                                if (!publicSnap.exists()) {
+                                    console.log('Migrating user to public_profiles...');
+                                    setDoc(publicRef, {
+                                        id: data.id,
+                                        displayName: data.displayName,
+                                        photoURL: data.photoURL,
+                                        stats: data.stats || DEFAULT_STATS,
+                                        xp: 0,
+                                        level: 1,
+                                        badges: []
+                                    }, { merge: true });
+                                }
+                            }).catch(err => console.error("Migration check failed", err));
                         }
                     }
                     setLoading(false);
