@@ -45,7 +45,7 @@ import SafeToSpendCard from '@/components/SafeToSpendCard';
 import ActionGrid from '@/components/dashboard/ActionGrid';
 import DashboardHeader from '@/components/dashboard/DashboardHeader';
 import HookChallengeWidget from '@/components/dashboard/HookChallengeWidget';
-import AddExpenseModal from '@/components/AddExpenseModal';
+import SmartExpenseModal from '@/components/SmartExpenseModal';
 import GradientExpenseCard from '@/components/GradientExpenseCard';
 import ImpulseLockModal from '@/components/dashboard/ImpulseLockModal';
 import { recurringExpensesService, getMonthlyEquivalent } from '@/lib/subscriptions/recurring-service';
@@ -489,7 +489,7 @@ export default function DashboardPage() {
                 }}
             />
             <ImpulseLockModal isOpen={isImpulseModalOpen} onClose={() => setIsImpulseModalOpen(false)} />
-            <AddExpenseModal isOpen={isAddModalOpen} onClose={() => setIsAddModalOpen(false)} />
+            <SmartExpenseModal isOpen={isAddModalOpen} onClose={() => setIsAddModalOpen(false)} />
         </div>
     );
 }

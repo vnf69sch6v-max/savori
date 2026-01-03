@@ -22,7 +22,7 @@ import { formatMoney, formatDate, CATEGORY_LABELS, CATEGORY_ICONS } from '@/lib/
 import { collection, query, orderBy, onSnapshot, deleteDoc, doc, where, Timestamp, limit } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Expense, ExpenseCategory } from '@/types';
-import AddExpenseModal from '@/components/AddExpenseModal';
+import SmartExpenseModal from '@/components/SmartExpenseModal';
 // Using GradientExpenseCard for consistency with Dashboard
 import GradientExpenseCard from '@/components/GradientExpenseCard';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -282,7 +282,7 @@ export default function ExpensesPage() {
             )}
 
             {/* Add Expense Modal */}
-            <AddExpenseModal
+            <SmartExpenseModal
                 isOpen={showAddModal}
                 onClose={() => setShowAddModal(false)}
             />
