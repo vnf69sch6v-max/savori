@@ -1,6 +1,7 @@
 /**
  * Behavioral Categories Service
  * Kakeibo 2.0 - Psychological spending categorization
+ * Based on: Behawioralna Architektura Wydatków research
  */
 
 import { BehavioralCategory, EmotionTag, ExpenseCategory } from '@/types';
@@ -11,140 +12,183 @@ export interface BehavioralCategoryMeta {
     id: BehavioralCategory;
     emoji: string;
     name: string;
-    description: string;
+    shortDesc: string;         // Co zawiera (krótko)
+    examples: string;          // Przykładowe wydatki
+    psychBenefit: string;      // Korzyść psychologiczna
     group: 'fortress' | 'life';
     subgroup: 'survival' | 'dopamine' | 'social' | 'chaos';
-    gradient: [string, string]; // Tailwind from/to
+    gradient: [string, string];
     psychTrigger: string;
 }
 
 export const BEHAVIORAL_CATEGORIES: Record<BehavioralCategory, BehavioralCategoryMeta> = {
-    // ====== TWIERDZA (FORTRESS) ======
+    // ====== 🏰 TWIERDZA (Kotwica) - Koszty nienegocjowalne ======
     fortress: {
         id: 'fortress',
         emoji: '🏰',
         name: 'Twierdza',
-        description: 'Czynsz, hipoteka, rachunki',
+        shortDesc: 'Czynsz, hipoteka, rachunki stałe',
+        examples: 'Czynsz • Hipoteka • Prąd • Gaz • Woda',
+        psychBenefit: 'Fundament bezpieczeństwa - "Cztery Ściany"',
         group: 'fortress',
         subgroup: 'survival',
         gradient: ['slate-700', 'slate-900'],
-        psychTrigger: 'Fundament bezpieczeństwa',
+        psychTrigger: 'Stabilność i schronienie',
     },
     shield: {
         id: 'shield',
         emoji: '🛡️',
         name: 'Spokojny Sen',
-        description: 'Fundusz awaryjny, ubezpieczenia',
+        shortDesc: 'Fundusz awaryjny, ubezpieczenia',
+        examples: 'Ubezpieczenie • Fundusz nagły • Spłata długu',
+        psychBenefit: 'Redukcja lęku - "Święty Spokój"',
         group: 'fortress',
         subgroup: 'survival',
         gradient: ['blue-600', 'blue-900'],
-        psychTrigger: 'Redukcja lęku',
+        psychTrigger: 'Sprzedajesz sobie spokój, nie tylko rezerwę',
     },
     fuel: {
         id: 'fuel',
-        emoji: '⛽',
-        name: 'Paliwo',
-        description: 'Podstawowa żywność, transport',
+        emoji: '🥗',
+        name: 'Paliwo Życia',
+        shortDesc: 'Żywność podstawowa, transport codzienny',
+        examples: 'Biedronka • Lidl • Bilet miesięczny • Benzyna',
+        psychBenefit: 'Konieczność, nie wybór - oddziel od restauracji!',
         group: 'fortress',
         subgroup: 'survival',
         gradient: ['emerald-600', 'emerald-900'],
-        psychTrigger: 'Konieczność, nie wybór',
+        psychTrigger: 'To jest twoje paliwo, nie rozrywka',
     },
 
-    // ====== ŻYCIE - DOPAMINA ======
+    // ====== 🎢 ŻYCIE - Dopamina i Radość ======
     dopamine: {
         id: 'dopamine',
         emoji: '🎢',
-        name: 'Dopamina',
-        description: 'Gadżety, hobby, gry',
+        name: 'Strzały Dopaminy',
+        shortDesc: 'Gadżety, hobby, gry, zakupy dla przyjemności',
+        examples: 'Allegro • Amazon • Steam • Zestawy LEGO',
+        psychBenefit: 'Kontrolowana strefa przyjemności bez winy',
         group: 'life',
         subgroup: 'dopamine',
         gradient: ['purple-500', 'pink-600'],
-        psychTrigger: 'Kontrolowana przyjemność',
+        psychTrigger: 'Oczekiwanie na zakup > posiadanie rzeczy',
     },
     micro_joy: {
         id: 'micro_joy',
         emoji: '☕',
         name: 'Mikro-Radość',
-        description: 'Kawa, przekąski, kosmetyki',
+        shortDesc: 'Kawa, przekąski, drobne luksusy',
+        examples: 'Starbucks • Żabka • Rossmann • Sephora',
+        psychBenefit: '"Efekt szminki" - małe przyjemności są OK',
         group: 'life',
         subgroup: 'dopamine',
         gradient: ['amber-500', 'orange-600'],
-        psychTrigger: 'Efekt szminki',
+        psychTrigger: 'Mikro-momenty błogości regulują nastrój',
     },
     xp_points: {
         id: 'xp_points',
         emoji: '🎟️',
-        name: 'Punkty XP',
-        description: 'Podróże, koncerty, kultura',
+        name: 'Punkty Doświadczenia',
+        shortDesc: 'Podróże, koncerty, kultura - "levelowanie życia"',
+        examples: 'Bilety • Festiwale • Podróże • Muzea',
+        psychBenefit: 'Grywalizacja życia - zbierasz wspomnienia',
         group: 'life',
         subgroup: 'dopamine',
         gradient: ['cyan-500', 'blue-600'],
-        psychTrigger: 'Grywalizacja życia',
+        psychTrigger: 'Wydajesz na BYCIE, nie POSIADANIE',
     },
     for_me: {
         id: 'for_me',
         emoji: '🧘',
         name: 'Dla Mnie',
-        description: 'Siłownia, terapia, self-care',
+        shortDesc: 'Self-care, rozwój osobisty, zdrowie psychiczne',
+        examples: 'Siłownia • Terapia • Spa • Kursy • Książki',
+        psychBenefit: 'Inwestycja w siebie buduje wartość',
         group: 'life',
         subgroup: 'dopamine',
         gradient: ['teal-500', 'emerald-600'],
-        psychTrigger: 'Inwestycja w siebie',
+        psychTrigger: 'To nie wydatek - to upgrade Ciebie',
     },
 
-    // ====== ŻYCIE - SPOŁECZNE ======
+    // ====== 🍷 ŻYCIE - Więzi Społeczne ======
     social_glue: {
         id: 'social_glue',
         emoji: '🍷',
         name: 'Smar Społeczny',
-        description: 'Restauracje, bary, randki',
+        shortDesc: 'Wyjścia z ludźmi - cel to WIĘŹ, nie jedzenie',
+        examples: 'Restauracje • Bary • Kawa ze znajomymi',
+        psychBenefit: 'Walidacja potrzeb społecznych',
         group: 'life',
         subgroup: 'social',
         gradient: ['rose-500', 'pink-600'],
-        psychTrigger: 'Więzi, nie jedzenie',
+        psychTrigger: 'Wydajesz na relacje, nie na kalorie',
     },
     love_language: {
         id: 'love_language',
         emoji: '🎁',
         name: 'Język Miłości',
-        description: 'Prezenty, darowizny',
+        shortDesc: 'Prezenty, darowizny, wyrażanie uczuć',
+        examples: 'Prezenty • Kwiaty • Datki charytatywne',
+        psychBenefit: 'Akt uczucia lub charytatywności',
         group: 'life',
         subgroup: 'social',
         gradient: ['red-500', 'rose-600'],
-        psychTrigger: 'Wyrażanie uczuć',
+        psychTrigger: 'Dawanie = szczęście (udowodnione naukowo)',
     },
     tribe_tax: {
         id: 'tribe_tax',
         emoji: '👥',
         name: 'Podatek Plemienny',
-        description: 'Wesela, składki grupowe',
+        shortDesc: 'Zobowiązania społeczne, których nie unikniesz',
+        examples: 'Wesela • Składki • Imprezy firmowe • Rounds',
+        psychBenefit: 'Uznaje koszt presji społecznej',
         group: 'life',
         subgroup: 'social',
         gradient: ['indigo-500', 'purple-600'],
-        psychTrigger: 'Presja społeczna',
+        psychTrigger: 'Czasem płacisz za przynależność',
     },
 
-    // ====== ŻYCIE - CHAOS ======
+    // ====== 🧠 ŻYCIE - Stack Neuroatypowy/Chaos ======
     chaos_tax: {
         id: 'chaos_tax',
         emoji: '🧠',
         name: 'Podatek od Chaosu',
-        description: 'Opłaty za zwłokę, zgubione rzeczy',
+        shortDesc: 'Koszty ADHD, zapominalstwa, wyczerpania',
+        examples: 'Opłaty za zwłokę • Zgubione rzeczy • Duplikaty',
+        psychBenefit: 'ADHD-friendly - bez osądzania, tylko tracking',
         group: 'life',
         subgroup: 'chaos',
         gradient: ['gray-500', 'gray-700'],
-        psychTrigger: 'ADHD-friendly tracking',
+        psychTrigger: 'Widzisz realny koszt chaosu → możesz go zmniejszyć',
     },
     impulse_zone: {
         id: 'impulse_zone',
         emoji: '⚡',
         name: 'Strefa Bez Winy',
-        description: 'Impulsywne zakupy (kontrolowane)',
+        shortDesc: 'Wyznaczona kwota na impulsy - zero wstydu',
+        examples: 'Cokolwiek! (w ramach limitu)',
+        psychBenefit: '"Bezpieczna" kwota do przepuszczenia',
         group: 'life',
         subgroup: 'chaos',
         gradient: ['yellow-500', 'amber-600'],
-        psychTrigger: 'Zero wstydu',
+        psychTrigger: 'Planowana spontaniczność = brak wyrzutów sumienia',
+    },
+};
+
+// ============ GROUP DESCRIPTIONS ============
+
+export const GROUP_DESCRIPTIONS = {
+    fortress: {
+        name: 'Twierdza',
+        emoji: '🏰',
+        headline: 'Koszty nienegocjowalne',
+        description: 'Elementy, na które nie masz wpływu w krótkim terminie. Celem jest automatyzacja - nie chcesz o nich myśleć.',
+    },
+    life: {
+        name: 'Życie',
+        emoji: '🌈',
+        headline: 'Twoje wybory',
+        description: 'Tu decydujesz TY. Celem jest uważność i zgodność z wartościami - czy ten wydatek jest zgodny z tym, kim chcesz być?',
     },
 };
 
@@ -155,24 +199,63 @@ export interface EmotionMeta {
     emoji: string;
     name: string;
     color: string;
+    description: string;
 }
 
 export const EMOTIONS: Record<EmotionTag, EmotionMeta> = {
-    joy: { id: 'joy', emoji: '😊', name: 'Radość', color: 'emerald' },
-    necessity: { id: 'necessity', emoji: '😐', name: 'Konieczność', color: 'slate' },
-    tired: { id: 'tired', emoji: '😴', name: 'Zmęczenie', color: 'blue' },
-    regret: { id: 'regret', emoji: '😢', name: 'Żal', color: 'red' },
-    bored: { id: 'bored', emoji: '😑', name: 'Nuda', color: 'gray' },
-    social: { id: 'social', emoji: '🤝', name: 'Więzi', color: 'amber' },
-    reward: { id: 'reward', emoji: '🎁', name: 'Nagroda', color: 'purple' },
+    joy: {
+        id: 'joy',
+        emoji: '😊',
+        name: 'Radość',
+        color: 'emerald',
+        description: 'Świadomy zakup, który cieszy'
+    },
+    necessity: {
+        id: 'necessity',
+        emoji: '😐',
+        name: 'Konieczność',
+        color: 'slate',
+        description: 'Musiałem - nie miałem wyboru'
+    },
+    tired: {
+        id: 'tired',
+        emoji: '😴',
+        name: 'Zmęczenie',
+        color: 'blue',
+        description: 'Zapłaciłem za wygodę bo nie miałem siły'
+    },
+    regret: {
+        id: 'regret',
+        emoji: '😢',
+        name: 'Żal',
+        color: 'red',
+        description: 'Wolałbym tego nie kupić'
+    },
+    bored: {
+        id: 'bored',
+        emoji: '😑',
+        name: 'Nuda',
+        color: 'gray',
+        description: 'Kupiłem bo było nudno'
+    },
+    social: {
+        id: 'social',
+        emoji: '🤝',
+        name: 'Więzi',
+        color: 'amber',
+        description: 'Wydatek budujący relacje'
+    },
+    reward: {
+        id: 'reward',
+        emoji: '🎁',
+        name: 'Nagroda',
+        color: 'purple',
+        description: 'Zasłużyłem na to!'
+    },
 };
 
 // ============ MCC → BEHAVIORAL MAPPING ============
 
-/**
- * Maps traditional ExpenseCategory to suggested BehavioralCategory
- * User can override this mapping
- */
 export const MCC_TO_BEHAVIORAL: Record<ExpenseCategory, BehavioralCategory> = {
     groceries: 'fuel',
     restaurants: 'social_glue',

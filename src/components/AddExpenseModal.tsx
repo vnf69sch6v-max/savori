@@ -263,26 +263,24 @@ export default function AddExpenseModal({ isOpen, onClose, onSuccess }: AddExpen
                             )}
                         </div>
 
-                        {/* Category */}
+                        {/* Category - 2 column grid with full names */}
                         <div>
                             <label className="block text-sm font-medium text-slate-300 mb-2">
                                 Kategoria *
                             </label>
-                            <div className="grid grid-cols-5 gap-2">
+                            <div className="grid grid-cols-2 gap-2">
                                 {CATEGORIES.map((cat) => (
                                     <button
                                         key={cat}
                                         type="button"
                                         onClick={() => setCategory(cat)}
-                                        className={`flex flex-col items-center gap-1 p-3 rounded-xl border transition-all ${category === cat
-                                            ? 'bg-emerald-500/10 border-emerald-500/50 text-emerald-400'
-                                            : 'bg-slate-800/50 border-slate-700 text-slate-400 hover:border-slate-600'
+                                        className={`flex items-center gap-3 p-3 rounded-xl border transition-all text-left ${category === cat
+                                            ? 'bg-emerald-500/15 border-emerald-500/50 text-emerald-300'
+                                            : 'bg-slate-800/50 border-slate-700/50 text-slate-300 hover:border-slate-600'
                                             }`}
                                     >
-                                        <span className="text-xl">{CATEGORY_ICONS[cat]}</span>
-                                        <span className="text-xs truncate w-full text-center">
-                                            {CATEGORY_LABELS[cat].split(' ')[0]}
-                                        </span>
+                                        <span className="text-2xl flex-shrink-0">{CATEGORY_ICONS[cat]}</span>
+                                        <span className="text-sm font-medium truncate">{CATEGORY_LABELS[cat]}</span>
                                     </button>
                                 ))}
                             </div>

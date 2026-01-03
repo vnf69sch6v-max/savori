@@ -105,7 +105,7 @@ function BehavioralSettingsModal({
                 className="relative w-full max-w-lg max-h-[85vh] overflow-y-auto bg-slate-900 border border-slate-700/50 rounded-t-3xl sm:rounded-3xl"
             >
                 {/* Header */}
-                <div className="sticky top-0 bg-slate-900 flex items-center justify-between p-4 border-b border-slate-800 z-10">
+                <div className="sticky top-0 bg-slate-900/95 backdrop-blur-sm flex items-center justify-between p-4 border-b border-slate-800 z-10">
                     <div>
                         <h2 className="text-lg font-semibold text-white">Ustaw limity</h2>
                         <p className="text-xs text-slate-400">
@@ -116,8 +116,8 @@ function BehavioralSettingsModal({
                         <button
                             onClick={handleSave}
                             disabled={saving}
-                            className="px-4 py-2 rounded-xl bg-purple-500 text-white text-sm font-medium 
-                                     hover:bg-purple-600 disabled:opacity-50 flex items-center gap-2"
+                            className="px-4 py-2 rounded-xl bg-gradient-to-r from-purple-500 to-pink-500 text-white text-sm font-medium 
+                                     hover:opacity-90 disabled:opacity-50 flex items-center gap-2"
                         >
                             {saving ? (
                                 <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -133,11 +133,18 @@ function BehavioralSettingsModal({
                 </div>
 
                 <div className="p-4 space-y-6">
-                    {/* Fortress Section */}
+                    {/* 🏰 Fortress Section */}
                     <div>
-                        <h3 className="text-sm font-medium text-slate-300 mb-3 flex items-center gap-2">
-                            <Shield className="w-4 h-4" /> 🏰 Twierdza
-                        </h3>
+                        <div className="mb-4 p-3 rounded-2xl bg-slate-800/50 border border-slate-700/50">
+                            <h3 className="font-semibold text-white flex items-center gap-2 mb-1">
+                                <Shield className="w-4 h-4 text-slate-400" />
+                                🏰 Twierdza
+                            </h3>
+                            <p className="text-xs text-slate-400">
+                                Koszty <strong>nienegocjowalne</strong> - fundamenty życia.
+                                Celem jest automatyzacja - nie chcesz o nich myśleć.
+                            </p>
+                        </div>
                         <div className="space-y-2">
                             {fortressCategories.map((cat) => (
                                 <LimitInput
@@ -150,11 +157,18 @@ function BehavioralSettingsModal({
                         </div>
                     </div>
 
-                    {/* Life Section */}
+                    {/* 🌈 Life Section */}
                     <div>
-                        <h3 className="text-sm font-medium text-slate-300 mb-3 flex items-center gap-2">
-                            <Sparkles className="w-4 h-4" /> 🌈 Życie
-                        </h3>
+                        <div className="mb-4 p-3 rounded-2xl bg-gradient-to-r from-purple-500/10 to-pink-500/10 border border-purple-500/30">
+                            <h3 className="font-semibold text-white flex items-center gap-2 mb-1">
+                                <Sparkles className="w-4 h-4 text-purple-400" />
+                                🌈 Życie
+                            </h3>
+                            <p className="text-xs text-slate-300">
+                                Tu decydujesz <strong>TY</strong>. Celem jest uważność -
+                                czy ten wydatek jest zgodny z tym, kim chcesz być?
+                            </p>
+                        </div>
                         <div className="space-y-2">
                             {lifeCategories.map((cat) => (
                                 <LimitInput
@@ -184,6 +198,7 @@ function LimitInput({
     const meta = BEHAVIORAL_CATEGORIES[categoryId];
     const colors = CATEGORY_COLORS[categoryId];
     const [inputValue, setInputValue] = useState((value / 100).toString());
+    const [isExpanded, setIsExpanded] = useState(false);
 
     const handleBlur = () => {
         const parsed = parseFloat(inputValue) || 0;
@@ -195,22 +210,56 @@ function LimitInput({
     }, [value]);
 
     return (
-        <div className={`flex items-center gap-3 p-3 rounded-xl ${colors.bg} border border-transparent`}>
-            <span className="text-lg">{meta.emoji}</span>
-            <span className="flex-1 text-sm text-white font-medium">{meta.name}</span>
-            <div className="relative w-24">
-                <input
-                    type="number"
-                    value={inputValue}
-                    onChange={(e) => setInputValue(e.target.value)}
-                    onBlur={handleBlur}
-                    className="w-full px-3 py-1.5 text-right text-sm bg-slate-800/80 border border-slate-600/50 
-                             rounded-lg text-white focus:outline-none focus:ring-1 focus:ring-purple-500/50"
-                />
-                <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-slate-500 pointer-events-none">
-                    zł
-                </span>
-            </div>
+        <div className="overflow-hidden">
+            <button
+                type="button"
+                onClick={() => setIsExpanded(!isExpanded)}
+                className={`w-full flex items-center gap-3 p-3 rounded-xl ${colors.bg} border border-transparent 
+                           hover:border-slate-600/50 transition-all text-left`}
+            >
+                <span className="text-xl flex-shrink-0">{meta.emoji}</span>
+                <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between gap-2">
+                        <span className="text-sm text-white font-medium">{meta.name}</span>
+                        <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
+                            <input
+                                type="number"
+                                value={inputValue}
+                                onChange={(e) => setInputValue(e.target.value)}
+                                onBlur={handleBlur}
+                                className="w-20 px-2 py-1 text-right text-sm bg-slate-800/80 border border-slate-600/50 
+                                         rounded-lg text-white focus:outline-none focus:ring-1 focus:ring-purple-500/50"
+                            />
+                            <span className="text-xs text-slate-500">zł</span>
+                        </div>
+                    </div>
+                    <p className="text-xs text-slate-400 truncate">{meta.shortDesc}</p>
+                </div>
+                <ChevronDown className={`w-4 h-4 text-slate-500 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
+            </button>
+
+            <AnimatePresence>
+                {isExpanded && (
+                    <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: 'auto', opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: 0.2 }}
+                        className="overflow-hidden"
+                    >
+                        <div className="p-3 mx-3 mb-2 rounded-xl bg-slate-800/50 border border-slate-700/30 space-y-2">
+                            <div>
+                                <p className="text-xs text-slate-500 mb-1">Przykłady:</p>
+                                <p className="text-xs text-slate-300">{meta.examples}</p>
+                            </div>
+                            <div>
+                                <p className="text-xs text-slate-500 mb-1">Dlaczego ta kategoria?</p>
+                                <p className="text-xs text-purple-300/90">{meta.psychBenefit}</p>
+                            </div>
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </div>
     );
 }
@@ -239,8 +288,8 @@ function CategoryItem({
             <motion.button
                 onClick={onToggle}
                 className={`w-full p-3 rounded-xl border transition-all ${isExpanded
-                        ? `border-transparent bg-gradient-to-r ${colors.gradient}`
-                        : 'border-slate-700/50 bg-slate-800/40 hover:bg-slate-700/50'
+                    ? `border-transparent bg-gradient-to-r ${colors.gradient}`
+                    : 'border-slate-700/50 bg-slate-800/40 hover:bg-slate-700/50'
                     }`}
                 whileTap={{ scale: 0.98 }}
             >
@@ -283,7 +332,7 @@ function CategoryItem({
                         className="overflow-hidden"
                     >
                         <div className={`mt-1 p-3 rounded-xl bg-gradient-to-r ${colors.gradient} bg-opacity-50`}>
-                            <p className="text-xs text-white/70 mb-2">{meta.description}</p>
+                            <p className="text-xs text-white/70 mb-1">{meta.examples}</p>
                             <div className="flex items-center justify-between text-xs">
                                 <span className="text-white/60">💡 {meta.psychTrigger}</span>
                                 <span className={`px-2 py-0.5 rounded-full ${isOver ? 'bg-red-500/30 text-red-200' : 'bg-white/20 text-white'
@@ -330,8 +379,8 @@ function CollapsibleSection({
             <motion.button
                 onClick={() => setIsOpen(!isOpen)}
                 className={`w-full p-3 rounded-2xl mb-2 flex items-center gap-3 transition-all ${isOpen
-                        ? `bg-gradient-to-r ${gradient} border border-transparent`
-                        : 'bg-slate-800/50 border border-slate-700/50 hover:bg-slate-700/50'
+                    ? `bg-gradient-to-r ${gradient} border border-transparent`
+                    : 'bg-slate-800/50 border border-slate-700/50 hover:bg-slate-700/50'
                     }`}
                 whileTap={{ scale: 0.98 }}
             >

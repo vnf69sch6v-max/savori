@@ -51,8 +51,8 @@ export default function BehavioralBudgetCard({
         <motion.div
             layout
             className={`rounded-3xl overflow-hidden backdrop-blur-xl border transition-all ${isOverBudget
-                    ? 'border-red-500/30 bg-red-500/5'
-                    : 'border-slate-700/50 bg-slate-800/40'
+                ? 'border-red-500/30 bg-red-500/5'
+                : 'border-slate-700/50 bg-slate-800/40'
                 }`}
         >
             {/* Header - Always Visible */}
@@ -107,7 +107,7 @@ export default function BehavioralBudgetCard({
                         {meta.name}
                     </h3>
                     <p className="text-sm text-slate-400 truncate">
-                        {meta.description}
+                        {meta.shortDesc}
                     </p>
                     <div className="flex items-baseline gap-2 mt-1">
                         <span className={`font-bold ${isOverBudget ? 'text-red-400' : 'text-white'}`}>
@@ -138,8 +138,8 @@ export default function BehavioralBudgetCard({
                         <div className="px-5 pb-5 space-y-3">
                             {/* Remaining Badge */}
                             <div className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-sm ${isOverBudget
-                                    ? 'bg-red-500/20 text-red-400'
-                                    : 'bg-emerald-500/20 text-emerald-400'
+                                ? 'bg-red-500/20 text-red-400'
+                                : 'bg-emerald-500/20 text-emerald-400'
                                 }`}>
                                 {isOverBudget ? (
                                     <>⚠️ Przekroczono o {(Math.abs(remaining) / 100).toFixed(0)} zł</>
