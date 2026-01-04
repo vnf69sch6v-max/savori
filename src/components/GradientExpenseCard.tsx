@@ -65,7 +65,7 @@ export default function GradientExpenseCard({ expense, onDelete }: GradientExpen
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, x: -100, height: 0 }}
-            className="relative"
+            className="relative w-full max-w-full"
         >
             {/* Delete background */}
             <div className="absolute inset-0 bg-rose-500/30 flex items-center justify-end px-6 rounded-2xl">
@@ -79,28 +79,28 @@ export default function GradientExpenseCard({ expense, onDelete }: GradientExpen
                 dragElastic={{ left: 0.3, right: 0.1 }}
                 onDragEnd={handleDragEnd}
                 style={{ touchAction: 'pan-y' }}
-                className={`relative rounded-2xl p-4 overflow-hidden ${gradient} backdrop-blur-xl border border-white/10`}
+                className={`relative rounded-2xl p-3.5 overflow-hidden ${gradient} backdrop-blur-xl border border-white/10 w-full max-w-full`}
             >
                 {/* Glassmorphism overlay */}
                 <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent pointer-events-none" />
 
                 <div className="relative flex items-start justify-between">
                     {/* Left: Large emoji + name */}
-                    <div className="flex items-center gap-4 min-w-0 flex-1">
+                    <div className="flex items-center gap-3 min-w-0 flex-1">
                         {/* Large emoji icon */}
-                        <div className="text-5xl drop-shadow-lg shrink-0">
+                        <div className="text-4xl drop-shadow-lg shrink-0">
                             {merchantIcon}
                         </div>
 
-                        <div className="min-w-0">
+                        <div className="min-w-0 flex-1">
                             {/* Merchant name */}
-                            <h3 className="font-bold text-lg text-white drop-shadow-sm truncate pr-2">
+                            <h3 className="font-bold text-base text-white drop-shadow-sm truncate pr-2">
                                 {merchantName}
                             </h3>
 
                             {/* Category badge + source */}
-                            <div className="flex items-center gap-2 mt-1 flex-wrap">
-                                <span className="px-2 py-0.5 bg-black/20 backdrop-blur rounded-full text-xs text-white/80 whitespace-nowrap">
+                            <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
+                                <span className="px-2 py-0.5 bg-black/20 backdrop-blur rounded-full text-[10px] text-white/80 whitespace-nowrap">
                                     {category === 'groceries' ? 'Spożywcze' :
                                         category === 'restaurants' ? 'Jedzenie' :
                                             category === 'transport' ? 'Transport' :
@@ -113,7 +113,7 @@ export default function GradientExpenseCard({ expense, onDelete }: GradientExpen
                                 </span>
 
                                 {/* Source badge */}
-                                <span className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-xs text-white ${sourceConfig.color}/60 whitespace-nowrap`}>
+                                <span className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] text-white ${sourceConfig.color}/60 whitespace-nowrap`}>
                                     <sourceConfig.icon className="w-3 h-3" />
                                     {sourceConfig.label}
                                 </span>
@@ -123,7 +123,7 @@ export default function GradientExpenseCard({ expense, onDelete }: GradientExpen
 
                     {/* Right: Amount + date */}
                     <div className="text-right shrink-0 ml-2">
-                        <p className="text-2xl font-bold text-white drop-shadow-sm tabular-nums" style={{ fontVariantNumeric: 'tabular-nums' }}>
+                        <p className="text-xl sm:text-2xl font-bold text-white drop-shadow-sm tabular-nums" style={{ fontVariantNumeric: 'tabular-nums' }}>
                             -{formatMoney(expense.amount)}
                         </p>
                         <p className="text-xs text-white/60 mt-1">
