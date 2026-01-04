@@ -1,10 +1,17 @@
 import { NextResponse } from 'next/server';
 import { DataAnalysisAgent } from '@/lib/ai/data-analysis-agent';
 import { redactor } from '@/lib/security/redactor';
+import { checkSubscription, unauthorizedResponse } from '@/lib/api/subscription-guard';
 
 export async function POST(request: Request) {
     try {
-        const { question, context } = await request.json();
+        const { question, context, userId } = await request.json();
+
+        // SERVER-SIDE SUBSCRIPTION CHECK - Critical for cost control
+        const subscriptionCheck = await checkSubscription(userId, 'pro');
+        if (!subscriptionCheck.isValid) {
+            return unauthorizedResponse(subscriptionCheck.error || 'Pro subscription required');
+        }
 
         // 1. Redact PII from context and question
         const safeContext = redactor.object(context || {});

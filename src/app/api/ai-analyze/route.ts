@@ -2,11 +2,18 @@ import { NextRequest, NextResponse } from 'next/server';
 import { DataAnalysisAgent } from '@/lib/ai/data-analysis-agent';
 import { getAIModel } from '@/lib/firebase';
 import { redactor } from '@/lib/security/redactor';
+import { checkSubscription, unauthorizedResponse } from '@/lib/api/subscription-guard';
 
 export async function POST(request: NextRequest) {
     try {
         const body = await request.json();
-        let { type, data } = body;
+        let { type, data, userId } = body;
+
+        // SERVER-SIDE SUBSCRIPTION CHECK - Critical for cost control
+        const subscriptionCheck = await checkSubscription(userId, 'pro');
+        if (!subscriptionCheck.isValid) {
+            return unauthorizedResponse(subscriptionCheck.error || 'Pro subscription required');
+        }
 
         if (!type || !data) {
             return NextResponse.json(
