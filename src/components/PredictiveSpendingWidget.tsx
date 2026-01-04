@@ -94,27 +94,27 @@ export default function PredictiveSpendingWidget({ lastUpdate, onPriorityChange 
         : 0;
 
     return (
-        <Card className="overflow-hidden">
+        <Card className="overflow-hidden w-full max-w-full">
             <CardHeader className="flex flex-row items-center justify-between pb-2 p-3">
-                <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-blue-500/20 to-purple-500/20 flex items-center justify-center">
-                        <TrendingUp className="w-4 h-4 text-blue-400" />
+                <div className="flex items-center gap-2.5">
+                    <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-blue-500/20 to-purple-500/20 flex items-center justify-center">
+                        <TrendingUp className="w-3.5 h-3.5 text-blue-400" />
                     </div>
                     <div>
-                        <CardTitle className="text-base font-semibold">Prognoza</CardTitle>
+                        <CardTitle className="text-sm font-semibold">Prognoza</CardTitle>
                         <p className="text-[10px] uppercase tracking-wide text-slate-500">{prediction.daysRemaining} dni do końca</p>
                     </div>
                 </div>
                 <button
                     onClick={fetchPrediction}
                     disabled={refreshing}
-                    className="p-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-all disabled:opacity-50"
+                    className="p-1.5 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-all disabled:opacity-50"
                 >
-                    <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
+                    <RefreshCw className={`w-3.5 h-3.5 ${refreshing ? 'animate-spin' : ''}`} />
                 </button>
             </CardHeader>
 
-            <CardContent className="space-y-3 p-4 pt-0">
+            <CardContent className="space-y-2.5 p-3.5 pt-0">
                 {/* Progress bars */}
                 <div className="space-y-1.5">
                     {/* Current spent */}
@@ -125,7 +125,7 @@ export default function PredictiveSpendingWidget({ lastUpdate, onPriorityChange 
 
                     {/* Budget visualization */}
                     {prediction.budgetLimit && (
-                        <div className="relative h-4 bg-slate-800 rounded-full overflow-hidden">
+                        <div className="relative h-3 bg-slate-800 rounded-full overflow-hidden">
                             {/* Current spent bar */}
                             <motion.div
                                 initial={{ width: 0 }}
