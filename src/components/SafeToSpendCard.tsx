@@ -53,20 +53,13 @@ export default function SafeToSpendCard({ spent, limit, loading = false }: SafeT
                 </div>
 
                 {/* Subtext */}
-                <p className="text-xs text-gray-400 mb-3 font-medium relative z-10">
+                <p className="text-xs text-gray-400 mb-6 font-medium relative z-10">
                     ~{formatMoney(dailySafe).replace(/,00..$/, '')} <span className="text-gray-500">dziennie</span>
                 </p>
 
-                {/* AI Insight Pill */}
-                <div className="bg-white/5 border border-white/5 rounded-xl p-2.5 flex items-start gap-2.5 mb-4 relative z-10 backdrop-blur-md">
-                    <Sparkles className="w-3.5 h-3.5 text-violet-400 mt-0.5 shrink-0" />
-                    <p className="text-xs text-gray-300 leading-relaxed line-clamp-2">
-                        {percentageUsed < 80
-                            ? "Świetnie Ci idzie! Stać Cię na lepszy obiad ☕️"
-                            : "Uważaj, zbliżasz się do limitu budżetu! 📉"
-                        }
-                    </p>
-                </div>
+                {/* Insight Pill removed for compact mobile layout matching Budgets screen */}
+
+                {/* Progress Bar Section */}
 
                 {/* Progress Bar Section */}
                 <div className="space-y-2 relative z-10">

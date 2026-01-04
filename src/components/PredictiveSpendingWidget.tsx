@@ -174,28 +174,7 @@ export default function PredictiveSpendingWidget({ lastUpdate, onPriorityChange 
                     )}
                 </div>
 
-                {/* Status alert */}
-                <motion.div
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className={`p-3 rounded-xl border ${status.status === 'danger'
-                        ? 'bg-red-500/10 border-red-500/30'
-                        : status.status === 'warning'
-                            ? 'bg-amber-500/10 border-amber-500/30'
-                            : 'bg-emerald-500/10 border-emerald-500/30'
-                        }`}
-                >
-                    <div className="flex items-center gap-2">
-                        {status.status === 'danger' ? (
-                            <AlertTriangle className="w-4 h-4 text-red-400" />
-                        ) : status.status === 'warning' ? (
-                            <AlertTriangle className="w-4 h-4 text-amber-400" />
-                        ) : (
-                            <CheckCircle className="w-4 h-4 text-emerald-400" />
-                        )}
-                        <span className={`text-sm ${status.color}`}>{status.message}</span>
-                    </div>
-                </motion.div>
+                {/* Status alert removed for compact layout */}
 
                 {/* Daily recommendation */}
                 {prediction.budgetLimit && prediction.daysRemaining > 0 && (
