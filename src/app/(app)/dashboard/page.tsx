@@ -216,14 +216,14 @@ export default function DashboardPage() {
                         {!isAICritical && showAI && <AIInsightsWidget onPriorityChange={(p) => handlePriorityChange('ai', p)} />}
                         <HookChallengeWidget />
 
-                        {/* Weather & Money Wrapped - Pro only */}
+                        {/* Weather & Money Wrapped - Pro only, compact for mobile grid */}
                         <div className="grid grid-cols-2 gap-3">
                             <FinancialWeatherWidget
                                 expenses={expenses}
                                 budgets={[{ totalLimit: monthlyBudget, totalSpent: monthlySpent } as any]}
-                                className="col-span-1"
+                                compact
                             />
-                            <MoneyWrappedCard expenses={expenses} className="col-span-1" />
+                            <MoneyWrappedCard expenses={expenses} compact />
                         </div>
                     </>
                 ) : (

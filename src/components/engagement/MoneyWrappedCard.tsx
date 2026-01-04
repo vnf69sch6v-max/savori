@@ -11,9 +11,10 @@ import { formatMoney } from '@/lib/utils';
 interface MoneyWrappedCardProps {
     expenses: Expense[];
     className?: string;
+    compact?: boolean;
 }
 
-export default function MoneyWrappedCard({ expenses, className = '' }: MoneyWrappedCardProps) {
+export default function MoneyWrappedCard({ expenses, className = '', compact = false }: MoneyWrappedCardProps) {
     const [isOpen, setIsOpen] = useState(false);
     const [wrapped, setWrapped] = useState<MoneyWrapped | null>(null);
 
@@ -27,6 +28,50 @@ export default function MoneyWrappedCard({ expenses, className = '' }: MoneyWrap
 
     // Quick preview stats
     const monthlyWrapped = wrappedService.generateMonthlyWrapped(expenses);
+
+    if (compact) {
+        return (
+            <>
+                <motion.div
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() => handleOpen('month')}
+                    className={`relative overflow-hidden rounded-xl bg-gradient-to-br from-purple-900/40 to-slate-900 border border-purple-500/20 p-3 h-full flex flex-col justify-between ${className}`}
+                >
+                    <div className="flex items-center gap-2 mb-2">
+                        <div className="p-1.5 rounded-lg bg-purple-500/20">
+                            <Sparkles className="w-3.5 h-3.5 text-purple-400" />
+                        </div>
+                        <span className="text-xs font-semibold text-white/90">Wrapped</span>
+                    </div>
+
+                    <div>
+                        <p className="text-lg font-bold text-white leading-tight">
+                            {formatMoney(monthlyWrapped.totalSpent)}
+                        </p>
+                        <p className="text-[10px] text-slate-400 mt-0.5">
+                            {monthlyWrapped.totalTransactions} transakcji
+                        </p>
+                    </div>
+
+                    <div className="flex items-center gap-1 mt-2 text-purple-400 text-[10px] font-medium">
+                        <span>Zobacz teraz</span>
+                        <Play className="w-2.5 h-2.5" />
+                    </div>
+                </motion.div>
+
+                {isOpen && wrapped && (
+                    <MoneyWrappedModal
+                        isOpen={isOpen}
+                        onClose={() => setIsOpen(false)}
+                        wrapped={wrapped}
+                    />
+                )}
+            </>
+        );
+    }
+
+    // Full widget logic continues here...
     const weeklyWrapped = wrappedService.generateWeeklyPulse(expenses);
 
     return (
