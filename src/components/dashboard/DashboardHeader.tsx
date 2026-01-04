@@ -12,7 +12,7 @@ export default function DashboardHeader() {
     const { t } = useLanguage();
 
     return (
-        <header className="px-6 flex justify-between items-center mb-6 pt-2">
+        <header className="flex justify-between items-center mb-6 pt-2">
             <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-xl bg-emerald-400 flex items-center justify-center text-white shadow-lg shadow-emerald-500/30">
                     <PiggyBank className="w-6 h-6" />
