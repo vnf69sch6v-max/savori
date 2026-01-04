@@ -1,9 +1,10 @@
 /**
- * Savori Advanced Spending Predictor v2.0
- * Statistical predictions using regression, volatility, and seasonality
+ * Savori Advanced Spending Predictor v3.0
+ * Hybrid: Statistical predictions + Gemini AI for smart messaging
  */
 
 import { Expense, ExpenseCategory } from '@/types';
+import { getAIModel } from '@/lib/firebase';
 import {
     calculateStats,
     linearRegression,
@@ -28,6 +29,41 @@ export interface SpendingPrediction {
     changePercent: number;
     breakdown?: CategoryBreakdown[];
     methodology: string;  // Explain how prediction was made
+}
+
+// NEW: Gemini-powered smart prediction with friendly messaging
+export interface GeminiSmartPrediction {
+    // Core prediction data
+    predictedTotal: number;
+    confidence: number;
+    daysRemaining: number;
+    dailyBudget: number;
+
+    // Friendly messaging (Gemini generated)
+    headline: string;        // e.g., "Spokojnie, idziesz dobrze! ☀️"
+    explanation: string;     // e.g., "Wydajesz średnio 150 zł dziennie..."
+    tip: string;            // e.g., "Jeśli ugotujesz 2x w tygodniu, zaoszczędzisz ~120 zł"
+    weatherEmoji: string;   // ☀️ 🌤️ ⛅ 🌧️ ⛈️
+
+    // Upcoming alerts
+    upcomingExpenses: UpcomingExpense[];
+
+    // Actionable insights
+    savingsOpportunities: SavingsOpportunity[];
+}
+
+export interface UpcomingExpense {
+    name: string;           // "Netflix"
+    amount: number;         // 49
+    daysUntil: number;      // 5
+    suggestion?: string;    // "Może warto przejrzeć?"
+}
+
+export interface SavingsOpportunity {
+    category: ExpenseCategory;
+    currentMonthly: number;
+    potentialSavings: number;
+    suggestion: string;     // "Gotowanie zamiast zamawiania = ~150 zł/mies"
 }
 
 export interface CategoryBreakdown {
@@ -577,6 +613,171 @@ export class SpendingPredictor {
 
     private formatMoney(amount: number): string {
         return `${(amount / 100).toFixed(2).replace('.', ',')} zł`;
+    }
+
+    // ============ GEMINI-POWERED SMART PREDICTION ============
+
+    /**
+     * Get AI-powered smart prediction with friendly messaging
+     * Uses Gemini 2.0 Flash for contextual, personalized insights
+     */
+    async getSmartPrediction(
+        expenses: Expense[],
+        budget: number | null,
+        userName?: string
+    ): Promise<GeminiSmartPrediction> {
+        const now = new Date();
+        const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+        const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+        const daysInMonth = endOfMonth.getDate();
+        const daysPassed = now.getDate();
+        const daysRemaining = daysInMonth - daysPassed;
+
+        // Current month expenses
+        const monthExpenses = expenses.filter(e => toDate(e.date) >= startOfMonth);
+        const currentSpent = monthExpenses.reduce((sum, e) => sum + e.amount, 0);
+
+        // Calculate daily average and projection
+        const dailyAvg = daysPassed > 0 ? currentSpent / daysPassed : 0;
+        const projectedTotal = currentSpent + (dailyAvg * daysRemaining);
+        const dailyBudget = budget && daysRemaining > 0
+            ? (budget - currentSpent) / daysRemaining
+            : dailyAvg;
+
+        // Detect recurring expenses (potential upcoming)
+        const recurringMerchants = this.detectRecurringMerchants(expenses);
+
+        // Category breakdown for context
+        const categoryTotals = this.getCategoryTotalsForAI(monthExpenses);
+
+        // Build AI prompt
+        const prompt = `
+Jesteś przyjaznym asystentem finansowym Savori. Twój ton to "Mądry Przyjaciel" - wspierający, z humorem, nigdy straszący.
+
+KONTEKST UŻYTKOWNIKA:
+- Imię: ${userName || 'Użytkownik'}
+- Wydane w tym miesiącu: ${currentSpent.toFixed(0)} zł
+- Budżet miesięczny: ${budget ? budget.toFixed(0) + ' zł' : 'nie ustalony'}
+- Pozostało dni: ${daysRemaining}
+- Prognoza na koniec miesiąca: ~${projectedTotal.toFixed(0)} zł
+- Średnia dzienna: ${dailyAvg.toFixed(0)} zł
+
+TOP KATEGORIE:
+${categoryTotals.map(c => `- ${c.category}: ${c.total.toFixed(0)} zł`).join('\n')}
+
+CYKLICZNE WYDATKI (mogą się powtórzyć):
+${recurringMerchants.slice(0, 5).map(r => `- ${r.merchant}: ~${r.avgAmount.toFixed(0)} zł`).join('\n') || 'Brak wykrytych'}
+
+ZADANIE:
+Odpowiedz WYŁĄCZNIE poprawnym JSON (bez markdown):
+{
+    "headline": "Krótki, przyjazny nagłówek z emoji (max 50 znaków)",
+    "explanation": "2-3 zdania o aktualnej sytuacji (przyjazny ton)",
+    "tip": "1 konkretna rada jak zaoszczędzić (z kwotą!)",
+    "weatherEmoji": "jeden emoji pogody: ☀️ (super) / 🌤️ (dobrze) / ⛅ (ok) / 🌧️ (uwaga) / ⛈️ (alarm)",
+    "upcomingExpenses": [
+        {"name": "nazwa", "amount": 0, "daysUntil": 0, "suggestion": "opcjonalna rada"}
+    ],
+    "savingsOpportunities": [
+        {"category": "kategoria", "currentMonthly": 0, "potentialSavings": 0, "suggestion": "konkretna rada"}
+    ]
+}
+
+WAŻNE:
+- Bądź wspierający, nie straszący
+- Dawaj konkretne kwoty, nie "oszczędzaj więcej"
+- Używaj "my" zamiast "ty" gdzie pasuje
+- Celebruj jeśli idzie dobrze!
+`;
+
+        try {
+            const model = getAIModel('gemini-2.0-flash');
+            const result = await model.generateContent(prompt);
+            const text = result.response.text();
+
+            // Parse JSON from response
+            const jsonMatch = text.match(/\{[\s\S]*\}/);
+            if (jsonMatch) {
+                const parsed = JSON.parse(jsonMatch[0]);
+
+                return {
+                    predictedTotal: Math.round(projectedTotal),
+                    confidence: Math.min(0.9, 0.5 + (daysPassed / daysInMonth) * 0.4),
+                    daysRemaining,
+                    dailyBudget: Math.round(dailyBudget),
+                    headline: parsed.headline || 'Sprawdzam Twoje finanse... 📊',
+                    explanation: parsed.explanation || 'Analizuję Twoje wydatki.',
+                    tip: parsed.tip || 'Kontynuuj śledzenie wydatków!',
+                    weatherEmoji: parsed.weatherEmoji || '🌤️',
+                    upcomingExpenses: (parsed.upcomingExpenses || []).slice(0, 3),
+                    savingsOpportunities: (parsed.savingsOpportunities || []).slice(0, 3),
+                };
+            }
+        } catch (error) {
+            console.error('Gemini prediction error:', error);
+        }
+
+        // Fallback if AI fails
+        return this.getFallbackPrediction(currentSpent, projectedTotal, budget, daysRemaining, dailyBudget);
+    }
+
+    private getFallbackPrediction(
+        currentSpent: number,
+        projectedTotal: number,
+        budget: number | null,
+        daysRemaining: number,
+        dailyBudget: number
+    ): GeminiSmartPrediction {
+        const isOnTrack = !budget || projectedTotal <= budget;
+
+        return {
+            predictedTotal: Math.round(projectedTotal),
+            confidence: 0.6,
+            daysRemaining,
+            dailyBudget: Math.round(dailyBudget),
+            headline: isOnTrack ? 'Idziesz dobrze! 🌤️' : 'Warto zwrócić uwagę 👀',
+            explanation: `Wydałeś już ${currentSpent.toFixed(0)} zł. Do końca miesiąca pozostało ${daysRemaining} dni.`,
+            tip: isOnTrack
+                ? 'Kontynuuj w tym tempie - zmieścisz się w budżecie!'
+                : `Spróbuj ograniczyć wydatki do ${dailyBudget.toFixed(0)} zł dziennie.`,
+            weatherEmoji: isOnTrack ? '🌤️' : '⛅',
+            upcomingExpenses: [],
+            savingsOpportunities: [],
+        };
+    }
+
+    private detectRecurringMerchants(expenses: Expense[]): Array<{ merchant: string; avgAmount: number; count: number }> {
+        const merchantStats: Record<string, { amounts: number[]; count: number }> = {};
+
+        expenses.forEach(e => {
+            const name = e.merchant?.name || 'Unknown';
+            if (!merchantStats[name]) merchantStats[name] = { amounts: [], count: 0 };
+            merchantStats[name].amounts.push(e.amount);
+            merchantStats[name].count++;
+        });
+
+        return Object.entries(merchantStats)
+            .filter(([_, data]) => data.count >= 2)
+            .map(([merchant, data]) => ({
+                merchant,
+                avgAmount: data.amounts.reduce((a, b) => a + b, 0) / data.amounts.length,
+                count: data.count,
+            }))
+            .sort((a, b) => b.count - a.count);
+    }
+
+    private getCategoryTotalsForAI(expenses: Expense[]): Array<{ category: string; total: number }> {
+        const totals: Record<string, number> = {};
+
+        expenses.forEach(e => {
+            const cat = e.merchant?.category || 'other';
+            totals[cat] = (totals[cat] || 0) + e.amount;
+        });
+
+        return Object.entries(totals)
+            .map(([category, total]) => ({ category, total }))
+            .sort((a, b) => b.total - a.total)
+            .slice(0, 5);
     }
 }
 
