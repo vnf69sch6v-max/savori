@@ -47,10 +47,13 @@ const INITIAL_HOOKS: Challenge[] = [
 ];
 
 export default function HookChallengeWidget() {
-    const { user: userData } = useAuth();
+    const { user: userData, userData: userFullData } = useAuth();
     const [hooks, setHooks] = useState<Challenge[]>(INITIAL_HOOKS);
     const [currentIndex, setCurrentIndex] = useState(0);
     const [isAutoRotating, setIsAutoRotating] = useState(true);
+
+    // Check Pro subscription - defense in depth
+    const isPro = userFullData?.subscription?.plan === 'pro' || userFullData?.subscription?.plan === 'ultra';
 
     const currentHook = hooks[currentIndex] || INITIAL_HOOKS[0];
 
@@ -101,38 +104,31 @@ export default function HookChallengeWidget() {
                 link: '/subscriptions',
             });
 
-            // 3. Fetch AI Quiz
-            try {
-                const res = await fetch('/api/ai-quiz');
-                const quiz = await res.json();
-                if (quiz && quiz.question) {
-                    newHooks.push({
-                        type: 'quiz',
-                        emoji: '🧠',
-                        title: 'Quiz Dnia AI',
-                        description: quiz.question,
-                        xp: 20,
-                        link: '/quiz' // Assuming /quiz exists or handles this
-                    });
+            // 3. Fetch AI Quiz (only for Pro users to save API costs)
+            if (isPro) {
+                try {
+                    const res = await fetch('/api/ai-quiz');
+                    const quiz = await res.json();
+                    if (quiz && quiz.question) {
+                        newHooks.push({
+                            type: 'quiz',
+                            emoji: '🧠',
+                            title: 'Quiz Dnia AI',
+                            description: quiz.question,
+                            xp: 20,
+                            link: '/quiz'
+                        });
+                    }
+                } catch (e) {
+                    console.error('Quiz fetch error:', e);
                 }
-            } catch (e) {
-                console.error('Quiz fetch error:', e);
-                // Fallback quiz if fetch fails
-                newHooks.push({
-                    type: 'quiz',
-                    emoji: '🧠',
-                    title: 'Pytanie dnia',
-                    description: 'Co to jest procent składany?',
-                    xp: 10,
-                    link: '/challenges',
-                });
             }
 
             setHooks(newHooks);
         }
 
         loadData();
-    }, [userData?.uid]);
+    }, [userData?.uid, isPro]);
 
     // Auto-rotate every 8 seconds
     useEffect(() => {

@@ -225,6 +225,20 @@ export default function DashboardPage() {
                     <HookChallengeWidget />
                 </PremiumFeatureGate>
 
+                {/* Weather & Money Wrapped - Mobile */}
+                <div className="grid grid-cols-2 gap-3">
+                    <PremiumFeatureGate requiredPlan="pro" featureName="Pogoda Finansowa">
+                        <FinancialWeatherWidget
+                            expenses={expenses}
+                            budgets={[{ totalLimit: monthlyBudget, totalSpent: monthlySpent } as any]}
+                            className="col-span-1"
+                        />
+                    </PremiumFeatureGate>
+                    <PremiumFeatureGate requiredPlan="pro" featureName="Money Wrapped">
+                        <MoneyWrappedCard expenses={expenses} className="col-span-1" />
+                    </PremiumFeatureGate>
+                </div>
+
                 <ActionGrid
                     onScanClick={() => router.push('/scan')}
                     onAddClick={() => setIsAddModalOpen(true)}
