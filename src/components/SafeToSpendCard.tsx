@@ -45,9 +45,8 @@ export default function SafeToSpendCard({ spent, limit, loading = false }: SafeT
                     <span className="font-medium text-xs uppercase tracking-wide opacity-80">Bezpiecznie do wydania</span>
                 </div>
 
-                {/* Main Number */}
                 <div className="mb-2 relative z-10">
-                    <h2 className="text-2xl sm:text-3xl font-bold text-emerald-400 tracking-tight tabular-nums">
+                    <h2 className="text-xl sm:text-2xl font-bold text-emerald-400 tracking-tight tabular-nums">
                         {formatMoney(safeToSpend)}
                     </h2>
                 </div>
