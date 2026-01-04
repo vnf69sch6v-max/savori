@@ -74,7 +74,7 @@ export default function GradientExpenseCard({ expense, onDelete }: GradientExpen
 
             {/* Main card */}
             <motion.div
-                drag="x"
+                drag={!!onDelete ? "x" : false}
                 dragConstraints={{ left: 0, right: 0 }}
                 dragElastic={{ left: 0.3, right: 0.1 }}
                 onDragEnd={handleDragEnd}

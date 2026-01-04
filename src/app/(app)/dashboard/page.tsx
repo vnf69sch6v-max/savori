@@ -238,7 +238,7 @@ export default function DashboardPage() {
                     onChatClick={() => setIsChatOpen(true)}
                 />
 
-                <div className="flex items-center justify-between pt-2 px-1">
+                <div className="flex items-center justify-between pt-2">
                     <h2 className="text-lg font-semibold text-white">{t.dashboard.recentTransactions}</h2>
                     <Link href="/expenses" className="text-sm text-emerald-400">
                         {t.dashboard.seeAll}
@@ -255,7 +255,6 @@ export default function DashboardPage() {
                         >
                             <GradientExpenseCard
                                 expense={expense}
-                                onDelete={async () => { }}
                             />
                         </motion.div>
                     ))}
