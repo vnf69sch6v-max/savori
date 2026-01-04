@@ -17,6 +17,7 @@ import {
     HelpCircle,
 } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent, Button } from '@/components/ui';
+import { BankTrustWarning, SecurityBadge } from '@/components/messaging';
 import { useAuth } from '@/contexts/AuthContext';
 import { addDoc, collection, Timestamp } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
@@ -226,16 +227,19 @@ export default function ImportPage() {
                 </p>
             </div>
 
-            {/* Trust Badges */}
-            <div className="flex flex-wrap justify-center gap-4 mb-8">
-                <div className="flex items-center gap-2 px-3 py-1.5 bg-emerald-500/10 rounded-full text-sm text-emerald-400">
-                    <Shield className="w-4 h-4" />
-                    Prywatne - plik nie opuszcza urządzenia
+            {/* Trust Section */}
+            <div className="mb-8 space-y-4">
+                {/* Quick Trust Badges */}
+                <div className="flex flex-wrap justify-center gap-3">
+                    <SecurityBadge variant="inline" message="Prywatne - plik nie opuszcza urządzenia" />
+                    <div className="flex items-center gap-2 px-3 py-1.5 bg-blue-500/10 rounded-full text-sm text-blue-400 border border-blue-500/20">
+                        <Sparkles className="w-4 h-4" />
+                        AI automatycznie kategoryzuje
+                    </div>
                 </div>
-                <div className="flex items-center gap-2 px-3 py-1.5 bg-blue-500/10 rounded-full text-sm text-blue-400">
-                    <Sparkles className="w-4 h-4" />
-                    AI automatycznie kategoryzuje
-                </div>
+
+                {/* Bank Comparison - Compact */}
+                <BankTrustWarning variant="compact" />
             </div>
 
             {/* Steps Progress */}
