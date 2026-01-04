@@ -245,7 +245,7 @@ export default function DashboardPage() {
                     </Link>
                 </div>
 
-                <div className="space-y-3">
+                <div className="space-y-3 overflow-hidden">
                     {displayExpenses.slice(0, 4).map((expense, index) => (
                         <motion.div
                             key={expense.id}
