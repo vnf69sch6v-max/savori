@@ -56,6 +56,8 @@ import FinancialWeatherWidget from '@/components/engagement/FinancialWeatherWidg
 import MoneyWrappedCard from '@/components/engagement/MoneyWrappedCard';
 import PendingPurchasesWidget from '@/components/engagement/PendingPurchasesWidget';
 import PremiumFeatureGate from '@/components/PremiumFeatureGate';
+import ProUpgradeBanner from '@/components/ProUpgradeBanner';
+import { useSubscription } from '@/hooks/useSubscription';
 
 const MIN_EXPENSES_FOR_AI = 5;
 const MIN_EXPENSES_FOR_PREDICTIONS = 3;
@@ -65,11 +67,10 @@ import { useLanguage, useCurrency } from '@/hooks/use-language';
 export default function DashboardPage() {
     const router = useRouter();
     const { userData } = useAuth();
+    const { isPro } = useSubscription();
     const { t, currency } = useLanguage();
     const { format: formatMoney } = useCurrency(); // Override global formatMoney
     // const userCurrency = (userData?.settings?.currency as string) || 'PLN'; // Deprecated for display
-
-    // ...
 
     // ...
     const [expenses, setExpenses] = useState<Expense[]>([]);
@@ -205,39 +206,30 @@ export default function DashboardPage() {
                 <DashboardHeader />
                 <SafeToSpendCard spent={monthlySpent} limit={monthlyBudget} loading={loading} />
 
-                {/* Dynamic Mobile Layout: Critical items first - PRO ONLY */}
-                <PremiumFeatureGate requiredPlan="pro" featureName="AI Insights">
-                    {isAICritical && <AIInsightsWidget onPriorityChange={(p) => handlePriorityChange('ai', p)} />}
-                </PremiumFeatureGate>
-                <PremiumFeatureGate requiredPlan="pro" featureName="Prognoza Wydatków">
-                    {isPredictionCritical && showPredictions && <PredictiveSpendingWidget lastUpdate={expenses.length + monthlyExpenses} onPriorityChange={(p) => handlePriorityChange('prediction', p)} />}
-                </PremiumFeatureGate>
+                {/* Pro Features OR Upgrade Banner */}
+                {isPro ? (
+                    <>
+                        {/* AI Features - shown only for Pro */}
+                        {isAICritical && <AIInsightsWidget onPriorityChange={(p) => handlePriorityChange('ai', p)} />}
+                        {isPredictionCritical && showPredictions && <PredictiveSpendingWidget lastUpdate={expenses.length + monthlyExpenses} onPriorityChange={(p) => handlePriorityChange('prediction', p)} />}
+                        {!isPredictionCritical && showPredictions && <PredictiveSpendingWidget lastUpdate={expenses.length + monthlyExpenses} onPriorityChange={(p) => handlePriorityChange('prediction', p)} />}
+                        {!isAICritical && showAI && <AIInsightsWidget onPriorityChange={(p) => handlePriorityChange('ai', p)} />}
+                        <HookChallengeWidget />
 
-                {/* Normal order for non-critical - PRO ONLY */}
-                <PremiumFeatureGate requiredPlan="pro" featureName="Prognoza Wydatków">
-                    {!isPredictionCritical && showPredictions && <PredictiveSpendingWidget lastUpdate={expenses.length + monthlyExpenses} onPriorityChange={(p) => handlePriorityChange('prediction', p)} />}
-                </PremiumFeatureGate>
-                <PremiumFeatureGate requiredPlan="pro" featureName="AI Insights">
-                    {!isAICritical && showAI && <AIInsightsWidget onPriorityChange={(p) => handlePriorityChange('ai', p)} />}
-                </PremiumFeatureGate>
-
-                <PremiumFeatureGate requiredPlan="pro" featureName="AI Quiz">
-                    <HookChallengeWidget />
-                </PremiumFeatureGate>
-
-                {/* Weather & Money Wrapped - Mobile */}
-                <div className="grid grid-cols-2 gap-3">
-                    <PremiumFeatureGate requiredPlan="pro" featureName="Pogoda Finansowa">
-                        <FinancialWeatherWidget
-                            expenses={expenses}
-                            budgets={[{ totalLimit: monthlyBudget, totalSpent: monthlySpent } as any]}
-                            className="col-span-1"
-                        />
-                    </PremiumFeatureGate>
-                    <PremiumFeatureGate requiredPlan="pro" featureName="Money Wrapped">
-                        <MoneyWrappedCard expenses={expenses} className="col-span-1" />
-                    </PremiumFeatureGate>
-                </div>
+                        {/* Weather & Money Wrapped - Pro only */}
+                        <div className="grid grid-cols-2 gap-3">
+                            <FinancialWeatherWidget
+                                expenses={expenses}
+                                budgets={[{ totalLimit: monthlyBudget, totalSpent: monthlySpent } as any]}
+                                className="col-span-1"
+                            />
+                            <MoneyWrappedCard expenses={expenses} className="col-span-1" />
+                        </div>
+                    </>
+                ) : (
+                    /* Single elegant upgrade banner for free users */
+                    <ProUpgradeBanner variant="full" />
+                )}
 
                 <ActionGrid
                     onScanClick={() => router.push('/scan')}
