@@ -7,12 +7,12 @@ const config: CapacitorConfig = {
 
   // Server configuration - load from dev server
   // Server configuration - load from Vercel (Production)
-  url: 'https://savori.vercel.app',
-  // url: 'http://192.168.0.206:3000', // Local Dev backup
-  cleartext: true,
-  androidScheme: 'https',
-},
-
+  server: {
+    url: 'https://savori.vercel.app',
+    // url: 'http://192.168.0.206:3000', // Local Dev backup
+    cleartext: true,
+    androidScheme: 'https',
+  },
   plugins: {
     SplashScreen: {
       launchShowDuration: 2000,
