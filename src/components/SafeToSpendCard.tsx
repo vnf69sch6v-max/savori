@@ -33,7 +33,6 @@ export default function SafeToSpendCard({ spent, limit, loading = false }: SafeT
             animate={{ opacity: 1, y: 0 }}
             className="w-full"
         >
-        >
             <div className="bg-[#003c3c] rounded-3xl p-3.5 shadow-xl relative overflow-hidden border border-white/5 w-full max-w-full">
                 {/* Ambient Glow */}
                 <div className="absolute -top-20 -right-20 w-64 h-64 bg-emerald-400/10 rounded-full blur-3xl pointer-events-none"></div>
