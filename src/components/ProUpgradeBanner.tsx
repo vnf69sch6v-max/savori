@@ -121,11 +121,11 @@ export default function ProUpgradeBanner({
                     </div>
 
                     {/* CTA */}
-                    <div className="flex items-center justify-between">
+                    <div className="flex flex-wrap gap-y-2 items-center justify-between">
                         <span className="text-sm text-white/70">
                             od <span className="font-semibold text-white">12,42 zł</span>/msc
                         </span>
-                        <div className="flex items-center gap-2 px-4 py-2 bg-white rounded-xl text-emerald-600 font-semibold text-sm">
+                        <div className="flex items-center gap-2 px-4 py-2 bg-white rounded-xl text-emerald-600 font-semibold text-sm whitespace-nowrap">
                             Zobacz plany
                             <ArrowRight className="w-4 h-4" />
                         </div>

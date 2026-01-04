@@ -95,14 +95,14 @@ export default function PredictiveSpendingWidget({ lastUpdate, onPriorityChange 
 
     return (
         <Card className="overflow-hidden">
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardHeader className="flex flex-row items-center justify-between pb-2 p-3">
                 <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500/20 to-purple-500/20 flex items-center justify-center">
-                        <TrendingUp className="w-5 h-5 text-blue-400" />
+                    <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-blue-500/20 to-purple-500/20 flex items-center justify-center">
+                        <TrendingUp className="w-4 h-4 text-blue-400" />
                     </div>
                     <div>
-                        <CardTitle className="text-lg">Prognoza wydatków</CardTitle>
-                        <p className="text-xs text-slate-500">{prediction.daysRemaining} dni do końca miesiąca</p>
+                        <CardTitle className="text-base font-semibold">Prognoza</CardTitle>
+                        <p className="text-[10px] uppercase tracking-wide text-slate-500">{prediction.daysRemaining} dni do końca</p>
                     </div>
                 </div>
                 <button
@@ -114,18 +114,18 @@ export default function PredictiveSpendingWidget({ lastUpdate, onPriorityChange 
                 </button>
             </CardHeader>
 
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-3 p-4 pt-0">
                 {/* Progress bars */}
-                <div className="space-y-2">
+                <div className="space-y-1.5">
                     {/* Current spent */}
-                    <div className="flex items-center justify-between text-sm">
+                    <div className="flex items-center justify-between text-xs">
                         <span className="text-slate-400">Wydane</span>
                         <span className="font-medium">{formatMoney(prediction.currentSpent)}</span>
                     </div>
 
                     {/* Budget visualization */}
                     {prediction.budgetLimit && (
-                        <div className="relative h-6 bg-slate-800 rounded-full overflow-hidden">
+                        <div className="relative h-4 bg-slate-800 rounded-full overflow-hidden">
                             {/* Current spent bar */}
                             <motion.div
                                 initial={{ width: 0 }}
@@ -220,13 +220,13 @@ export default function PredictiveSpendingWidget({ lastUpdate, onPriorityChange 
                         <p className="text-xs text-slate-500 uppercase tracking-wide">Top kategorie</p>
                         {prediction.breakdown.slice(0, 3).map((cat, i) => (
                             <div key={cat.category} className="flex items-center justify-between text-sm">
-                                <div className="flex items-center gap-2">
-                                    <span>{CATEGORY_ICONS[cat.category] || '📦'}</span>
-                                    <span className="text-slate-300">
+                                <div className="flex items-center gap-2 min-w-0 flex-1">
+                                    <span className="shrink-0">{CATEGORY_ICONS[cat.category] || '📦'}</span>
+                                    <span className="text-slate-300 truncate">
                                         {CATEGORY_LABELS[cat.category] || cat.category}
                                     </span>
                                 </div>
-                                <div className="flex items-center gap-2">
+                                <div className="flex items-center gap-2 shrink-0 ml-2">
                                     <span className="text-slate-400">{formatMoney(cat.spent)}</span>
                                     {cat.trend === 'up' && <TrendingUp className="w-3 h-3 text-red-400" />}
                                     {cat.trend === 'down' && <TrendingDown className="w-3 h-3 text-emerald-400" />}

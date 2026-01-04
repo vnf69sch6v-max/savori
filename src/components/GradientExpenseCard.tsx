@@ -86,21 +86,21 @@ export default function GradientExpenseCard({ expense, onDelete }: GradientExpen
 
                 <div className="relative flex items-start justify-between">
                     {/* Left: Large emoji + name */}
-                    <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-4 min-w-0 flex-1">
                         {/* Large emoji icon */}
-                        <div className="text-5xl drop-shadow-lg">
+                        <div className="text-5xl drop-shadow-lg shrink-0">
                             {merchantIcon}
                         </div>
 
-                        <div>
+                        <div className="min-w-0">
                             {/* Merchant name */}
-                            <h3 className="font-bold text-lg text-white drop-shadow-sm">
+                            <h3 className="font-bold text-lg text-white drop-shadow-sm truncate pr-2">
                                 {merchantName}
                             </h3>
 
                             {/* Category badge + source */}
-                            <div className="flex items-center gap-2 mt-1">
-                                <span className="px-2 py-0.5 bg-black/20 backdrop-blur rounded-full text-xs text-white/80">
+                            <div className="flex items-center gap-2 mt-1 flex-wrap">
+                                <span className="px-2 py-0.5 bg-black/20 backdrop-blur rounded-full text-xs text-white/80 whitespace-nowrap">
                                     {category === 'groceries' ? 'Spożywcze' :
                                         category === 'restaurants' ? 'Jedzenie' :
                                             category === 'transport' ? 'Transport' :
@@ -113,7 +113,7 @@ export default function GradientExpenseCard({ expense, onDelete }: GradientExpen
                                 </span>
 
                                 {/* Source badge */}
-                                <span className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-xs text-white ${sourceConfig.color}/60`}>
+                                <span className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-xs text-white ${sourceConfig.color}/60 whitespace-nowrap`}>
                                     <sourceConfig.icon className="w-3 h-3" />
                                     {sourceConfig.label}
                                 </span>
@@ -122,7 +122,7 @@ export default function GradientExpenseCard({ expense, onDelete }: GradientExpen
                     </div>
 
                     {/* Right: Amount + date */}
-                    <div className="text-right">
+                    <div className="text-right shrink-0 ml-2">
                         <p className="text-2xl font-bold text-white drop-shadow-sm tabular-nums" style={{ fontVariantNumeric: 'tabular-nums' }}>
                             -{formatMoney(expense.amount)}
                         </p>

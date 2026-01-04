@@ -6,12 +6,12 @@ const config: CapacitorConfig = {
   webDir: 'out',
 
   // Server configuration - load from dev server
-  // server: {
-  //   // For development: use local Next.js dev server
-  //   url: 'http://localhost:3000',
-  //   cleartext: true, // Allow HTTP for local dev
-  //   androidScheme: 'https',
-  // },
+  server: {
+    // For development: use local Next.js dev server with LAN IP
+    url: 'http://192.168.0.206:3000',
+    cleartext: true, // Allow HTTP for local dev
+    androidScheme: 'https',
+  },
 
   plugins: {
     SplashScreen: {
