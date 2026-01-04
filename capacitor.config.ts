@@ -6,12 +6,12 @@ const config: CapacitorConfig = {
   webDir: 'out',
 
   // Server configuration - load from dev server
-  server: {
-    // For development: use local Next.js dev server with LAN IP
-    url: 'http://192.168.0.206:3000',
-    cleartext: true, // Allow HTTP for local dev
-    androidScheme: 'https',
-  },
+  // Server configuration - load from Vercel (Production)
+  url: 'https://savori.vercel.app',
+  // url: 'http://192.168.0.206:3000', // Local Dev backup
+  cleartext: true,
+  androidScheme: 'https',
+},
 
   plugins: {
     SplashScreen: {
