@@ -36,7 +36,7 @@ export default function MoneyWrappedCard({ expenses, className = '', compact = f
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                     onClick={() => handleOpen('month')}
-                    className={`relative overflow-hidden rounded-xl bg-gradient-to-br from-purple-900/40 to-slate-900 border border-purple-500/20 p-3 h-full flex flex-col justify-between ${className}`}
+                    className={`relative min-w-0 overflow-hidden rounded-xl bg-gradient-to-br from-purple-900/40 to-slate-900 border border-purple-500/20 p-3 h-full flex flex-col justify-between ${className}`}
                 >
                     <div className="flex items-center gap-2 mb-2">
                         <div className="p-1.5 rounded-lg bg-purple-500/20">

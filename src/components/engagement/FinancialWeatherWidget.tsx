@@ -33,19 +33,19 @@ export default function FinancialWeatherWidget({
 
     const riskConfig = RISK_CONFIG[forecast.riskLevel];
 
-    // Compact version for dashboard header
+    // Compact version for dashboard grid - vertical card layout
     if (compact) {
         return (
             <motion.div
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
-                className={`flex items-center gap-3 px-4 py-2 rounded-xl bg-gradient-to-r ${forecast.color} ${className}`}
+                className={`min-w-0 overflow-hidden rounded-xl bg-gradient-to-br ${forecast.color} p-3 h-full flex flex-col justify-between ${className}`}
             >
-                <span className="text-2xl">{forecast.emoji}</span>
-                <div>
-                    <p className="text-sm font-medium text-white">{forecast.title}</p>
-                    <p className="text-xs text-white/70">{forecast.subtitle}</p>
+                <div className="flex items-center gap-2 mb-2">
+                    <span className="text-2xl">{forecast.emoji}</span>
+                    <span className="text-sm font-semibold text-white truncate">{forecast.title}</span>
                 </div>
+                <p className="text-xs text-white/70 line-clamp-2">{forecast.subtitle}</p>
             </motion.div>
         );
     }

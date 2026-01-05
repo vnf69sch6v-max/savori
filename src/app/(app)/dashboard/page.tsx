@@ -217,13 +217,13 @@ export default function DashboardPage() {
                         <HookChallengeWidget />
 
                         {/* Weather & Money Wrapped - Pro only */}
-                        <div className="grid grid-cols-2 gap-3">
+                        <div className="grid grid-cols-2 gap-3 overflow-hidden">
                             <FinancialWeatherWidget
                                 expenses={expenses}
                                 budgets={[{ totalLimit: monthlyBudget, totalSpent: monthlySpent } as any]}
-                                className="col-span-1"
+                                compact
                             />
-                            <MoneyWrappedCard expenses={expenses} className="col-span-1" />
+                            <MoneyWrappedCard expenses={expenses} compact />
                         </div>
                     </>
                 ) : (
