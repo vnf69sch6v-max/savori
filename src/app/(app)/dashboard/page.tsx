@@ -202,7 +202,7 @@ export default function DashboardPage() {
     return (
         <div className="max-w-7xl mx-auto pb-24 lg:pb-0">
             {/* Mobile Layout */}
-            <div className="lg:hidden flex flex-col gap-4 w-full max-w-lg mx-auto">
+            <div className="lg:hidden space-y-4">
                 <DashboardHeader />
                 <SafeToSpendCard spent={monthlySpent} limit={monthlyBudget} loading={loading} />
 
@@ -245,7 +245,7 @@ export default function DashboardPage() {
                     </Link>
                 </div>
 
-                <div className="space-y-3 overflow-hidden">
+                <div className="space-y-3">
                     {displayExpenses.slice(0, 4).map((expense, index) => (
                         <motion.div
                             key={expense.id}
