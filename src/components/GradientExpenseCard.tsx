@@ -65,7 +65,7 @@ export default function GradientExpenseCard({ expense, onDelete }: GradientExpen
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, x: -100, height: 0 }}
-            className="relative"
+            className="relative w-full max-w-full"
         >
             {/* Delete background */}
             <div className="absolute inset-0 bg-rose-500/30 flex items-center justify-end px-6 rounded-2xl">
@@ -74,7 +74,7 @@ export default function GradientExpenseCard({ expense, onDelete }: GradientExpen
 
             {/* Main card */}
             <motion.div
-                drag="x"
+                drag={onDelete ? "x" : false}
                 dragConstraints={{ left: 0, right: 0 }}
                 dragElastic={{ left: 0.3, right: 0.1 }}
                 onDragEnd={handleDragEnd}
@@ -86,15 +86,15 @@ export default function GradientExpenseCard({ expense, onDelete }: GradientExpen
 
                 <div className="relative flex items-start justify-between">
                     {/* Left: Large emoji + name */}
-                    <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-3 min-w-0 flex-1">
                         {/* Large emoji icon */}
-                        <div className="text-5xl drop-shadow-lg">
+                        <div className="text-4xl drop-shadow-lg shrink-0">
                             {merchantIcon}
                         </div>
 
-                        <div>
+                        <div className="min-w-0 flex-1">
                             {/* Merchant name */}
-                            <h3 className="font-bold text-lg text-white drop-shadow-sm">
+                            <h3 className="font-bold text-base text-white drop-shadow-sm truncate">
                                 {merchantName}
                             </h3>
 

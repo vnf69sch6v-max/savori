@@ -33,7 +33,7 @@ export default function SafeToSpendCard({ spent, limit, loading = false }: SafeT
             animate={{ opacity: 1, y: 0 }}
             className="w-full"
         >
-            <div className="bg-[#003c3c] rounded-3xl p-6 shadow-xl relative overflow-hidden border border-white/5">
+            <div className="bg-[#003c3c] rounded-3xl p-5 shadow-xl relative overflow-hidden border border-white/5 w-full max-w-full">
                 {/* Ambient Glow */}
                 <div className="absolute -top-20 -right-20 w-64 h-64 bg-emerald-400/10 rounded-full blur-3xl pointer-events-none"></div>
 
@@ -47,7 +47,7 @@ export default function SafeToSpendCard({ spent, limit, loading = false }: SafeT
 
                 {/* Main Number */}
                 <div className="mb-1 relative z-10">
-                    <h2 className="text-4xl font-bold text-emerald-400 tracking-tight">
+                    <h2 className="text-3xl sm:text-4xl font-bold text-emerald-400 tracking-tight">
                         {formatMoney(safeToSpend)}
                     </h2>
                 </div>
@@ -83,7 +83,7 @@ export default function SafeToSpendCard({ spent, limit, loading = false }: SafeT
                         />
                     </div>
 
-                    <div className="flex justify-between items-center text-xs mt-3">
+                    <div className="flex flex-wrap justify-between items-center text-xs mt-3 gap-2">
                         <div className="flex items-center gap-1.5 text-red-400">
                             <TrendingUp className="w-3 h-3" />
                             <span>Wydatki: {formatMoney(spent)}</span>

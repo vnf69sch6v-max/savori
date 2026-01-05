@@ -202,7 +202,7 @@ export default function DashboardPage() {
     return (
         <div className="max-w-7xl mx-auto pb-24 lg:pb-0">
             {/* Mobile Layout */}
-            <div className="lg:hidden space-y-4 max-w-2xl mx-auto">
+            <div className="lg:hidden space-y-4 w-full px-4">
                 <DashboardHeader />
                 <SafeToSpendCard spent={monthlySpent} limit={monthlyBudget} loading={loading} />
 
@@ -253,10 +253,7 @@ export default function DashboardPage() {
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: index * 0.1 }}
                         >
-                            <GradientExpenseCard
-                                expense={expense}
-                                onDelete={async () => { }}
-                            />
+                            <GradientExpenseCard expense={expense} />
                         </motion.div>
                     ))}
                     {/* ... expenses list ... */}

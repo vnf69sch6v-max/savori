@@ -94,7 +94,7 @@ export default function PredictiveSpendingWidget({ lastUpdate, onPriorityChange 
         : 0;
 
     return (
-        <Card className="overflow-hidden">
+        <Card className="overflow-hidden w-full max-w-full">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
                 <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500/20 to-purple-500/20 flex items-center justify-center">
