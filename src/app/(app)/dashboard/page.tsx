@@ -202,7 +202,7 @@ export default function DashboardPage() {
     return (
         <div className="max-w-7xl mx-auto pb-24 lg:pb-0">
             {/* Mobile Layout */}
-            <div className="lg:hidden space-y-4">
+            <div className="lg:hidden space-y-4 max-w-2xl mx-auto">
                 <DashboardHeader />
                 <SafeToSpendCard spent={monthlySpent} limit={monthlyBudget} loading={loading} />
 
@@ -216,14 +216,14 @@ export default function DashboardPage() {
                         {!isAICritical && showAI && <AIInsightsWidget onPriorityChange={(p) => handlePriorityChange('ai', p)} />}
                         <HookChallengeWidget />
 
-                        {/* Weather & Money Wrapped - Pro only, compact for mobile grid */}
+                        {/* Weather & Money Wrapped - Pro only */}
                         <div className="grid grid-cols-2 gap-3">
                             <FinancialWeatherWidget
                                 expenses={expenses}
                                 budgets={[{ totalLimit: monthlyBudget, totalSpent: monthlySpent } as any]}
-                                compact
+                                className="col-span-1"
                             />
-                            <MoneyWrappedCard expenses={expenses} compact />
+                            <MoneyWrappedCard expenses={expenses} className="col-span-1" />
                         </div>
                     </>
                 ) : (
@@ -238,7 +238,7 @@ export default function DashboardPage() {
                     onChatClick={() => setIsChatOpen(true)}
                 />
 
-                <div className="flex items-center justify-between pt-2">
+                <div className="flex items-center justify-between pt-2 px-1">
                     <h2 className="text-lg font-semibold text-white">{t.dashboard.recentTransactions}</h2>
                     <Link href="/expenses" className="text-sm text-emerald-400">
                         {t.dashboard.seeAll}
@@ -255,6 +255,7 @@ export default function DashboardPage() {
                         >
                             <GradientExpenseCard
                                 expense={expense}
+                                onDelete={async () => { }}
                             />
                         </motion.div>
                     ))}
