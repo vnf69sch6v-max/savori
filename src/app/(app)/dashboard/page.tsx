@@ -44,6 +44,7 @@ import EmptyDashboard from '@/components/EmptyDashboard';
 import SafeToSpendCard from '@/components/SafeToSpendCard';
 import ActionGrid from '@/components/dashboard/ActionGrid';
 import DashboardHeader from '@/components/dashboard/DashboardHeader';
+import MobileDashboard from '@/components/dashboard/MobileDashboard';
 import HookChallengeWidget from '@/components/dashboard/HookChallengeWidget';
 import SmartExpenseModal from '@/components/SmartExpenseModal';
 import GradientExpenseCard from '@/components/GradientExpenseCard';
@@ -202,62 +203,20 @@ export default function DashboardPage() {
     return (
         <div className="max-w-7xl mx-auto pb-24 lg:pb-0">
             {/* Mobile Layout */}
-            <div className="lg:hidden space-y-3 w-full px-4">
-                <DashboardHeader />
-                <SafeToSpendCard spent={monthlySpent} limit={monthlyBudget} loading={loading} />
-
-                {/* Pro Features OR Upgrade Banner */}
-                {isPro ? (
-                    <>
-                        {/* AI Features - shown only for Pro */}
-                        {isAICritical && <AIInsightsWidget onPriorityChange={(p) => handlePriorityChange('ai', p)} />}
-                        {isPredictionCritical && showPredictions && <PredictiveSpendingWidget lastUpdate={expenses.length + monthlyExpenses} onPriorityChange={(p) => handlePriorityChange('prediction', p)} />}
-                        {!isPredictionCritical && showPredictions && <PredictiveSpendingWidget lastUpdate={expenses.length + monthlyExpenses} onPriorityChange={(p) => handlePriorityChange('prediction', p)} />}
-                        {!isAICritical && showAI && <AIInsightsWidget onPriorityChange={(p) => handlePriorityChange('ai', p)} />}
-                        <HookChallengeWidget />
-
-                        {/* Weather & Money Wrapped - Pro only */}
-                        <div className="grid grid-cols-2 gap-3 overflow-hidden">
-                            <FinancialWeatherWidget
-                                expenses={expenses}
-                                budgets={[{ totalLimit: monthlyBudget, totalSpent: monthlySpent } as any]}
-                                compact
-                            />
-                            <MoneyWrappedCard expenses={expenses} compact />
-                        </div>
-                    </>
-                ) : (
-                    /* Single elegant upgrade banner for free users */
-                    <ProUpgradeBanner variant="full" />
-                )}
-
-                <ActionGrid
+            <div className="lg:hidden">
+                <MobileDashboard
+                    spent={monthlySpent}
+                    limit={monthlyBudget}
+                    loading={loading}
+                    expenses={expenses}
+                    isPro={isPro}
                     onScanClick={() => router.push('/scan')}
                     onAddClick={() => setIsAddModalOpen(true)}
                     onImpulseClick={() => setIsImpulseModalOpen(true)}
                     onChatClick={() => setIsChatOpen(true)}
+                    formatMoney={formatMoney}
+                    t={t}
                 />
-
-                <div className="flex items-center justify-between pt-2 px-1">
-                    <h2 className="text-lg font-semibold text-white">{t.dashboard.recentTransactions}</h2>
-                    <Link href="/expenses" className="text-sm text-emerald-400">
-                        {t.dashboard.seeAll}
-                    </Link>
-                </div>
-
-                <div className="space-y-3">
-                    {displayExpenses.slice(0, 4).map((expense, index) => (
-                        <motion.div
-                            key={expense.id}
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: index * 0.1 }}
-                        >
-                            <GradientExpenseCard expense={expense} />
-                        </motion.div>
-                    ))}
-                    {/* ... expenses list ... */}
-                </div>
             </div>
 
             {/* Desktop Layout */}
