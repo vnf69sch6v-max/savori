@@ -95,13 +95,13 @@ export default function PredictiveSpendingWidget({ lastUpdate, onPriorityChange 
 
     return (
         <Card className="overflow-hidden w-full max-w-full">
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardHeader className="flex flex-row items-center justify-between pb-2 p-3">
                 <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500/20 to-purple-500/20 flex items-center justify-center">
-                        <TrendingUp className="w-5 h-5 text-blue-400" />
+                    <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500/20 to-purple-500/20 flex items-center justify-center">
+                        <TrendingUp className="w-4 h-4 text-blue-400" />
                     </div>
                     <div>
-                        <CardTitle className="text-lg">Prognoza wydatków</CardTitle>
+                        <CardTitle className="text-base">Prognoza</CardTitle>
                         <p className="text-xs text-slate-500">{prediction.daysRemaining} dni do końca miesiąca</p>
                     </div>
                 </div>
@@ -114,7 +114,7 @@ export default function PredictiveSpendingWidget({ lastUpdate, onPriorityChange 
                 </button>
             </CardHeader>
 
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-3 p-3 pt-0">
                 {/* Progress bars */}
                 <div className="space-y-2">
                     {/* Current spent */}

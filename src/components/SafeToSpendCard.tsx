@@ -38,9 +38,9 @@ export default function SafeToSpendCard({ spent, limit, loading = false }: SafeT
                 <div className="absolute -top-20 -right-20 w-64 h-64 bg-emerald-400/10 rounded-full blur-3xl pointer-events-none"></div>
 
                 {/* Header */}
-                <div className="flex items-center gap-3 mb-4 text-gray-300 relative z-10">
-                    <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center backdrop-blur-sm">
-                        <Wallet className="w-5 h-5 text-emerald-400" />
+                <div className="flex items-center gap-2 mb-2 text-gray-300 relative z-10">
+                    <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center backdrop-blur-sm">
+                        <Wallet className="w-4 h-4 text-emerald-400" />
                     </div>
                     <span className="font-medium text-sm">Bezpiecznie do wydania</span>
                 </div>
@@ -53,12 +53,12 @@ export default function SafeToSpendCard({ spent, limit, loading = false }: SafeT
                 </div>
 
                 {/* Subtext */}
-                <p className="text-sm text-gray-400 mb-6 font-medium relative z-10">
+                <p className="text-xs text-gray-400 mb-3 font-medium relative z-10">
                     ~{formatMoney(dailySafe).replace(/,00..$/, '')} <span className="text-gray-500">dziennie do końca miesiąca</span>
                 </p>
 
                 {/* AI Insight Pill */}
-                <div className="bg-white/5 border border-white/5 rounded-xl p-3 flex items-start gap-3 mb-6 relative z-10 backdrop-blur-md">
+                <div className="bg-white/5 border border-white/5 rounded-lg p-2 flex items-start gap-2 mb-3 relative z-10 backdrop-blur-md">
                     <Sparkles className="w-4 h-4 text-violet-400 mt-0.5 shrink-0" />
                     <p className="text-xs text-gray-300 leading-relaxed">
                         {percentageUsed < 80

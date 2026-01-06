@@ -202,7 +202,7 @@ export default function DashboardPage() {
     return (
         <div className="max-w-7xl mx-auto pb-24 lg:pb-0">
             {/* Mobile Layout */}
-            <div className="lg:hidden space-y-4 w-full px-4">
+            <div className="lg:hidden space-y-3 w-full px-4">
                 <DashboardHeader />
                 <SafeToSpendCard spent={monthlySpent} limit={monthlyBudget} loading={loading} />
 
