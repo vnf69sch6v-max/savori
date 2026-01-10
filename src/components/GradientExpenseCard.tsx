@@ -9,10 +9,10 @@ import { useCurrency } from '@/hooks/use-language';
 
 // Source badge configs
 const SOURCE_BADGES = {
-    manual: { icon: Pencil, color: 'bg-amber-500', label: 'Ręcznie' },
+    manual: { icon: Pencil, color: 'bg-amber-500', label: 'Manual' },
     scan: { icon: Camera, color: 'bg-emerald-500', label: 'AI' },
-    import: { icon: CreditCard, color: 'bg-blue-500', label: 'Karta' },
-    recurring: { icon: RefreshCw, color: 'bg-purple-500', label: 'Cykliczna' },
+    import: { icon: CreditCard, color: 'bg-blue-500', label: 'Card' },
+    recurring: { icon: RefreshCw, color: 'bg-purple-500', label: 'Recurring' },
 } as const;
 
 // Format relative date
@@ -22,14 +22,14 @@ function formatRelativeDate(date: Date): string {
     const targetDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
     const diffDays = Math.floor((today.getTime() - targetDate.getTime()) / (1000 * 60 * 60 * 24));
 
-    if (diffDays === 0) return 'Dziś';
-    if (diffDays === 1) return 'Wczoraj';
+    if (diffDays === 0) return 'Today';
+    if (diffDays === 1) return 'Yesterday';
     if (diffDays < 7) {
-        const days = ['Nd', 'Pn', 'Wt', 'Śr', 'Cz', 'Pt', 'Sb'];
+        const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
         return days[date.getDay()];
     }
 
-    const months = ['sty', 'lut', 'mar', 'kwi', 'maj', 'cze', 'lip', 'sie', 'wrz', 'paź', 'lis', 'gru'];
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
     return `${date.getDate()} ${months[date.getMonth()]}`;
 }
 
@@ -42,7 +42,7 @@ export default function GradientExpenseCard({ expense, onDelete }: GradientExpen
     const { format: formatMoney } = useCurrency();
     const category = expense.merchant?.category || 'other';
     const source = expense.metadata?.source || 'manual';
-    const merchantName = cleanMerchantName(expense.merchant?.name || 'Nieznany');
+    const merchantName = cleanMerchantName(expense.merchant?.name || 'Unknown');
     const merchantIcon = getMerchantIcon(merchantName, category);
     const gradient = CATEGORY_GRADIENTS[category] || CATEGORY_GRADIENTS.other;
     const sourceConfig = SOURCE_BADGES[source as keyof typeof SOURCE_BADGES] || SOURCE_BADGES.manual;
@@ -101,15 +101,15 @@ export default function GradientExpenseCard({ expense, onDelete }: GradientExpen
                             {/* Category badge + source */}
                             <div className="flex items-center gap-2 mt-1">
                                 <span className="px-2 py-0.5 bg-black/20 backdrop-blur rounded-full text-xs text-white/80">
-                                    {category === 'groceries' ? 'Spożywcze' :
-                                        category === 'restaurants' ? 'Jedzenie' :
+                                    {category === 'groceries' ? 'Groceries' :
+                                        category === 'restaurants' ? 'Dining' :
                                             category === 'transport' ? 'Transport' :
-                                                category === 'subscriptions' ? 'Subskrypcje' :
-                                                    category === 'entertainment' ? 'Rozrywka' :
-                                                        category === 'shopping' ? 'Zakupy' :
-                                                            category === 'health' ? 'Zdrowie' :
-                                                                category === 'education' ? 'Edukacja' :
-                                                                    category === 'utilities' ? 'Opłaty' : 'Inne'}
+                                                category === 'subscriptions' ? 'Subscriptions' :
+                                                    category === 'entertainment' ? 'Entertainment' :
+                                                        category === 'shopping' ? 'Shopping' :
+                                                            category === 'health' ? 'Health' :
+                                                                category === 'education' ? 'Education' :
+                                                                    category === 'utilities' ? 'Utilities' : 'Other'}
                                 </span>
 
                                 {/* Source badge */}

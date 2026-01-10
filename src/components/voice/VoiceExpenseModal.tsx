@@ -16,16 +16,16 @@ import { subscriptionService } from '@/lib/subscription-service';
 import Link from 'next/link';
 
 const CATEGORY_LABELS: Record<ExpenseCategory, string> = {
-    groceries: '🛒 Spożywcze',
-    restaurants: '🍽️ Restauracje',
+    groceries: '🛒 Groceries',
+    restaurants: '🍽️ Restaurants',
     transport: '🚗 Transport',
-    utilities: '💡 Rachunki',
-    entertainment: '🎬 Rozrywka',
-    shopping: '🛍️ Zakupy',
-    health: '💊 Zdrowie',
-    education: '📚 Edukacja',
-    subscriptions: '📱 Subskrypcje',
-    other: '📦 Inne',
+    utilities: '💡 Utilities',
+    entertainment: '🎬 Entertainment',
+    shopping: '🛍️ Shopping',
+    health: '💊 Health',
+    education: '📚 Education',
+    subscriptions: '📱 Subscriptions',
+    other: '📦 Other',
 };
 
 interface VoiceExpenseModalProps {
@@ -91,7 +91,7 @@ export default function VoiceExpenseModal({ isOpen, onClose }: VoiceExpenseModal
 
     const handleStartRecording = async () => {
         if (remainingMessages <= 0 && !isUnlimited) {
-            setErrorMessage('Wykorzystałeś dzisiejszy limit wiadomości AI');
+            setErrorMessage('You have used your daily AI message limit');
             setState('error');
             return;
         }
@@ -109,7 +109,7 @@ export default function VoiceExpenseModal({ isOpen, onClose }: VoiceExpenseModal
     const handleTextSubmit = async () => {
         if (textInput.trim().length > 3) {
             if (remainingMessages <= 0 && !isUnlimited) {
-                setErrorMessage('Wykorzystałeś dzisiejszy limit wiadomości AI');
+                setErrorMessage('You have used your daily AI message limit');
                 setState('error');
                 return;
             }
@@ -126,11 +126,11 @@ export default function VoiceExpenseModal({ isOpen, onClose }: VoiceExpenseModal
                     setTranscript(textInput.trim());
                     setState('preview');
                 } else {
-                    setErrorMessage(result.error || 'Nie udało się rozpoznać wydatku');
+                    setErrorMessage(result.error || 'Could not recognize expense');
                     setState('error');
                 }
             } catch {
-                setErrorMessage('Błąd połączenia.');
+                setErrorMessage('Connection error.');
                 setState('error');
             }
         }
@@ -155,20 +155,20 @@ export default function VoiceExpenseModal({ isOpen, onClose }: VoiceExpenseModal
                 setTranscript(result.transcript || '');
                 setState('preview');
             } else {
-                setErrorMessage(result.error || 'Nie udało się rozpoznać wydatku');
+                setErrorMessage(result.error || 'Could not recognize expense');
                 setTranscript(result.transcript || '');
                 setState('error');
             }
         } catch (error) {
             console.error('Process error:', error);
-            setErrorMessage('Błąd połączenia. Spróbuj ponownie.');
+            setErrorMessage('Connection error. Please try again.');
             setState('error');
         }
     };
 
     const handleSaveExpense = async () => {
         if (!parsedExpense || !userData?.id) {
-            setErrorMessage('Brak danych użytkownika. Zaloguj się ponownie.');
+            setErrorMessage('Missing user data. Please log in again.');
             setState('error');
             return;
         }
@@ -182,7 +182,7 @@ export default function VoiceExpenseModal({ isOpen, onClose }: VoiceExpenseModal
                 userId: userData.id,
                 amount: parsedExpense.amount,
                 merchant: {
-                    name: parsedExpense.merchant || 'Wydatek głosowy',
+                    name: parsedExpense.merchant || 'Voice expense',
                     category: parsedExpense.category,
                 },
                 date: expenseDate,
@@ -194,7 +194,7 @@ export default function VoiceExpenseModal({ isOpen, onClose }: VoiceExpenseModal
 
             setState('success');
             setSavedAmount(parsedExpense.amount);
-            toast.success('Wydatek dodany! 🎉');
+            toast.success('Expense added! 🎉');
 
             setTimeout(() => {
                 handleClose();
@@ -202,8 +202,8 @@ export default function VoiceExpenseModal({ isOpen, onClose }: VoiceExpenseModal
             }, 1800);
         } catch (error) {
             console.error('Save error:', error);
-            const errorMsg = error instanceof Error ? error.message : 'Nieznany błąd';
-            setErrorMessage(`Nie udało się zapisać: ${errorMsg}`);
+            const errorMsg = error instanceof Error ? error.message : 'Unknown error';
+            setErrorMessage(`Failed to save: ${errorMsg}`);
             setState('error');
         }
     };
@@ -268,14 +268,14 @@ export default function VoiceExpenseModal({ isOpen, onClose }: VoiceExpenseModal
                                     </div>
                                     <div>
                                         <h2 className="text-lg font-semibold text-white">
-                                            {state === 'idle' && 'Asystent AI'}
-                                            {state === 'recording' && 'Nagrywam...'}
-                                            {state === 'processing' && 'Analizuję...'}
-                                            {state === 'preview' && 'Rozpoznano'}
-                                            {state === 'saving' && 'Zapisuję...'}
-                                            {state === 'success' && 'Dodano!'}
-                                            {state === 'error' && 'Błąd'}
-                                            {state === 'text-input' && 'Wpisz wydatek'}
+                                            {state === 'idle' && 'AI Assistant'}
+                                            {state === 'recording' && 'Recording...'}
+                                            {state === 'processing' && 'Analyzing...'}
+                                            {state === 'preview' && 'Recognized'}
+                                            {state === 'saving' && 'Saving...'}
+                                            {state === 'success' && 'Added!'}
+                                            {state === 'error' && 'Error'}
+                                            {state === 'text-input' && 'Type expense'}
                                         </h2>
 
                                         {/* Usage counter for non-unlimited plans */}
@@ -284,10 +284,10 @@ export default function VoiceExpenseModal({ isOpen, onClose }: VoiceExpenseModal
                                                 {remainingMessages > 0 ? (
                                                     <span>
                                                         <span className="text-emerald-400 font-medium">{remainingMessages}</span>
-                                                        /{dailyLimit} dziś
+                                                        /{dailyLimit} today
                                                     </span>
                                                 ) : (
-                                                    <span className="text-amber-400">Limit wyczerpany</span>
+                                                    <span className="text-amber-400">Limit reached</span>
                                                 )}
                                             </p>
                                         )}
@@ -386,7 +386,7 @@ export default function VoiceExpenseModal({ isOpen, onClose }: VoiceExpenseModal
                                                 animate={{ opacity: 1, y: 0 }}
                                                 className="space-y-2"
                                             >
-                                                <p className="text-emerald-400 font-medium tracking-wide uppercase text-xs">Słucham...</p>
+                                                <p className="text-emerald-400 font-medium tracking-wide uppercase text-xs">Listening...</p>
                                                 <p className="text-white text-3xl font-light font-mono">
                                                     {Math.floor(duration / 60).toString().padStart(2, '0')}:
                                                     {(duration % 60).toString().padStart(2, '0')}
@@ -394,7 +394,7 @@ export default function VoiceExpenseModal({ isOpen, onClose }: VoiceExpenseModal
                                             </motion.div>
                                         ) : remainingMessages <= 0 && !isUnlimited ? (
                                             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-3">
-                                                <p className="text-amber-400 text-sm">Dzienny limit wyczerpany</p>
+                                                <p className="text-amber-400 text-sm">Daily limit reached</p>
                                                 <Link href="/settings/billing">
                                                     <motion.button
                                                         whileHover={{ scale: 1.02 }}
@@ -402,14 +402,14 @@ export default function VoiceExpenseModal({ isOpen, onClose }: VoiceExpenseModal
                                                         className="px-4 py-2 rounded-xl bg-gradient-to-r from-purple-500 to-pink-500 text-white text-sm font-medium flex items-center gap-2 mx-auto"
                                                     >
                                                         <Crown className="w-4 h-4" />
-                                                        Ulepsz plan
+                                                        Upgrade plan
                                                     </motion.button>
                                                 </Link>
                                             </motion.div>
                                         ) : (
                                             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-1">
-                                                <p className="text-slate-400 text-sm">Dotknij, aby rozmawiać</p>
-                                                <p className="text-slate-300 font-medium">"50 zł w Żabce na zakupy"</p>
+                                                <p className="text-slate-400 text-sm">Tap to talk</p>
+                                                <p className="text-slate-300 font-medium">"$50 at Walmart for groceries"</p>
                                             </motion.div>
                                         )}
                                     </div>
@@ -421,7 +421,7 @@ export default function VoiceExpenseModal({ isOpen, onClose }: VoiceExpenseModal
                                             className="text-slate-500 hover:text-purple-400 text-xs flex items-center justify-center gap-2 mx-auto transition-colors"
                                         >
                                             <Keyboard className="w-3.5 h-3.5" />
-                                            Wpisz ręcznie
+                                            Type manually
                                         </button>
                                     )}
                                 </div>
@@ -431,7 +431,7 @@ export default function VoiceExpenseModal({ isOpen, onClose }: VoiceExpenseModal
                             {state === 'text-input' && (
                                 <div className="space-y-4">
                                     <p className="text-slate-400 text-sm text-center">
-                                        Wpisz wydatek naturalnym językiem
+                                        Type expense in natural language
                                     </p>
                                     <div className="relative">
                                         <input
@@ -439,7 +439,7 @@ export default function VoiceExpenseModal({ isOpen, onClose }: VoiceExpenseModal
                                             value={textInput}
                                             onChange={(e) => setTextInput(e.target.value)}
                                             onKeyDown={(e) => e.key === 'Enter' && handleTextSubmit()}
-                                            placeholder="50 zł w Żabce..."
+                                            placeholder="$50 at Walmart..."
                                             autoFocus
                                             className="w-full h-14 px-4 pr-14 bg-slate-800/80 border border-slate-600/50 rounded-2xl text-white placeholder:text-slate-500 focus:outline-none focus:border-purple-500/50 focus:ring-2 focus:ring-purple-500/20 transition-all text-lg"
                                         />
@@ -453,7 +453,7 @@ export default function VoiceExpenseModal({ isOpen, onClose }: VoiceExpenseModal
                                     </div>
 
                                     <div className="flex flex-wrap gap-2">
-                                        {['50 zł zakupy', '15 zł kawa', '200 zł paliwo'].map((example) => (
+                                        {['$50 groceries', '$15 coffee', '$200 gas'].map((example) => (
                                             <button
                                                 key={example}
                                                 onClick={() => setTextInput(example)}
@@ -469,7 +469,7 @@ export default function VoiceExpenseModal({ isOpen, onClose }: VoiceExpenseModal
                                         className="w-full py-3 text-slate-400 hover:text-white flex items-center justify-center gap-2 transition-colors"
                                     >
                                         <Mic className="w-4 h-4" />
-                                        Użyj głosu
+                                        Use voice
                                     </button>
                                 </div>
                             )}
@@ -487,7 +487,7 @@ export default function VoiceExpenseModal({ isOpen, onClose }: VoiceExpenseModal
                                             <Zap className="w-6 h-6 text-purple-400" />
                                         </div>
                                     </div>
-                                    <p className="text-slate-400 mt-4">AI analizuje...</p>
+                                    <p className="text-slate-400 mt-4">AI analyzing...</p>
                                 </div>
                             )}
 
@@ -506,30 +506,30 @@ export default function VoiceExpenseModal({ isOpen, onClose }: VoiceExpenseModal
 
                                     <div className="space-y-2 bg-slate-800/50 rounded-2xl p-4 border border-slate-700/50">
                                         <div className="flex items-center justify-between py-1">
-                                            <span className="text-slate-400 text-sm">Sklep</span>
-                                            <span className="text-white font-medium">{parsedExpense.merchant || 'Nieznany'}</span>
+                                            <span className="text-slate-400 text-sm">Store</span>
+                                            <span className="text-white font-medium">{parsedExpense.merchant || 'Unknown'}</span>
                                         </div>
                                         <div className="flex items-center justify-between py-1 border-t border-slate-700/50">
-                                            <span className="text-slate-400 text-sm">Kategoria</span>
+                                            <span className="text-slate-400 text-sm">Category</span>
                                             <span className="text-white font-medium">{CATEGORY_LABELS[parsedExpense.category]}</span>
                                         </div>
                                         <div className="flex items-center justify-between py-1 border-t border-slate-700/50">
-                                            <span className="text-slate-400 text-sm">Data</span>
+                                            <span className="text-slate-400 text-sm">Date</span>
                                             <span className="text-white">
-                                                {parsedExpense.dateOffset === 0 ? 'Dziś' :
-                                                    parsedExpense.dateOffset === -1 ? 'Wczoraj' :
-                                                        getDateFromOffset(parsedExpense.dateOffset).toLocaleDateString('pl-PL')}
+                                                {parsedExpense.dateOffset === 0 ? 'Today' :
+                                                    parsedExpense.dateOffset === -1 ? 'Yesterday' :
+                                                        getDateFromOffset(parsedExpense.dateOffset).toLocaleDateString('en-US')}
                                             </span>
                                         </div>
                                     </div>
 
                                     <div className="flex gap-3 pt-2">
                                         <Button onClick={handleRetry} variant="outline" className="flex-1 border-slate-700">
-                                            Popraw
+                                            Fix
                                         </Button>
                                         <Button onClick={handleSaveExpense} className="flex-1 bg-gradient-to-r from-emerald-500 to-cyan-500 border-0 hover:opacity-90">
                                             <Check className="w-4 h-4 mr-2" />
-                                            Dodaj
+                                            Add
                                         </Button>
                                     </div>
                                 </div>
@@ -539,7 +539,7 @@ export default function VoiceExpenseModal({ isOpen, onClose }: VoiceExpenseModal
                             {state === 'saving' && (
                                 <div className="text-center py-12">
                                     <Loader2 className="w-12 h-12 text-emerald-400 animate-spin mx-auto mb-4" />
-                                    <p className="text-slate-400">Zapisuję wydatek...</p>
+                                    <p className="text-slate-400">Saving expense...</p>
                                 </div>
                             )}
 
@@ -565,7 +565,7 @@ export default function VoiceExpenseModal({ isOpen, onClose }: VoiceExpenseModal
                                         <Check className="w-10 h-10 text-white" />
                                     </motion.div>
                                     <p className="text-emerald-400 text-3xl font-bold mb-1">{formatAmountFromGrosze(savedAmount)}</p>
-                                    <p className="text-white text-lg font-semibold">Wydatek dodany!</p>
+                                    <p className="text-white text-lg font-semibold">Expense added!</p>
                                 </div>
                             )}
 
@@ -580,18 +580,18 @@ export default function VoiceExpenseModal({ isOpen, onClose }: VoiceExpenseModal
                                         <Link href="/settings/billing">
                                             <Button className="mt-4 bg-gradient-to-r from-purple-500 to-pink-500 border-0">
                                                 <Crown className="w-4 h-4 mr-2" />
-                                                Ulepsz plan
+                                                Upgrade plan
                                             </Button>
                                         </Link>
                                     ) : (
                                         <div className="flex gap-3 justify-center">
                                             <Button onClick={handleRetry}>
                                                 <Mic className="w-4 h-4 mr-2" />
-                                                Spróbuj ponownie
+                                                Try again
                                             </Button>
                                             <Button onClick={switchToTextInput} variant="outline">
                                                 <Keyboard className="w-4 h-4 mr-2" />
-                                                Wpisz
+                                                Type
                                             </Button>
                                         </div>
                                     )}
