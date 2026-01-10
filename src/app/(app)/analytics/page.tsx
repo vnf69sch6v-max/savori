@@ -106,7 +106,7 @@ function InteractiveStat({
                         className={`flex items-center gap-1 text-sm font-medium ${trend.isPositive ? 'text-emerald-400' : 'text-rose-400'}`}
                     >
                         {trend.isPositive ? <TrendingDown className="w-4 h-4" /> : <TrendingUp className="w-4 h-4" />}
-                        <span>{Math.abs(trend.value)}% vs ostatni okres</span>
+                        <span>{Math.abs(trend.value)}% vs last period</span>
                     </motion.div>
                 )}
             </div>
@@ -298,10 +298,10 @@ export default function AnalyticsPage() {
         .slice(0, 5);
 
     const periodLabels = {
-        week: 'Tydzień',
-        month: 'Miesiąc',
-        quarter: 'Kwartał',
-        year: 'Rok',
+        week: 'Week',
+        month: 'Month',
+        quarter: 'Quarter',
+        year: 'Year',
     };
 
     const periodIcons = {
@@ -326,7 +326,7 @@ export default function AnalyticsPage() {
                             className="text-3xl md:text-4xl font-bold flex items-center gap-3"
                         >
                             <BarChart3 className="w-8 h-8 text-purple-400" />
-                            Analityka
+                            Analytics
                         </motion.h1>
                         <motion.p
                             initial={{ opacity: 0 }}
@@ -334,7 +334,7 @@ export default function AnalyticsPage() {
                             transition={{ delay: 0.1 }}
                             className="text-slate-400 mt-2 flex items-center gap-2"
                         >
-                            Zagłęb się w swoje finanse
+                            Dive deeper into your finances
                             <Sparkles className="w-4 h-4 text-amber-400" />
                         </motion.p>
                     </div>
@@ -373,9 +373,9 @@ export default function AnalyticsPage() {
                     className="text-center py-16 bg-slate-900/50 rounded-2xl border border-slate-800"
                 >
                     <BarChart3 className="w-20 h-20 text-slate-700 mx-auto mb-4" />
-                    <h3 className="text-xl font-medium mb-2">Brak danych do analizy</h3>
-                    <p className="text-slate-400 mb-6">Dodaj wydatki, aby zobaczyć szczegółowe statystyki</p>
-                    <Button>Dodaj pierwszy wydatek</Button>
+                    <h3 className="text-xl font-medium mb-2">No data to analyze</h3>
+                    <p className="text-slate-400 mb-6">Add expenses to see detailed stats</p>
+                    <Button>Add first expense</Button>
                 </motion.div>
             ) : (
                 <>
@@ -405,28 +405,28 @@ export default function AnalyticsPage() {
                         className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6"
                     >
                         <InteractiveStat
-                            label="Suma wydatków"
+                            label="Total Expenses"
                             value={formatMoney(totalExpenses)}
                             icon={<Flame className="w-5 h-5" />}
                             color="from-rose-500/20 to-pink-500/20"
                             glowColor="0 20px 40px -15px rgba(244, 63, 94, 0.4)"
                         />
                         <InteractiveStat
-                            label="Średnio dziennie"
+                            label="Daily Average"
                             value={formatMoney(avgDaily)}
                             icon={<Calendar className="w-5 h-5" />}
                             color="from-blue-500/20 to-cyan-500/20"
                             glowColor="0 20px 40px -15px rgba(59, 130, 246, 0.4)"
                         />
                         <InteractiveStat
-                            label="Transakcji"
+                            label="Transactions"
                             value={transactionCount.toString()}
                             icon={<BarChart3 className="w-5 h-5" />}
                             color="from-purple-500/20 to-violet-500/20"
                             glowColor="0 20px 40px -15px rgba(139, 92, 246, 0.4)"
                         />
                         <InteractiveStat
-                            label="Śr. wartość"
+                            label="Avg. Value"
                             value={formatMoney(avgTransaction)}
                             icon={<Target className="w-5 h-5" />}
                             color="from-emerald-500/20 to-teal-500/20"
@@ -455,7 +455,7 @@ export default function AnalyticsPage() {
                                 <CardHeader className="pb-2">
                                     <CardTitle className="flex items-center gap-2 text-lg">
                                         <PieChart className="w-5 h-5 text-blue-400" />
-                                        Kategorie
+                                        Categories
                                     </CardTitle>
                                 </CardHeader>
                                 <CardContent>
@@ -489,7 +489,7 @@ export default function AnalyticsPage() {
                                                 onClick={() => setShowAllCategories(!showAllCategories)}
                                                 className="w-full flex items-center justify-center gap-1 py-2 text-sm text-slate-400 hover:text-white transition-colors"
                                             >
-                                                {showAllCategories ? 'Pokaż mniej' : `+${categoryData.length - 3} więcej`}
+                                                {showAllCategories ? 'Show less' : `+${categoryData.length - 3} more`}
                                                 <ChevronDown className={`w-4 h-4 transition-transform ${showAllCategories ? 'rotate-180' : ''}`} />
                                             </button>
                                         )}
@@ -514,23 +514,23 @@ export default function AnalyticsPage() {
                     <div className="grid md:grid-cols-3 gap-4 mb-6">
                         <InsightAchievement
                             icon={<Award className="w-5 h-5 text-amber-400" />}
-                            title="Top Kategoria"
+                            title="Top Category"
                             value={categoryData[0]?.name || '—'}
-                            description={`${Math.round((categoryData[0]?.amount / totalExpenses) * 100)}% Twoich wydatków`}
+                            description={`${Math.round((categoryData[0]?.amount / totalExpenses) * 100)}% of your expenses`}
                             color="from-amber-500/10 to-orange-500/10"
                             delay={0}
                         />
                         <InsightAchievement
                             icon={<Target className="w-5 h-5 text-emerald-400" />}
-                            title="Dzienny limit"
+                            title="Daily Limit"
                             value={formatMoney(avgDaily)}
-                            description="Średnia z tego okresu"
+                            description="Average for this period"
                             color="from-emerald-500/10 to-teal-500/10"
                             delay={0.1}
                         />
                         <InsightAchievement
                             icon={<Sparkles className="w-5 h-5 text-purple-400" />}
-                            title="Największy wydatek"
+                            title="Largest Expense"
                             value={merchantData[0]?.name || '—'}
                             description={formatMoney(merchantData[0]?.amount || 0)}
                             color="from-purple-500/10 to-pink-500/10"
@@ -548,7 +548,7 @@ export default function AnalyticsPage() {
                             <CardHeader>
                                 <CardTitle className="flex items-center gap-2 text-lg">
                                     <TrendingUp className="w-5 h-5 text-cyan-400" />
-                                    Gdzie wydajesz najwięcej
+                                    Where you spend the most
                                 </CardTitle>
                             </CardHeader>
                             <CardContent>

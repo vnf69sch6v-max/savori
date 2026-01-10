@@ -42,7 +42,7 @@ export default function SafeToSpendCard({ spent, limit, loading = false }: SafeT
                     <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center backdrop-blur-sm">
                         <Wallet className="w-4 h-4 text-emerald-400" />
                     </div>
-                    <span className="font-medium text-sm">Bezpiecznie do wydania</span>
+                    <span className="font-medium text-sm">Safe to spend</span>
                 </div>
 
                 {/* Main Number */}
@@ -54,7 +54,7 @@ export default function SafeToSpendCard({ spent, limit, loading = false }: SafeT
 
                 {/* Subtext */}
                 <p className="text-xs text-gray-400 mb-3 font-medium relative z-10">
-                    ~{formatMoney(dailySafe).replace(/,00..$/, '')} <span className="text-gray-500">dziennie do końca miesiąca</span>
+                    ~{formatMoney(dailySafe).replace(/,00..$/, '')} <span className="text-gray-500">daily until end of month</span>
                 </p>
 
                 {/* AI Insight Pill */}
@@ -62,8 +62,8 @@ export default function SafeToSpendCard({ spent, limit, loading = false }: SafeT
                     <Sparkles className="w-4 h-4 text-violet-400 mt-0.5 shrink-0" />
                     <p className="text-xs text-gray-300 leading-relaxed">
                         {percentageUsed < 80
-                            ? "Świetnie Ci idzie! Stać Cię na lepszy obiad ☕️"
-                            : "Uważaj, zbliżasz się do limitu budżetu! 📉"
+                            ? "You're doing great! You can afford a nicer dinner ☕️"
+                            : "Careful, you're approaching your budget limit! 📉"
                         }
                     </p>
                 </div>
@@ -71,7 +71,7 @@ export default function SafeToSpendCard({ spent, limit, loading = false }: SafeT
                 {/* Progress Bar Section */}
                 <div className="space-y-2 relative z-10">
                     <div className="flex justify-between text-xs font-medium text-gray-400 mb-2">
-                        <span>Wykorzystany budżet</span>
+                        <span>Budget used</span>
                         <span>{Math.round(percentageUsed)}%</span>
                     </div>
                     <div className="relative h-1.5 w-full bg-slate-900/50 rounded-full overflow-hidden">
@@ -86,7 +86,7 @@ export default function SafeToSpendCard({ spent, limit, loading = false }: SafeT
                     <div className="flex flex-wrap justify-between items-center text-xs mt-3 gap-2">
                         <div className="flex items-center gap-1.5 text-red-400">
                             <TrendingUp className="w-3 h-3" />
-                            <span>Wydatki: {formatMoney(spent)}</span>
+                            <span>Spent: {formatMoney(spent)}</span>
                         </div>
                         <div className="flex items-center gap-1.5 text-blue-400">
                             <ArrowRight className="w-3 h-3" />

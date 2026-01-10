@@ -83,16 +83,16 @@ export function formatDate(date: Date | string, format: 'short' | 'long' | 'time
  * Polskie nazwy kategorii wydatków
  */
 export const CATEGORY_LABELS: Record<string, string> = {
-    groceries: 'Spożywcze',
-    restaurants: 'Jedzenie na mieście',
+    groceries: 'Groceries',
+    restaurants: 'Restaurants',
     transport: 'Transport',
-    utilities: 'Rachunki',
-    entertainment: 'Rozrywka',
-    shopping: 'Zakupy',
-    health: 'Zdrowie',
-    education: 'Edukacja',
-    subscriptions: 'Subskrypcje',
-    other: 'Inne',
+    utilities: 'Utilities',
+    entertainment: 'Entertainment',
+    shopping: 'Shopping',
+    health: 'Health',
+    education: 'Education',
+    subscriptions: 'Subscriptions',
+    other: 'Other',
 };
 
 /**

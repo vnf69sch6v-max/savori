@@ -31,7 +31,7 @@ const SUPPORTED_BANKS = [
     { id: 'santander', name: 'Santander', emoji: '🔴', color: 'red' },
     { id: 'millennium', name: 'Millennium', emoji: '🟣', color: 'purple' },
     { id: 'pekao', name: 'Bank Pekao', emoji: '🔴', color: 'red' },
-    { id: 'other', name: 'Inny bank', emoji: '🏦', color: 'slate' },
+    { id: 'other', name: 'Other bank', emoji: '🏦', color: 'slate' },
 ];
 
 interface ParsedTransaction {
@@ -110,10 +110,10 @@ export default function ImportPage() {
 
             setParsedData(transactions);
             setStep(3);
-            toast.success(`Znaleziono ${transactions.length} transakcji!`);
+            toast.success(`Found ${transactions.length} transactions!`);
         } catch (error) {
             console.error('Parse error:', error);
-            toast.error('Nie udało się przetworzyć pliku');
+            toast.error('Failed to process file');
         } finally {
             setParsing(false);
         }
@@ -150,13 +150,13 @@ export default function ImportPage() {
 
                 setParsedData(transactions);
                 setStep(3);
-                toast.success(`🧠 AI znalazło ${transactions.length} transakcji w PDF!`);
+                toast.success(`🧠 AI found ${transactions.length} transactions in PDF!`);
             } else {
-                toast.error('Nie znaleziono transakcji w PDF');
+                toast.error('No transactions found in PDF');
             }
         } catch (error) {
             console.error('PDF parse error:', error);
-            toast.error('Błąd analizy PDF');
+            toast.error('PDF analysis error');
         } finally {
             setParsing(false);
         }
@@ -196,10 +196,10 @@ export default function ImportPage() {
 
             setImportComplete(true);
             setStep(4);
-            toast.success(`Zaimportowano ${imported} transakcji! 🎉`);
+            toast.success(`Imported ${imported} transactions! 🎉`);
         } catch (error) {
             console.error('Import error:', error);
-            toast.error('Błąd podczas importu');
+            toast.error('Error during import');
         } finally {
             setImporting(false);
         }
@@ -220,10 +220,10 @@ export default function ImportPage() {
                 <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-emerald-400 to-teal-500 flex items-center justify-center mx-auto mb-4">
                     <Upload className="w-8 h-8 text-white" />
                 </div>
-                <h1 className="text-2xl md:text-3xl font-bold mb-2">Import z banku</h1>
+                <h1 className="text-2xl md:text-3xl font-bold mb-2">Import from bank</h1>
                 <p className="text-slate-400 max-w-md mx-auto">
-                    Dodaj historię transakcji jednym kliknięciem.
-                    Szybko, bezpiecznie i prywatnie.
+                    Add transaction history with one click.
+                    Fast, secure, and private.
                 </p>
             </div>
 
@@ -231,10 +231,10 @@ export default function ImportPage() {
             <div className="mb-8 space-y-4">
                 {/* Quick Trust Badges */}
                 <div className="flex flex-wrap justify-center gap-3">
-                    <SecurityBadge variant="inline" message="Prywatne - plik nie opuszcza urządzenia" />
+                    <SecurityBadge variant="inline" message="Private - file never leaves device" />
                     <div className="flex items-center gap-2 px-3 py-1.5 bg-blue-500/10 rounded-full text-sm text-blue-400 border border-blue-500/20">
                         <Sparkles className="w-4 h-4" />
-                        AI automatycznie kategoryzuje
+                        AI auto-categorization
                     </div>
                 </div>
 
@@ -268,7 +268,7 @@ export default function ImportPage() {
                         <Card className="p-6">
                             <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
                                 <Building2 className="w-5 h-5 text-slate-400" />
-                                Wybierz swój bank
+                                Select your bank
                             </h2>
                             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                                 {SUPPORTED_BANKS.map((bank) => (
@@ -302,20 +302,20 @@ export default function ImportPage() {
                         <Card className="p-6">
                             <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
                                 <FileSpreadsheet className="w-5 h-5 text-slate-400" />
-                                Wgraj plik z historią
+                                Upload history file
                             </h2>
 
                             {/* How to export - friendly guide */}
                             <div className="mb-6 p-4 bg-blue-500/10 border border-blue-500/20 rounded-xl">
                                 <h3 className="font-medium text-blue-400 mb-2 flex items-center gap-2">
                                     <HelpCircle className="w-4 h-4" />
-                                    Jak pobrać plik z banku?
+                                    How to download bank file?
                                 </h3>
                                 <ol className="text-sm text-slate-300 space-y-1 list-decimal list-inside">
-                                    <li>Zaloguj się do bankowości internetowej</li>
-                                    <li>Przejdź do historii transakcji</li>
-                                    <li>Kliknij &quot;Eksportuj&quot; lub &quot;Pobierz CSV&quot;</li>
-                                    <li>Wgraj pobrany plik tutaj 👇</li>
+                                    <li>Log in to your online banking</li>
+                                    <li>Go to transaction history</li>
+                                    <li>Click &quot;Export&quot; or &quot;Download CSV&quot;</li>
+                                    <li>Upload downloaded file here 👇</li>
                                 </ol>
                             </div>
 
@@ -328,10 +328,10 @@ export default function ImportPage() {
                                         <Download className="w-12 h-12 text-slate-500 mx-auto mb-4" />
                                     )}
                                     <p className="text-slate-300 mb-2">
-                                        {parsing ? 'AI analizuje plik...' : 'Przeciągnij plik lub kliknij'}
+                                        {parsing ? 'AI is analyzing file...' : 'Drag & drop or click to upload'}
                                     </p>
                                     <p className="text-sm text-slate-500">
-                                        Akceptowane: .csv, .pdf 🧠
+                                        Accepted: .csv, .pdf 🧠
                                     </p>
                                 </div>
                                 <input
@@ -346,7 +346,7 @@ export default function ImportPage() {
                                 onClick={() => setStep(1)}
                                 className="mt-4 text-sm text-slate-400 hover:text-white"
                             >
-                                ← Zmień bank
+                                ← Change bank
                             </button>
                         </Card>
                     </motion.div>
@@ -362,13 +362,13 @@ export default function ImportPage() {
                         <Card className="p-6">
                             <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
                                 <CheckCircle className="w-5 h-5 text-emerald-400" />
-                                Znalezione transakcje ({parsedData.length})
+                                Found transactions ({parsedData.length})
                             </h2>
 
                             {/* Summary */}
                             <div className="mb-4 p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-xl">
                                 <p className="text-emerald-400">
-                                    ✨ Gotowe do importu! AI automatycznie skategoryzował wydatki.
+                                    ✨ Ready to import! AI automatically categorized expenses.
                                 </p>
                             </div>
 
@@ -377,9 +377,9 @@ export default function ImportPage() {
                                 <table className="w-full text-sm">
                                     <thead className="bg-slate-800 sticky top-0">
                                         <tr>
-                                            <th className="text-left p-3">Data</th>
-                                            <th className="text-left p-3">Opis</th>
-                                            <th className="text-right p-3">Kwota</th>
+                                            <th className="text-left p-3">Date</th>
+                                            <th className="text-left p-3">Description</th>
+                                            <th className="text-right p-3">Amount</th>
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-slate-800">
@@ -400,7 +400,7 @@ export default function ImportPage() {
 
                             {parsedData.length > 10 && (
                                 <p className="text-sm text-slate-500 mb-4">
-                                    ...i {parsedData.length - 10} więcej transakcji
+                                    ...and {parsedData.length - 10} more transactions
                                 </p>
                             )}
 
@@ -414,13 +414,13 @@ export default function ImportPage() {
                                         <Loader2 className="w-5 h-5 animate-spin" />
                                     ) : (
                                         <>
-                                            Importuj wszystko
+                                            Import all
                                             <ArrowRight className="w-5 h-5 ml-2" />
                                         </>
                                     )}
                                 </Button>
                                 <Button variant="outline" onClick={() => setStep(2)}>
-                                    Anuluj
+                                    Cancel
                                 </Button>
                             </div>
                         </Card>
@@ -443,14 +443,14 @@ export default function ImportPage() {
                                 <CheckCircle className="w-10 h-10 text-emerald-400" />
                             </motion.div>
 
-                            <h2 className="text-2xl font-bold mb-2">Import zakończony! 🎉</h2>
+                            <h2 className="text-2xl font-bold mb-2">Import completed! 🎉</h2>
                             <p className="text-slate-400 mb-6">
-                                Zaimportowano {parsedData.length} transakcji do Savori.
+                                Imported {parsedData.length} transactions to Savori.
                             </p>
 
                             <div className="flex flex-col sm:flex-row gap-3 justify-center">
                                 <Button onClick={() => window.location.href = '/expenses'}>
-                                    Zobacz wydatki
+                                    View expenses
                                 </Button>
                                 <Button
                                     variant="outline"
@@ -462,7 +462,7 @@ export default function ImportPage() {
                                         setImportComplete(false);
                                     }}
                                 >
-                                    Importuj więcej
+                                    Import more
                                 </Button>
                             </div>
                         </Card>

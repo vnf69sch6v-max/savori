@@ -213,9 +213,9 @@ export default function GoalsPage() {
             {/* Header */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
                 <div>
-                    <h1 className="text-2xl md:text-3xl font-bold">Cele oszczędnościowe</h1>
+                    <h1 className="text-2xl md:text-3xl font-bold">Savings Goals</h1>
                     <p className="text-slate-400 mt-1">
-                        Zaoszczędzone: <span className="text-emerald-400 font-medium">{formatMoney(totalSaved)}</span>
+                        Saved: <span className="text-emerald-400 font-medium">{formatMoney(totalSaved)}</span>
                         {totalTarget > 0 && (
                             <span className="text-slate-500"> / {formatMoney(totalTarget)}</span>
                         )}
@@ -258,12 +258,12 @@ export default function GoalsPage() {
             ) : goals.length === 0 ? (
                 <Card className="p-12 text-center">
                     <Target className="w-16 h-16 text-slate-600 mx-auto mb-4" />
-                    <h3 className="text-lg font-medium mb-2">Brak celów</h3>
+                    <h3 className="text-lg font-medium mb-2">No goals</h3>
                     <p className="text-slate-400 mb-6">
-                        Stwórz swój pierwszy cel oszczędnościowy i zacznij odkładać pieniądze
+                        Create your first savings goal and start saving money
                     </p>
                     <Button icon={<Plus className="w-5 h-5" />} onClick={() => setShowAddModal(true)}>
-                        Stwórz cel
+                        Create Goal
                     </Button>
                 </Card>
             ) : (
@@ -337,7 +337,7 @@ export default function GoalsPage() {
 
                                     <div className="flex items-center justify-between text-sm">
                                         <span className="text-slate-400">
-                                            {Math.round(progress)}% ukończone
+                                            {Math.round(progress)}% completed
                                         </span>
                                         <div className="flex items-center gap-2">
                                             {!isCompleted && (
@@ -357,7 +357,7 @@ export default function GoalsPage() {
                                             {goal.deadline && (
                                                 <span className="text-slate-500 flex items-center gap-1">
                                                     <Calendar className="w-3 h-3" />
-                                                    {new Date(goal.deadline.toDate()).toLocaleDateString('pl-PL')}
+                                                    {new Date(goal.deadline.toDate()).toLocaleDateString('en-IE')}
                                                 </span>
                                             )}
                                         </div>
@@ -404,7 +404,7 @@ export default function GoalsPage() {
                         >
                             <Card className="w-full max-w-md p-6">
                                 <div className="flex items-center justify-between mb-6">
-                                    <h2 className="text-xl font-bold">Nowy cel</h2>
+                                    <h2 className="text-xl font-bold">New Goal</h2>
                                     <button
                                         onClick={() => setShowAddModal(false)}
                                         className="p-2 text-slate-400 hover:text-white"
@@ -417,7 +417,7 @@ export default function GoalsPage() {
                                     {/* Emoji picker */}
                                     <div>
                                         <label className="block text-sm font-medium text-slate-300 mb-2">
-                                            Ikona
+                                            Icon
                                         </label>
                                         <div className="flex flex-wrap gap-2">
                                             {GOAL_EMOJIS.map(emoji => (
@@ -434,14 +434,14 @@ export default function GoalsPage() {
                                     </div>
 
                                     <Input
-                                        label="Nazwa celu"
-                                        placeholder="np. Wakacje w Grecji"
+                                        label="Goal Name"
+                                        placeholder="e.g. Trip to Greece"
                                         value={newGoal.name}
                                         onChange={(e) => setNewGoal({ ...newGoal, name: e.target.value })}
                                     />
 
                                     <Input
-                                        label="Kwota docelowa (PLN)"
+                                        label="Target Amount (EUR)"
                                         type="number"
                                         placeholder="5000"
                                         value={newGoal.targetAmount}
@@ -449,7 +449,7 @@ export default function GoalsPage() {
                                     />
 
                                     <Input
-                                        label="Termin (opcjonalnie)"
+                                        label="Deadline (optional)"
                                         type="date"
                                         value={newGoal.deadline}
                                         onChange={(e) => setNewGoal({ ...newGoal, deadline: e.target.value })}
@@ -457,10 +457,10 @@ export default function GoalsPage() {
 
                                     <div className="flex gap-3 pt-4">
                                         <Button variant="outline" className="flex-1" onClick={() => setShowAddModal(false)}>
-                                            Anuluj
+                                            Cancel
                                         </Button>
                                         <Button className="flex-1" onClick={handleCreateGoal}>
-                                            Utwórz cel
+                                            Create Goal
                                         </Button>
                                     </div>
                                 </div>
@@ -488,7 +488,7 @@ export default function GoalsPage() {
                         >
                             <Card className="w-full max-w-sm p-6">
                                 <div className="flex items-center justify-between mb-6">
-                                    <h2 className="text-xl font-bold">Dodaj wpłatę</h2>
+                                    <h2 className="text-xl font-bold">Add Deposit</h2>
                                     <button
                                         onClick={() => setShowContributeModal(null)}
                                         className="p-2 text-slate-400 hover:text-white"
@@ -499,7 +499,7 @@ export default function GoalsPage() {
 
                                 <div className="space-y-4">
                                     <Input
-                                        label="Kwota (PLN)"
+                                        label="Amount (EUR)"
                                         type="number"
                                         placeholder="100"
                                         value={contributeAmount}
@@ -508,10 +508,10 @@ export default function GoalsPage() {
 
                                     <div className="flex gap-3 pt-2">
                                         <Button variant="outline" className="flex-1" onClick={() => setShowContributeModal(null)}>
-                                            Anuluj
+                                            Cancel
                                         </Button>
                                         <Button className="flex-1" onClick={handleContribute}>
-                                            Wpłać
+                                            Deposit
                                         </Button>
                                     </div>
                                 </div>

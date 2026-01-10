@@ -29,8 +29,8 @@ export default function PredictiveSpendingWidget({ lastUpdate, onPriorityChange 
     if (!isPro) {
         return (
             <ProLockedFeature
-                title="Prognoza wydatków"
-                description="Dostępna w planie Pro"
+                title="Spending Forecast"
+                description="Available in Pro plan"
                 icon={<Target className="w-6 h-6 text-amber-400" />}
             />
         );
@@ -74,7 +74,7 @@ export default function PredictiveSpendingWidget({ lastUpdate, onPriorityChange 
                 <CardContent className="py-8">
                     <div className="flex items-center justify-center">
                         <Loader2 className="w-6 h-6 animate-spin text-purple-400" />
-                        <span className="ml-3 text-slate-400">Obliczanie prognozy...</span>
+                        <span className="ml-3 text-slate-400">Calculating forecast...</span>
                     </div>
                 </CardContent>
             </Card>
@@ -101,8 +101,8 @@ export default function PredictiveSpendingWidget({ lastUpdate, onPriorityChange 
                         <TrendingUp className="w-4 h-4 text-blue-400" />
                     </div>
                     <div>
-                        <CardTitle className="text-base">Prognoza</CardTitle>
-                        <p className="text-xs text-slate-500">{prediction.daysRemaining} dni do końca miesiąca</p>
+                        <CardTitle className="text-base">Forecast</CardTitle>
+                        <p className="text-xs text-slate-500">{prediction.daysRemaining} days left in month</p>
                     </div>
                 </div>
                 <button
@@ -119,7 +119,7 @@ export default function PredictiveSpendingWidget({ lastUpdate, onPriorityChange 
                 <div className="space-y-2">
                     {/* Current spent */}
                     <div className="flex items-center justify-between text-sm">
-                        <span className="text-slate-400">Wydane</span>
+                        <span className="text-slate-400">Spent</span>
                         <span className="font-medium">{formatMoney(prediction.currentSpent)}</span>
                     </div>
 
@@ -157,7 +157,7 @@ export default function PredictiveSpendingWidget({ lastUpdate, onPriorityChange 
                     <div className="flex items-center justify-between text-sm">
                         <span className="text-slate-400 flex items-center gap-1">
                             <span className="w-2 h-2 bg-amber-400 rounded-full" />
-                            Prognoza
+                            Forecast
                         </span>
                         <span className={`font-medium ${status.color}`}>
                             {formatMoney(prediction.predictedTotal)}
@@ -166,7 +166,7 @@ export default function PredictiveSpendingWidget({ lastUpdate, onPriorityChange 
 
                     {prediction.budgetLimit && (
                         <div className="flex items-center justify-between text-sm">
-                            <span className="text-slate-400">Budżet</span>
+                            <span className="text-slate-400">Budget</span>
                             <span className="font-medium text-slate-300">
                                 {formatMoney(prediction.budgetLimit)}
                             </span>
@@ -202,13 +202,13 @@ export default function PredictiveSpendingWidget({ lastUpdate, onPriorityChange 
                     <div className="flex items-center justify-between p-3 rounded-xl bg-slate-800/50">
                         <div className="flex items-center gap-2">
                             <Calendar className="w-4 h-4 text-slate-400" />
-                            <span className="text-sm text-slate-400">Dzienny limit</span>
+                            <span className="text-sm text-slate-400">Daily limit</span>
                         </div>
                         <span className={`text-sm font-medium ${prediction.predictedDailyBudget > 0 ? 'text-emerald-400' : 'text-red-400'
                             }`}>
                             {prediction.predictedDailyBudget > 0
                                 ? formatMoney(prediction.predictedDailyBudget)
-                                : 'Przekroczono!'
+                                : 'Exceeded!'
                             }
                         </span>
                     </div>
@@ -217,7 +217,7 @@ export default function PredictiveSpendingWidget({ lastUpdate, onPriorityChange 
                 {/* Category breakdown */}
                 {prediction.breakdown.length > 0 && (
                     <div className="space-y-2">
-                        <p className="text-xs text-slate-500 uppercase tracking-wide">Top kategorie</p>
+                        <p className="text-xs text-slate-500 uppercase tracking-wide">Top categories</p>
                         {prediction.breakdown.slice(0, 3).map((cat, i) => (
                             <div key={cat.category} className="flex items-center justify-between text-sm">
                                 <div className="flex items-center gap-2">
@@ -239,7 +239,7 @@ export default function PredictiveSpendingWidget({ lastUpdate, onPriorityChange 
                 {/* Confidence */}
                 <div className="flex items-center justify-center gap-2 pt-2">
                     <span className="text-xs text-slate-500">
-                        Pewność prognozy: {prediction.confidence.toFixed(0)}%
+                        Forecast confidence: {prediction.confidence.toFixed(0)}%
                     </span>
                 </div>
             </CardContent>

@@ -230,7 +230,7 @@ export default function DashboardPage() {
 
                 {/* Daily Bonus Widget */}
                 <div className="mb-6 grid md:grid-cols-2 gap-4">
-                    <PremiumFeatureGate requiredPlan="pro" featureName="Pogoda Finansowa">
+                    <PremiumFeatureGate requiredPlan="pro" featureName="Financial Weather">
                         <FinancialWeatherWidget
                             expenses={expenses}
                             budgets={[{ totalLimit: monthlyBudget, totalSpent: monthlySpent } as any]}
@@ -266,7 +266,7 @@ export default function DashboardPage() {
                     <GamificationHub
                         xp={userData?.gamification?.xp || 0}
                         level={userData?.gamification?.level || 1}
-                        levelName="Nowicjusz"
+                        levelName="Novice"
                         xpToNextLevel={((userData?.gamification?.level || 1) + 1) * 500}
                         currentLevelXP={(userData?.gamification?.level || 1) * 500}
                         streak={currentStreak}
@@ -288,7 +288,7 @@ export default function DashboardPage() {
                     <div className="lg:col-span-2">
                         {/* Show Prediction here ONLY if NOT critical */}
                         {!isPredictionCritical && (showPredictions ? (
-                            <PremiumFeatureGate requiredPlan="pro" featureName="Prognoza Wydatków">
+                            <PremiumFeatureGate requiredPlan="pro" featureName="Spending Forecast">
                                 <PredictiveSpendingWidget
                                     lastUpdate={expenses.length + monthlyExpenses}
                                     onPriorityChange={(p) => handlePriorityChange('prediction', p)}
@@ -352,10 +352,10 @@ export default function DashboardPage() {
                     <div className="lg:col-span-2">
                         <Card>
                             <CardHeader className="flex flex-row items-center justify-between">
-                                <CardTitle>Cele oszczędnościowe</CardTitle>
+                                <CardTitle>Savings Goals</CardTitle>
                                 <Link href="/goals">
                                     <Button variant="ghost" size="sm">
-                                        Zobacz wszystkie
+                                        See all
                                         <ArrowUpRight className="w-4 h-4 ml-1" />
                                     </Button>
                                 </Link>
@@ -400,7 +400,7 @@ export default function DashboardPage() {
                                     {goals.length === 0 && (
                                         <div className="text-center py-8">
                                             <Target className="w-12 h-12 text-slate-600 mx-auto mb-3" />
-                                            <p className="text-slate-400">Brak aktywnych celów</p>
+                                            <p className="text-slate-400">No active goals</p>
                                         </div>
                                     )}
                                 </div>
@@ -411,7 +411,7 @@ export default function DashboardPage() {
                     <div>
                         <Card>
                             <CardHeader className="flex flex-row items-center justify-between">
-                                <CardTitle>Ostatnie wydatki</CardTitle>
+                                <CardTitle>Recent expenses</CardTitle>
                                 <Link href="/expenses">
                                     <Button variant="ghost" size="sm">
                                         <ArrowUpRight className="w-4 h-4" />
@@ -433,10 +433,10 @@ export default function DashboardPage() {
                                             </span>
                                             <div className="flex-1 min-w-0">
                                                 <p className="font-medium truncate">
-                                                    {expense.merchant?.name || 'Nieznany'}
+                                                    {expense.merchant?.name || 'Unknown'}
                                                 </p>
                                                 <p className="text-xs text-slate-400">
-                                                    {CATEGORY_LABELS[expense.merchant?.category] || 'Inne'}
+                                                    {CATEGORY_LABELS[expense.merchant?.category] || 'Other'}
                                                 </p>
                                             </div>
                                             <p className="font-medium text-rose-400">
@@ -447,7 +447,7 @@ export default function DashboardPage() {
                                     {displayExpenses.length === 0 && (
                                         <div className="text-center py-6">
                                             <Receipt className="w-10 h-10 text-slate-600 mx-auto mb-2" />
-                                            <p className="text-slate-400 text-sm">Brak wydatków</p>
+                                            <p className="text-slate-400 text-sm">No expenses</p>
                                         </div>
                                     )}
                                 </div>

@@ -10,10 +10,10 @@ import { Button, Card } from '@/components/ui';
 import { useAuth } from '@/contexts/AuthContext';
 
 const benefits = [
-    'Skanuj paragony AI w sekundę',
-    'Automatyczne oszczędzanie',
-    'Szyfrowanie AES-256',
-    'Całkowicie za darmo na start',
+    'Scan receipts with AI in seconds',
+    'Automatic savings',
+    'AES-256 Encryption',
+    'Totally free to start',
 ];
 
 // Animated background orbs
@@ -58,28 +58,28 @@ export default function RegisterPage() {
 
         if (activeTab === 'email') {
             if (!formData.email || !formData.password || !formData.name) {
-                toast.error('Wypełnij wszystkie pola');
+                toast.error('Please fill in all fields');
                 return;
             }
 
             if (formData.password.length < 6) {
-                toast.error('Hasło musi mieć min. 6 znaków');
+                toast.error('Password must be at least 6 characters');
                 return;
             }
 
             try {
                 setLoading(true);
                 await signUp(formData.email, formData.password, formData.name);
-                toast.success('Konto utworzone! Witaj w Savori 🎉');
+                toast.success('Account created! Welcome to Savori 🎉');
                 router.push('/dashboard');
             } catch (error: unknown) {
                 console.error(error);
-                toast.error('Błąd rejestracji. Spróbuj ponownie.');
+                toast.error('Registration error. Please try again.');
             } finally {
                 setLoading(false);
             }
         } else {
-            toast('Rejestracja przez telefon - wkrótce', { icon: '📱' });
+            toast('Phone registration - coming soon', { icon: '📱' });
         }
     };
 
@@ -87,22 +87,22 @@ export default function RegisterPage() {
         try {
             setLoading(true);
             await signInWithGoogle();
-            toast.success('Zarejestrowano przez Google!');
+            toast.success('Registered with Google!');
             router.push('/dashboard');
         } catch (error: unknown) {
             console.error(error);
-            toast.error('Błąd rejestracji przez Google');
+            toast.error('Google registration error');
         } finally {
             setLoading(false);
         }
     };
 
     const handleAppleSignUp = async () => {
-        toast('Rejestracja Apple - wkrótce dostępna', { icon: '🍎' });
+        toast('Apple registration - coming soon', { icon: '🍎' });
     };
 
     const handleAnonymousSignUp = async () => {
-        toast('Tryb gościa - wkrótce dostępny', { icon: '👤' });
+        toast('Guest mode - coming soon', { icon: '👤' });
     };
 
     return (
@@ -135,13 +135,13 @@ export default function RegisterPage() {
                     </Link>
 
                     <h1 className="text-4xl font-bold text-white mb-4">
-                        Zacznij oszczędzać{' '}
+                        Start saving{' '}
                         <span className="bg-gradient-to-r from-emerald-400 to-cyan-400 bg-clip-text text-transparent">
-                            mądrzej
+                            smarter
                         </span>
                     </h1>
                     <p className="text-slate-400 text-lg mb-8">
-                        Dołącz do tysięcy użytkowników, którzy już oszczędzają z AI.
+                        Join thousands of users who are already saving with AI.
                     </p>
 
                     <div className="space-y-4">
@@ -165,7 +165,7 @@ export default function RegisterPage() {
                         <div className="flex items-center gap-3">
                             <Sparkles className="w-5 h-5 text-amber-400" />
                             <p className="text-sm text-slate-400">
-                                <span className="text-emerald-400 font-medium">10 000+</span> użytkowników już oszczędza z Savori
+                                <span className="text-emerald-400 font-medium">10,000+</span> users are already saving with Savori
                             </p>
                         </div>
                     </div>
@@ -193,8 +193,8 @@ export default function RegisterPage() {
                         <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-white/5 rounded-3xl blur-xl" />
                         <Card className="relative bg-slate-900/80 backdrop-blur-xl border border-white/10 rounded-3xl p-8 shadow-2xl">
                             <div className="text-center mb-6">
-                                <h2 className="text-2xl font-bold text-white mb-1">Utwórz konto</h2>
-                                <p className="text-slate-400 text-sm">Zarejestruj się i zacznij oszczędzać</p>
+                                <h2 className="text-2xl font-bold text-white mb-1">Create Account</h2>
+                                <p className="text-slate-400 text-sm">Register and start saving</p>
                             </div>
 
                             {/* Social Login */}
@@ -238,7 +238,7 @@ export default function RegisterPage() {
                                     <div className="w-full border-t border-slate-700/50"></div>
                                 </div>
                                 <div className="relative flex justify-center text-sm">
-                                    <span className="px-4 bg-slate-900/80 text-slate-500">lub</span>
+                                    <span className="px-4 bg-slate-900/80 text-slate-500">or</span>
                                 </div>
                             </div>
 
@@ -247,8 +247,8 @@ export default function RegisterPage() {
                                 <button
                                     onClick={() => setActiveTab('email')}
                                     className={`flex-1 py-2.5 rounded-lg text-sm font-medium transition-all ${activeTab === 'email'
-                                            ? 'bg-emerald-500 text-white shadow-lg'
-                                            : 'text-slate-400 hover:text-white'
+                                        ? 'bg-emerald-500 text-white shadow-lg'
+                                        : 'text-slate-400 hover:text-white'
                                         }`}
                                 >
                                     <Mail className="w-4 h-4 inline mr-2" />
@@ -257,25 +257,25 @@ export default function RegisterPage() {
                                 <button
                                     onClick={() => setActiveTab('phone')}
                                     className={`flex-1 py-2.5 rounded-lg text-sm font-medium transition-all ${activeTab === 'phone'
-                                            ? 'bg-emerald-500 text-white shadow-lg'
-                                            : 'text-slate-400 hover:text-white'
+                                        ? 'bg-emerald-500 text-white shadow-lg'
+                                        : 'text-slate-400 hover:text-white'
                                         }`}
                                 >
                                     <Phone className="w-4 h-4 inline mr-2" />
-                                    Telefon
+                                    Phone
                                 </button>
                             </div>
 
                             <form onSubmit={handleSubmit} className="space-y-4">
                                 {/* Name */}
                                 <div className="space-y-2">
-                                    <label className="text-sm text-slate-400">Imię</label>
+                                    <label className="text-sm text-slate-400">Name</label>
                                     <div className="relative">
                                         <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500" />
                                         <input
                                             type="text"
                                             name="name"
-                                            placeholder="Jan"
+                                            placeholder="John"
                                             value={formData.name}
                                             onChange={handleChange}
                                             disabled={loading}
@@ -293,7 +293,7 @@ export default function RegisterPage() {
                                                 <input
                                                     type="email"
                                                     name="email"
-                                                    placeholder="twoj@email.com"
+                                                    placeholder="your@email.com"
                                                     value={formData.email}
                                                     onChange={handleChange}
                                                     disabled={loading}
@@ -303,13 +303,13 @@ export default function RegisterPage() {
                                         </div>
 
                                         <div className="space-y-2">
-                                            <label className="text-sm text-slate-400">Hasło</label>
+                                            <label className="text-sm text-slate-400">Password</label>
                                             <div className="relative">
                                                 <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500" />
                                                 <input
                                                     type={showPassword ? 'text' : 'password'}
                                                     name="password"
-                                                    placeholder="Min. 6 znaków"
+                                                    placeholder="Min. 6 chars"
                                                     value={formData.password}
                                                     onChange={handleChange}
                                                     disabled={loading}
@@ -327,7 +327,7 @@ export default function RegisterPage() {
                                     </>
                                 ) : (
                                     <div className="space-y-2">
-                                        <label className="text-sm text-slate-400">Numer telefonu</label>
+                                        <label className="text-sm text-slate-400">Phone Number</label>
                                         <div className="relative">
                                             <div className="absolute left-4 top-1/2 -translate-y-1/2 flex items-center gap-2 text-slate-400">
                                                 <span className="text-lg">🇵🇱</span>
@@ -355,7 +355,7 @@ export default function RegisterPage() {
                                         <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                                     ) : (
                                         <>
-                                            Utwórz konto
+                                            Create Account
                                             <ArrowRight className="w-5 h-5 ml-2" />
                                         </>
                                     )}
@@ -363,17 +363,17 @@ export default function RegisterPage() {
                             </form>
 
                             <p className="text-center text-slate-400 text-sm mt-6">
-                                Masz już konto?{' '}
+                                Already have an account?{' '}
                                 <Link href="/login" className="text-emerald-400 hover:text-emerald-300 font-medium transition-colors">
-                                    Zaloguj się
+                                    Log In
                                 </Link>
                             </p>
 
                             <p className="text-center text-slate-500 text-xs mt-4">
-                                Rejestrując się akceptujesz{' '}
-                                <Link href="/terms" className="text-slate-400 hover:text-white">Regulamin</Link>
-                                {' '}i{' '}
-                                <Link href="/privacy" className="text-slate-400 hover:text-white">Politykę prywatności</Link>
+                                By registering you accept{' '}
+                                <Link href="/terms" className="text-slate-400 hover:text-white">Terms</Link>
+                                {' '}and{' '}
+                                <Link href="/privacy" className="text-slate-400 hover:text-white">Privacy Policy</Link>
                             </p>
                         </Card>
                     </div>

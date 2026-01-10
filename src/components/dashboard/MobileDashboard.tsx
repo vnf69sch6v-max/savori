@@ -76,6 +76,8 @@ export default function MobileDashboard({
         <div style={{
             paddingTop: 0,
             paddingBottom: 100,
+            paddingLeft: 16,
+            paddingRight: 16,
             width: '100%',
             boxSizing: 'border-box',
             maxWidth: '100%',
@@ -179,7 +181,7 @@ export default function MobileDashboard({
             <div style={{
                 display: 'grid',
                 gridTemplateColumns: '1fr 1fr',
-                gap: 8,
+                gap: 10,
                 marginBottom: 16,
                 width: '100%',
                 boxSizing: 'border-box'
@@ -198,15 +200,24 @@ export default function MobileDashboard({
                             flexDirection: 'column',
                             alignItems: 'center',
                             justifyContent: 'center',
-                            padding: '14px 0',
+                            padding: '16px 0',
                             backgroundColor: action.bg,
-                            border: '1px solid rgba(255,255,255,0.05)',
-                            borderRadius: 12,
-                            cursor: 'pointer'
+                            border: '1px solid rgba(255,255,255,0.08)',
+                            borderRadius: 14,
+                            cursor: 'pointer',
+                            minHeight: 72
                         }}
                     >
-                        <action.icon style={{ width: 20, height: 20, color: action.color, marginBottom: 4 }} />
-                        <span style={{ fontSize: 11, color: action.color }}>{action.label}</span>
+                        <action.icon
+                            style={{
+                                width: 24,
+                                height: 24,
+                                color: action.color,
+                                marginBottom: 6,
+                                strokeWidth: 2
+                            }}
+                        />
+                        <span style={{ fontSize: 12, fontWeight: 500, color: action.color }}>{action.label}</span>
                     </button>
                 ))}
             </div>

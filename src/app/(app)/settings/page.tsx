@@ -254,7 +254,7 @@ export default function SettingsPage() {
                             onClick={() => router.push('/settings/billing')}
                             variant={currentPlan === 'free' ? 'primary' : 'outline'}
                         >
-                            {currentPlan === 'free' ? 'Ulepsz plan' : 'Zarządzaj planem'}
+                            {currentPlan === 'free' ? 'Upgrade Plan' : 'Manage Plan'}
                         </Button>
                     </div>
                 </div>

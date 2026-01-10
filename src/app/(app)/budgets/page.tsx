@@ -193,13 +193,13 @@ export default function BudgetsPage() {
                     </div>
                     <div className="flex-1">
                         <h3 className="font-semibold text-white flex items-center gap-2">
-                            Budżet Behawioralny
+                            Behavioral Budget
                             <span className="px-2 py-0.5 text-xs bg-purple-500/20 text-purple-300 rounded-full border border-purple-500/30 flex items-center gap-1">
                                 <span className="text-[10px]">👑</span> ULTRA
                             </span>
                         </h3>
                         <p className="text-sm text-slate-400">
-                            Kakeibo 2.0 • Twierdza vs Życie • Tagowanie emocji
+                            Kakeibo 2.0 • Fortress vs Life • Emotion Tagging
                         </p>
                     </div>
                     <Sparkles className="w-5 h-5 text-purple-400" />
@@ -465,11 +465,11 @@ function BudgetModal({ isOpen, onClose, existingBudget, monthKey }: BudgetModalP
             const budgetRef = doc(db, 'users', userData.id, 'budgets', monthKey);
             await setDoc(budgetRef, budgetData);
 
-            toast.success(existingBudget ? 'Budżet zaktualizowany' : 'Budżet utworzony');
+            toast.success(existingBudget ? 'Budget updated' : 'Budget created');
             onClose();
         } catch (error) {
             console.error(error);
-            toast.error('Nie udało się zapisać budżetu');
+            toast.error('Failed to save budget');
         } finally {
             setLoading(false);
         }
@@ -495,7 +495,7 @@ function BudgetModal({ isOpen, onClose, existingBudget, monthKey }: BudgetModalP
             >
                 <div className="sticky top-0 bg-slate-900 flex items-center justify-between p-6 border-b border-slate-800 z-10">
                     <h2 className="text-xl font-semibold">
-                        {existingBudget ? 'Edytuj budżet' : 'Utwórz budżet'}
+                        {existingBudget ? 'Edit Budget' : 'Create Budget'}
                     </h2>
                     <button onClick={onClose} className="p-2 hover:bg-slate-800 rounded-lg">
                         <X className="w-5 h-5" />
@@ -506,7 +506,7 @@ function BudgetModal({ isOpen, onClose, existingBudget, monthKey }: BudgetModalP
                     {/* Total Limit */}
                     <div>
                         <label className="block text-sm font-medium text-slate-300 mb-2">
-                            Miesięczny limit całkowity
+                            Monthly Total Limit
                         </label>
                         <div className="relative">
                             <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">zł</span>
@@ -522,10 +522,10 @@ function BudgetModal({ isOpen, onClose, existingBudget, monthKey }: BudgetModalP
                     {/* Category Selection */}
                     <div>
                         <label className="block text-sm font-medium text-slate-300 mb-3">
-                            Wybierz kategorie do śledzenia
+                            Select categories to track
                         </label>
                         <p className="text-xs text-slate-500 mb-4">
-                            Kliknij kategorię, aby ją włączyć i ustawić limit
+                            Click a category to enable it and set a limit
                         </p>
                         <div className="space-y-2">
                             {allCategories.map((cat) => {
@@ -556,7 +556,7 @@ function BudgetModal({ isOpen, onClose, existingBudget, monthKey }: BudgetModalP
                                             <span className="text-xl">{CATEGORY_ICONS[cat] || '📁'}</span>
                                             <span className="flex-1 text-sm font-medium">
                                                 {CATEGORY_LABELS[cat] || cat}
-                                                {isCustom && <span className="text-xs text-slate-500 ml-2">(własna)</span>}
+                                                {isCustom && <span className="text-xs text-slate-500 ml-2">(custom)</span>}
                                             </span>
 
                                             {/* Limit input when enabled */}
@@ -585,14 +585,14 @@ function BudgetModal({ isOpen, onClose, existingBudget, monthKey }: BudgetModalP
                     {/* Add Custom Category */}
                     <div>
                         <label className="block text-sm font-medium text-slate-300 mb-2">
-                            Dodaj własną kategorię
+                            Add custom category
                         </label>
                         <div className="flex gap-2">
                             <input
                                 type="text"
                                 value={customCategory}
                                 onChange={(e) => setCustomCategory(e.target.value)}
-                                placeholder="np. Kawa, Siłownia..."
+                                placeholder="e.g. Coffee, Gym..."
                                 className="flex-1 px-4 py-2 bg-slate-800 border border-slate-700 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
                                 onKeyDown={(e) => e.key === 'Enter' && addCustomCategory()}
                             />
@@ -611,9 +611,9 @@ function BudgetModal({ isOpen, onClose, existingBudget, monthKey }: BudgetModalP
                     {enabledCategories.size > 0 && (
                         <div className="p-4 bg-slate-800/50 rounded-xl">
                             <p className="text-sm text-slate-400">
-                                Śledzisz <strong className="text-white">{enabledCategories.size}</strong> kategorii
+                                Tracking <strong className="text-white">{enabledCategories.size}</strong> categories
                                 {Object.values(categoryLimits).some(v => parseFloat(v) > 0) && (
-                                    <> z łącznym limitem <strong className="text-emerald-400">
+                                    <> with total limit <strong className="text-emerald-400">
                                         {(Object.values(categoryLimits).reduce((sum, v) => sum + (parseFloat(v) || 0), 0)).toFixed(0)} zł
                                     </strong></>
                                 )}
@@ -622,7 +622,7 @@ function BudgetModal({ isOpen, onClose, existingBudget, monthKey }: BudgetModalP
                     )}
 
                     <Button onClick={handleSave} disabled={loading} className="w-full">
-                        {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Zapisz budżet'}
+                        {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Save Budget'}
                     </Button>
                 </div>
             </motion.div>

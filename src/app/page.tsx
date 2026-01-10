@@ -31,14 +31,14 @@ function LiveDashboard() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
       >
-        <div className="text-[10px] text-slate-400 mb-1">Dostępne środki</div>
+        <div className="text-[10px] text-slate-400 mb-1">Available Funds</div>
         <motion.div
           className="text-2xl font-bold text-white"
           key={Math.floor(balance)}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
         >
-          {balance.toFixed(2)} zł
+          €{balance.toFixed(2)}
         </motion.div>
       </motion.div>
 
@@ -68,7 +68,7 @@ function LiveDashboard() {
       <div className="space-y-2">
         {[
           { name: 'Netflix', amount: '-19.99', icon: '🎬' },
-          { name: 'Żabka', amount: '-23.10', icon: '🛒' },
+          { name: 'Spar', amount: '-23.10', icon: '🛒' },
           { name: 'Uber', amount: '-45.00', icon: '🚗' },
         ].map((tx, i) => (
           <motion.div
@@ -83,9 +83,9 @@ function LiveDashboard() {
             </div>
             <div className="flex-1 min-w-0">
               <div className="text-[10px] font-medium text-white truncate">{tx.name}</div>
-              <div className="text-[8px] text-slate-500">Dzisiaj</div>
+              <div className="text-[8px] text-slate-500">Today</div>
             </div>
-            <div className="text-[10px] font-medium text-white">{tx.amount} zł</div>
+            <div className="text-[10px] font-medium text-white">€{tx.amount.replace('-', '')}</div>
           </motion.div>
         ))}
       </div>
@@ -178,7 +178,7 @@ export default function LandingPage() {
           </div>
           <Link href="/login">
             <Button variant="ghost" className="text-slate-300 hover:text-white">
-              Zaloguj się
+              Log In
             </Button>
           </Link>
         </div>
@@ -214,9 +214,9 @@ export default function LandingPage() {
             transition={{ delay: 0.1, duration: 0.8 }}
             className="text-5xl md:text-7xl lg:text-8xl font-bold mb-6 tracking-tight leading-[1.1]"
           >
-            Przestań się<br />
+            Stop worrying<br />
             <span className="bg-gradient-to-r from-emerald-400 via-cyan-400 to-blue-400 bg-clip-text text-transparent">
-              martwić o pieniądze
+              about money
             </span>
           </motion.h1>
 
@@ -226,9 +226,9 @@ export default function LandingPage() {
             transition={{ delay: 0.3, duration: 0.8 }}
             className="text-xl md:text-2xl text-slate-400 mb-12 max-w-2xl mx-auto"
           >
-            AI automatycznie analizuje wydatki i podpowiada gdzie zaoszczędzić.
+            AI automatically analyzes expenses and suggests where to save.
             <br className="hidden md:block" />
-            <span className="text-emerald-400 font-medium">Średnio 847 zł miesięcznie więcej w kieszeni.</span>
+            <span className="text-emerald-400 font-medium">Average €200 monthly more in your pocket.</span>
           </motion.p>
 
           {/* iPhone + Floating Cards - IMPROVED COMPOSITION */}
@@ -249,7 +249,7 @@ export default function LandingPage() {
               <FloatingCard
                 icon={Brain}
                 title="AI Insights"
-                value="99% dokładność"
+                value="99% accuracy"
                 color="from-purple-600/90 to-purple-500/90"
                 delay={1.0}
               />
@@ -257,8 +257,8 @@ export default function LandingPage() {
             <div className="absolute top-1/2 -right-8 md:right-4 z-10">
               <FloatingCard
                 icon={TrendingUp}
-                title="Oszczędności"
-                value="+847 zł/msc"
+                title="Savings"
+                value="+€200/mo"
                 color="from-emerald-600/90 to-emerald-500/90"
                 delay={1.2}
               />
@@ -266,7 +266,7 @@ export default function LandingPage() {
             <div className="absolute bottom-1/4 left-4 md:left-16 z-10">
               <FloatingCard
                 icon={Target}
-                title="Cele osiągnięte"
+                title="Goals Reached"
                 value="2,450+"
                 color="from-amber-600/90 to-amber-500/90"
                 delay={1.4}
@@ -283,12 +283,12 @@ export default function LandingPage() {
           >
             <Link href="/register">
               <Button className="h-14 px-8 text-base font-medium rounded-full bg-white text-black hover:bg-slate-100 transition-all hover:scale-105 shadow-2xl shadow-white/20">
-                Zacznij oszczędzać za darmo
+                Start Saving for Free
                 <ArrowRight className="w-4 h-4 ml-2" />
               </Button>
             </Link>
             <p className="text-sm text-slate-500">
-              ✓ Bez karty kredytowej &nbsp;•&nbsp; ✓ 10,000+ użytkowników
+              ✓ No credit card required &nbsp;•&nbsp; ✓ 10,000+ users
             </p>
           </motion.div>
         </motion.div>
@@ -314,9 +314,9 @@ export default function LandingPage() {
       <div className="max-w-5xl mx-auto px-6 py-32">
         <div className="grid md:grid-cols-3 gap-8">
           {[
-            { icon: Brain, title: 'AI analizuje za Ciebie', desc: 'Automatyczna kategoryzacja i wykrywanie anomalii' },
-            { icon: Target, title: 'Osiągnij cele szybciej', desc: 'Inteligentne rekomendacje oszczędności' },
-            { icon: Zap, title: 'Skanuj paragony', desc: 'Wystarczy zdjęcie - resztę zrobi AI' },
+            { icon: Brain, title: 'AI Analyzes for You', desc: 'Automatic categorization and anomaly detection' },
+            { icon: Target, title: 'Reach Goals Faster', desc: 'Smart savings recommendations' },
+            { icon: Zap, title: 'Scan Receipts', desc: 'Just snap a photo - AI does the rest' },
           ].map((feature, i) => (
             <motion.div
               key={feature.title}
@@ -341,9 +341,9 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-slate-600">
           <p>© 2026 Savori Inc.</p>
           <div className="flex gap-8">
-            <Link href="#" className="hover:text-slate-400">Prywatność</Link>
-            <Link href="#" className="hover:text-slate-400">Regulamin</Link>
-            <Link href="#" className="hover:text-slate-400">Kontakt</Link>
+            <Link href="#" className="hover:text-slate-400">Privacy</Link>
+            <Link href="#" className="hover:text-slate-400">Terms</Link>
+            <Link href="#" className="hover:text-slate-400">Contact</Link>
           </div>
         </div>
       </footer>

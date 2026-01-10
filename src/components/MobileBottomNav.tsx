@@ -60,7 +60,10 @@ export default function MobileBottomNav() {
                                 animate={isActive ? { scale: 1.05 } : { scale: 1 }}
                                 className={`relative ${isActive ? 'text-emerald-400' : 'text-slate-400'}`}
                             >
-                                <item.icon className="w-5 h-5" />
+                                <item.icon
+                                    className="w-[22px] h-[22px]"
+                                    strokeWidth={2}
+                                />
 
                                 {/* Scan button glow */}
                                 {item.href === '/scan' && (
@@ -68,8 +71,8 @@ export default function MobileBottomNav() {
                                 )}
                             </motion.div>
 
-                            {/* Label - smaller text */}
-                            <span className={`text-[9px] mt-0.5 truncate max-w-[56px] text-center ${isActive ? 'text-emerald-400 font-medium' : 'text-slate-500'}`}>
+                            {/* Label - slightly larger for readability */}
+                            <span className={`text-[10px] mt-1 truncate max-w-[56px] text-center ${isActive ? 'text-emerald-400 font-medium' : 'text-slate-500'}`}>
                                 {item.label}
                             </span>
                         </Link>

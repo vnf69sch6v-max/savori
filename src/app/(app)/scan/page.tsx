@@ -60,19 +60,19 @@ export default function ScanPage() {
         if (isFree) {
             const canScan = await checkCanScan();
             if (!canScan) {
-                openUpgrade(`Wykorzystałeś limit ${remainingScans} skanów w tym miesiącu. Przejdź na Pro po nielimitowane skany!`);
+                openUpgrade(`You've used your limit of ${remainingScans} scans this month. Upgrade to Pro for unlimited scans!`);
                 return;
             }
         }
 
         if (!file.type.startsWith('image/')) {
-            toast.error('Wybierz plik obrazu');
+            toast.error('Please select an image file');
             return;
         }
 
         // Check size (max 10MB)
         if (file.size > 10 * 1024 * 1024) {
-            toast.error('Plik jest za duży (max 10MB)');
+            toast.error('File too large (max 10MB)');
             return;
         }
 
@@ -126,13 +126,13 @@ export default function ScanPage() {
                     date: result.data.date.split('T')[0],
                 });
                 setStep('review');
-                toast.success('Paragon przeanalizowany!');
+                toast.success('Receipt analyzed!');
             } else {
-                throw new Error(result.error || 'Nie udało się przetworzyć paragonu');
+                throw new Error(result.error || 'Failed to process receipt');
             }
         } catch (error) {
-            console.error('Błąd przetwarzania:', error);
-            toast.error('Nie udało się przeanalizować paragonu. Spróbuj ponownie.');
+            console.error('Processing error:', error);
+            toast.error('Failed to analyze receipt. Please try again.');
             setStep('capture');
         }
     };
@@ -157,7 +157,7 @@ export default function ScanPage() {
 
             if (fraudCheck.confidence > 50 && !fraudCheck.isDuplicate) {
                 // Low confidence warning - show but allow
-                toast(fraudCheck.reason || 'Sprawdź czy to nie duplikat', { icon: '⚠️' });
+                toast(fraudCheck.reason || 'Check if this is a duplicate', { icon: '⚠️' });
             }
         }
 
@@ -225,11 +225,11 @@ export default function ScanPage() {
             // Log security event
             await logSecurityEvent(userData.id, SecurityEvents.receiptScan(editedData.merchant, expenseData.amount));
 
-            toast.success('Wydatek zapisany!');
+            toast.success('Expense saved!');
             router.push('/expenses');
         } catch (error) {
-            console.error('Błąd zapisywania:', error);
-            toast.error('Nie udało się zapisać wydatku');
+            console.error('Save error:', error);
+            toast.error('Failed to save expense');
             setStep('review');
         }
     };
@@ -257,7 +257,7 @@ export default function ScanPage() {
                 <div className="flex justify-center mb-4">
                     <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-400 text-sm">
                         <Lock className="w-3 h-3" />
-                        Pozostało {remainingScans} skanów w tym miesiącu
+                        {remainingScans} scans remaining this month
                     </div>
                 </div>
             )}
@@ -268,9 +268,9 @@ export default function ScanPage() {
                     <Sparkles className="w-4 h-4" />
                     Powered by Gemini AI
                 </div>
-                <h1 className="text-2xl md:text-3xl font-bold mb-2">Skanuj paragon</h1>
+                <h1 className="text-2xl md:text-3xl font-bold mb-2">Scan receipt</h1>
                 <p className="text-slate-400">
-                    Zrób zdjęcie lub wybierz plik - AI automatycznie wyciągnie dane
+                    Take a photo or select a file - AI will automatically extract data
                 </p>
             </div>
 
@@ -292,13 +292,13 @@ export default function ScanPage() {
                                     <Camera className="w-10 h-10 text-emerald-400" />
                                 </div>
                                 <p className="text-lg font-medium mb-2">
-                                    Kliknij lub upuść zdjęcie paragonu
+                                    Click or drop receipt image
                                 </p>
                                 <p className="text-slate-400 text-sm mb-6">
-                                    Obsługiwane formaty: JPG, PNG, WebP (max 10MB)
+                                    Supported formats: JPG, PNG, WebP (max 10MB)
                                 </p>
                                 <Button icon={<Upload className="w-5 h-5" />}>
-                                    Wybierz plik
+                                    Select file
                                 </Button>
                             </div>
                             <input
@@ -314,8 +314,8 @@ export default function ScanPage() {
                         {/* Tips */}
                         <div className="mt-6 p-4 rounded-xl bg-slate-800/30 border border-slate-700/30">
                             <p className="text-sm text-slate-400">
-                                <span className="text-white font-medium">Wskazówka:</span> Dla najlepszych wyników
-                                upewnij się, że paragon jest dobrze oświetlony i tekst jest czytelny.
+                                <span className="text-white font-medium">Tip:</span> For best results
+                                ensure the receipt is well-lit and text is readable.
                             </p>
                         </div>
                     </motion.div>
@@ -344,10 +344,10 @@ export default function ScanPage() {
                             )}
                             <div className="flex items-center justify-center gap-3 mb-4">
                                 <Sparkles className="w-5 h-5 text-emerald-400 animate-pulse" />
-                                <span className="text-lg font-medium">AI analizuje paragon...</span>
+                                <span className="text-lg font-medium">AI is analyzing receipt...</span>
                             </div>
                             <p className="text-slate-400 text-sm">
-                                Może to potrwać kilka sekund
+                                This may take a few seconds
                             </p>
                         </Card>
                     </motion.div>
@@ -363,7 +363,7 @@ export default function ScanPage() {
                     >
                         <Card className="p-6">
                             <div className="flex items-center justify-between mb-6">
-                                <h2 className="text-lg font-semibold">Sprawdź dane</h2>
+                                <h2 className="text-lg font-semibold">Verify data</h2>
                                 <div className="flex gap-2">
                                     <Button variant="ghost" size="sm" onClick={reset}>
                                         <RefreshCw className="w-4 h-4" />
@@ -374,7 +374,7 @@ export default function ScanPage() {
                                         onClick={() => setEditMode(!editMode)}
                                     >
                                         <Edit3 className="w-4 h-4 mr-1" />
-                                        {editMode ? 'Gotowe' : 'Edytuj'}
+                                        {editMode ? 'Done' : 'Edit'}
                                     </Button>
                                 </div>
                             </div>
@@ -391,7 +391,7 @@ export default function ScanPage() {
                                         />
                                         <div className="absolute top-2 right-2 px-2 py-1 rounded-full bg-emerald-500/90 text-xs text-white flex items-center gap-1">
                                             <Check className="w-3 h-3" />
-                                            {Math.round((extractedData.confidence || 0) * 100)}% pewności
+                                            {Math.round((extractedData.confidence || 0) * 100)}% confidence
                                         </div>
                                     </div>
                                 )}
@@ -401,12 +401,12 @@ export default function ScanPage() {
                                     {editMode ? (
                                         <>
                                             <Input
-                                                label="Nazwa sklepu"
+                                                label="Merchant"
                                                 value={editedData.merchant}
                                                 onChange={(e) => setEditedData({ ...editedData, merchant: e.target.value })}
                                             />
                                             <Input
-                                                label="Kwota (PLN)"
+                                                label="Amount (PLN)"
                                                 type="number"
                                                 step="0.01"
                                                 value={editedData.amount}
@@ -414,7 +414,7 @@ export default function ScanPage() {
                                             />
                                             <div>
                                                 <label className="block text-sm font-medium text-slate-300 mb-1.5">
-                                                    Kategoria
+                                                    Category
                                                 </label>
                                                 <select
                                                     value={editedData.category}
@@ -429,7 +429,7 @@ export default function ScanPage() {
                                                 </select>
                                             </div>
                                             <Input
-                                                label="Data"
+                                                label="Date"
                                                 type="date"
                                                 value={editedData.date}
                                                 onChange={(e) => setEditedData({ ...editedData, date: e.target.value })}
@@ -438,7 +438,7 @@ export default function ScanPage() {
                                     ) : (
                                         <>
                                             <div className="p-4 rounded-xl bg-slate-800/30">
-                                                <p className="text-sm text-slate-400 mb-1">Sklep</p>
+                                                <p className="text-sm text-slate-400 mb-1">Merchant</p>
                                                 <p className="font-medium text-lg">{editedData.merchant}</p>
                                                 {extractedData.merchant.nip && (
                                                     <p className="text-xs text-slate-500 mt-1">
@@ -447,19 +447,19 @@ export default function ScanPage() {
                                                 )}
                                             </div>
                                             <div className="p-4 rounded-xl bg-slate-800/30">
-                                                <p className="text-sm text-slate-400 mb-1">Kwota</p>
+                                                <p className="text-sm text-slate-400 mb-1">Amount</p>
                                                 <p className="font-bold text-2xl text-emerald-400">
                                                     {formatMoney(parseMoneyToCents(editedData.amount))}
                                                 </p>
                                             </div>
                                             <div className="p-4 rounded-xl bg-slate-800/30">
-                                                <p className="text-sm text-slate-400 mb-1">Kategoria</p>
+                                                <p className="text-sm text-slate-400 mb-1">Category</p>
                                                 <p className="font-medium">
                                                     {CATEGORY_ICONS[editedData.category]} {CATEGORY_LABELS[editedData.category]}
                                                 </p>
                                             </div>
                                             <div className="p-4 rounded-xl bg-slate-800/30">
-                                                <p className="text-sm text-slate-400 mb-1">Data</p>
+                                                <p className="text-sm text-slate-400 mb-1">Date</p>
                                                 <p className="font-medium">{editedData.date}</p>
                                             </div>
                                         </>
@@ -469,7 +469,7 @@ export default function ScanPage() {
                                     {extractedData.items && extractedData.items.length > 0 && (
                                         <div className="p-4 rounded-xl bg-slate-800/30">
                                             <p className="text-sm text-slate-400 mb-2">
-                                                Produkty ({extractedData.items.length})
+                                                Items ({extractedData.items.length})
                                             </p>
                                             <div className="space-y-2 max-h-40 overflow-y-auto">
                                                 {extractedData.items.slice(0, 5).map((item, i) => (
@@ -480,7 +480,7 @@ export default function ScanPage() {
                                                 ))}
                                                 {extractedData.items.length > 5 && (
                                                     <p className="text-xs text-slate-500">
-                                                        +{extractedData.items.length - 5} więcej...
+                                                        +{extractedData.items.length - 5} more...
                                                     </p>
                                                 )}
                                             </div>
@@ -493,11 +493,11 @@ export default function ScanPage() {
                             <div className="flex gap-3 mt-6 pt-6 border-t border-slate-700/50">
                                 <Button variant="outline" className="flex-1" onClick={reset}>
                                     <X className="w-4 h-4 mr-2" />
-                                    Anuluj
+                                    Cancel
                                 </Button>
                                 <Button className="flex-1" onClick={() => saveExpense()}>
                                     <Check className="w-4 h-4 mr-2" />
-                                    Zapisz wydatek
+                                    Save expense
                                 </Button>
                             </div>
                         </Card>
@@ -514,7 +514,7 @@ export default function ScanPage() {
                     >
                         <Card className="p-8 text-center">
                             <Loader2 className="w-12 h-12 text-emerald-400 animate-spin mx-auto mb-4" />
-                            <p className="text-lg font-medium">Zapisywanie wydatku...</p>
+                            <p className="text-lg font-medium">Saving expense...</p>
                         </Card>
                     </motion.div>
                 )}
@@ -536,10 +536,10 @@ export default function ScanPage() {
                             <div className="w-16 h-16 rounded-full bg-red-500/10 flex items-center justify-center mx-auto mb-4">
                                 <AlertTriangle className="w-8 h-8 text-red-400" />
                             </div>
-                            <h3 className="text-xl font-semibold mb-2">Możliwy duplikat!</h3>
+                            <h3 className="text-xl font-semibold mb-2">Possible duplicate!</h3>
                             <p className="text-slate-400 mb-4">{fraudWarning.reason}</p>
                             <p className="text-sm text-slate-500 mb-6">
-                                Pewność: {fraudWarning.confidence}%
+                                Confidence: {fraudWarning.confidence}%
                             </p>
                             <div className="flex gap-3">
                                 <Button
@@ -547,14 +547,14 @@ export default function ScanPage() {
                                     className="flex-1"
                                     onClick={() => setFraudWarning(null)}
                                 >
-                                    Anuluj
+                                    Cancel
                                 </Button>
                                 <Button
                                     variant="danger"
                                     className="flex-1"
                                     onClick={() => saveExpense(true)}
                                 >
-                                    Zapisz mimo to
+                                    Save anyway
                                 </Button>
                             </div>
                         </div>

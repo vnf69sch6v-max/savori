@@ -160,11 +160,11 @@ export default function ExpensesPage() {
                     <div className="flex gap-3">
                         <Link href="/scan">
                             <Button variant="outline" icon={<Camera className="w-5 h-5" />}>
-                                Skanuj
+                                Scan
                             </Button>
                         </Link>
                         <Button icon={<Plus className="w-5 h-5" />} onClick={() => setShowAddModal(true)}>
-                            Dodaj
+                            Add
                         </Button>
                     </div>
                 </div>
@@ -180,7 +180,7 @@ export default function ExpensesPage() {
                         <div className="flex items-center gap-2 px-2 cursor-pointer hover:bg-slate-800/30 rounded-lg transition-colors py-1" onClick={resetDate}>
                             <Calendar className="w-4 h-4 text-emerald-400" />
                             <span className="text-lg font-medium capitalize text-slate-200">
-                                {viewDate.toLocaleString('pl-PL', { month: 'long', year: 'numeric' })}
+                                {viewDate.toLocaleString('en-US', { month: 'long', year: 'numeric' })}
                             </span>
                         </div>
 
