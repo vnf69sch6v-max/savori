@@ -278,7 +278,7 @@ export default function AnalyticsPage() {
 
     const trendData = Object.entries(dailyData)
         .map(([date, amount]) => ({
-            date: new Date(date).toLocaleDateString('pl-PL', { day: 'numeric', month: 'short' }),
+            date: new Date(date).toLocaleDateString('en-US', { day: 'numeric', month: 'short' }),
             fullDate: date,
             amount: amount / 100,
         }))
@@ -288,7 +288,7 @@ export default function AnalyticsPage() {
     // Top merchants
     const merchantData = Object.entries(
         expenses.reduce((acc, e) => {
-            const name = e.merchant?.name || 'Nieznany';
+            const name = e.merchant?.name || 'Unknown';
             acc[name] = (acc[name] || 0) + (e.amount || 0);
             return acc;
         }, {} as Record<string, number>)
@@ -380,7 +380,7 @@ export default function AnalyticsPage() {
             ) : (
                 <>
                     {/* AI Analyst Widget - PRO ONLY */}
-                    <PremiumFeatureGate requiredPlan="pro" featureName="AI Analityk">
+                    <PremiumFeatureGate requiredPlan="pro" featureName="AI Analyst">
                         <div className="mb-6 grid lg:grid-cols-3 gap-6">
                             <div className="lg:col-span-2">
                                 <AICommentary
@@ -502,7 +502,7 @@ export default function AnalyticsPage() {
                     {/* Anonymous Benchmarks Section */}
                     {expenses.length >= 5 && (
                         <div className="mb-6">
-                            <PremiumFeatureGate requiredPlan="pro" featureName="Anonimowe Benchmarki">
+                            <PremiumFeatureGate requiredPlan="pro" featureName="Anonymous Benchmarks">
                                 <BenchmarkCard
                                     benchmark={benchmarkService.calculateBenchmarks(expenses)}
                                 />

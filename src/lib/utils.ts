@@ -9,15 +9,15 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 /**
- * Formatuj kwotę w groszach do czytelnej formy
- * @param amountInCents - Kwota w groszach (np. 4550)
- * @param currency - Kod waluty (domyślnie PLN)
- * @returns Sformatowana kwota (np. "45,50 zł")
+ * Format amount in cents to a readable currency string
+ * @param amountInCents - Amount in cents (e.g. 4550)
+ * @param currency - Currency code (default PLN)
+ * @returns Formatted string (e.g. "$45.50")
  */
 export function formatMoney(amountInCents: number, currency: string = 'PLN'): string {
     const amount = amountInCents / 100;
 
-    return new Intl.NumberFormat('pl-PL', {
+    return new Intl.NumberFormat('en-US', {
         style: 'currency',
         currency,
         minimumFractionDigits: 2,
@@ -26,38 +26,38 @@ export function formatMoney(amountInCents: number, currency: string = 'PLN'): st
 }
 
 /**
- * Formatuj kwotę bez groszy gdy są zerowe (czystrzy wygląd Apple-style)
- * @param amountInCents - Kwota w groszach
- * @returns Sformatowana kwota (np. "45 zł" lub "45,50 zł")
+ * Format amount without cents if they are zero (Apple-style)
+ * @param amountInCents - Amount in cents
+ * @returns Formatted string (e.g. "$45" or "$45.50")
  */
 export function formatMoneyShort(amountInCents: number): string {
     const amount = amountInCents / 100;
     const hasDecimals = amount % 1 !== 0;
 
-    return new Intl.NumberFormat('pl-PL', {
+    return new Intl.NumberFormat('en-US', {
         style: 'currency',
-        currency: 'PLN',
+        currency: 'USD',
         minimumFractionDigits: hasDecimals ? 2 : 0,
         maximumFractionDigits: hasDecimals ? 2 : 0,
     }).format(amount);
 }
 
 /**
- * Parsuj kwotę tekstową do groszy
- * @param text - Tekst z kwotą (np. "45,50", "45.50 zł")
- * @returns Kwota w groszach
+ * Parse text amount to cents
+ * @param text - Text with amount (e.g. "45.50", "45.50 USD")
+ * @returns Amount in cents
  */
 export function parseMoneyToCents(text: string): number {
     // Usuń wszystko oprócz cyfr, kropek i przecinków
     const cleaned = text.replace(/[^\d.,]/g, '');
-    // Zamień przecinek na kropkę
+    // Replace comma with dot if needed
     const normalized = cleaned.replace(',', '.');
     // Parse i pomnóż przez 100
     return Math.round(parseFloat(normalized) * 100);
 }
 
 /**
- * Formatuj datę do polskiego formatu
+ * Format date to English format
  */
 export function formatDate(date: Date | string, format: 'short' | 'long' | 'time' = 'short'): string {
     const d = typeof date === 'string' ? new Date(date) : date;
@@ -76,11 +76,11 @@ export function formatDate(date: Date | string, format: 'short' | 'long' | 'time
             break;
     }
 
-    return new Intl.DateTimeFormat('pl-PL', options).format(d);
+    return new Intl.DateTimeFormat('en-US', options).format(d);
 }
 
 /**
- * Polskie nazwy kategorii wydatków
+ * Expense category labels
  */
 export const CATEGORY_LABELS: Record<string, string> = {
     groceries: 'Groceries',
@@ -96,7 +96,7 @@ export const CATEGORY_LABELS: Record<string, string> = {
 };
 
 /**
- * Kolory kategorii dla wykresów
+ * Category colors for charts
  */
 export const CATEGORY_COLORS: Record<string, string> = {
     groceries: '#10b981',
@@ -112,7 +112,7 @@ export const CATEGORY_COLORS: Record<string, string> = {
 };
 
 /**
- * Ikony kategorii (emoji)
+ * Category icons (emoji)
  */
 export const CATEGORY_ICONS: Record<string, string> = {
     groceries: '🛒',
@@ -128,7 +128,7 @@ export const CATEGORY_ICONS: Record<string, string> = {
 };
 
 /**
- * Waliduj polski NIP
+ * Validate Polish NIP (kept for compatibility)
  */
 export function validateNIP(nip: string): boolean {
     // Usuń kreski i spacje
@@ -152,7 +152,7 @@ export function validateNIP(nip: string): boolean {
 }
 
 /**
- * Generuj losowe ID
+ * Generate random ID
  */
 export function generateId(prefix: string = ''): string {
     const timestamp = Date.now().toString(36);

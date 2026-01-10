@@ -149,10 +149,11 @@ function UpgradePrompt({
 
             {/* Description */}
             <p className="text-sm text-slate-400 mb-4">
-                Ta funkcja jest dostępna w planie{' '}
+                This feature is available in the{' '}
                 <span className={`font-semibold ${config.textColor}`}>
                     {config.label}
-                </span>
+                </span>{' '}
+                plan
             </p>
 
             {/* Upgrade button */}
@@ -163,13 +164,13 @@ function UpgradePrompt({
                 className={`inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r ${config.color} text-white font-semibold shadow-lg hover:shadow-xl transition-shadow`}
             >
                 <Icon className="w-4 h-4" />
-                Odblokuj {config.label}
+                Unlock {config.label}
                 <ArrowRight className="w-4 h-4" />
             </motion.button>
 
             {/* Price hint */}
             <p className="text-xs text-slate-500 mt-3">
-                Już od 12,42 zł/msc
+                Starting from $2.99/mo
             </p>
         </div>
     );
