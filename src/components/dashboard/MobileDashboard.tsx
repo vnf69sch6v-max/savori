@@ -74,10 +74,11 @@ export default function MobileDashboard({
 
     return (
         <div style={{
-            padding: '8px 16px 100px 16px',
+            paddingTop: 0,
+            paddingBottom: 100,
             width: '100%',
             boxSizing: 'border-box',
-            maxWidth: '100vw',
+            maxWidth: '100%',
             overflowX: 'hidden'
         }}>
 
