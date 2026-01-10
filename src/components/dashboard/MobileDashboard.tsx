@@ -135,7 +135,7 @@ export default function MobileDashboard({
                 <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
                     <Wallet style={{ width: 14, height: 14, color: '#34d399' }} />
                     <span style={{ fontSize: 10, color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                        Bezpiecznie do wydania
+                        Safe to spend
                     </span>
                 </div>
 
@@ -144,12 +144,12 @@ export default function MobileDashboard({
                     {formatMoney(safeToSpend)}
                 </div>
                 <div style={{ fontSize: 11, color: '#6b7280', marginBottom: 12 }}>
-                    ~{formatMoney(dailySafe).replace(/,00.*$/, '')} dziennie
+                    ~{formatMoney(dailySafe).replace(/,00.*$/, '')} daily
                 </div>
 
                 {/* Progress */}
                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 10, color: '#9ca3af', marginBottom: 4 }}>
-                    <span>Budżet</span>
+                    <span>Budget</span>
                     <span>{Math.round(percentageUsed)}%</span>
                 </div>
                 <div style={{
@@ -170,7 +170,7 @@ export default function MobileDashboard({
 
                 {/* Stats */}
                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11 }}>
-                    <span style={{ color: '#f87171' }}>Wydane: {formatMoney(spent)}</span>
+                    <span style={{ color: '#f87171' }}>Spent: {formatMoney(spent)}</span>
                     <span style={{ color: '#64748b' }}>Limit: {formatMoney(limit)}</span>
                 </div>
             </div>
@@ -185,10 +185,10 @@ export default function MobileDashboard({
                 boxSizing: 'border-box'
             }}>
                 {[
-                    { label: 'Skanuj', icon: ScanLine, color: '#34d399', bg: 'rgba(52,211,153,0.1)', onClick: onScanClick },
-                    { label: 'Dodaj', icon: Plus, color: '#60a5fa', bg: 'rgba(96,165,250,0.1)', onClick: onAddClick },
-                    { label: 'Impuls', icon: ShieldAlert, color: '#fbbf24', bg: 'rgba(251,191,36,0.1)', onClick: onImpulseClick },
-                    { label: 'Czat AI', icon: MessageSquare, color: '#a78bfa', bg: 'rgba(167,139,250,0.1)', onClick: onChatClick },
+                    { label: 'Scan', icon: ScanLine, color: '#34d399', bg: 'rgba(52,211,153,0.1)', onClick: onScanClick },
+                    { label: 'Add', icon: Plus, color: '#60a5fa', bg: 'rgba(96,165,250,0.1)', onClick: onAddClick },
+                    { label: 'Impulse', icon: ShieldAlert, color: '#fbbf24', bg: 'rgba(251,191,36,0.1)', onClick: onImpulseClick },
+                    { label: 'AI Chat', icon: MessageSquare, color: '#a78bfa', bg: 'rgba(167,139,250,0.1)', onClick: onChatClick },
                 ].map((action, i) => (
                     <button
                         key={i}
@@ -218,7 +218,7 @@ export default function MobileDashboard({
                 alignItems: 'center',
                 marginBottom: 8
             }}>
-                <span style={{ fontSize: 13, fontWeight: 500, color: 'white' }}>Ostatnie transakcje</span>
+                <span style={{ fontSize: 13, fontWeight: 500, color: 'white' }}>Recent transactions</span>
                 <Link href="/expenses" style={{
                     fontSize: 11,
                     color: '#34d399',
@@ -226,7 +226,7 @@ export default function MobileDashboard({
                     alignItems: 'center',
                     textDecoration: 'none'
                 }}>
-                    Wszystkie <ChevronRight style={{ width: 12, height: 12, marginLeft: 2 }} />
+                    See all <ChevronRight style={{ width: 12, height: 12, marginLeft: 2 }} />
                 </Link>
             </div>
 
@@ -234,7 +234,7 @@ export default function MobileDashboard({
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                 {displayExpenses.map(expense => {
                     const category = expense.merchant?.category || 'other';
-                    const merchantName = expense.merchant?.name || 'Transakcja';
+                    const merchantName = expense.merchant?.name || 'Transaction';
 
                     return (
                         <div
@@ -269,7 +269,7 @@ export default function MobileDashboard({
                 })}
                 {displayExpenses.length === 0 && (
                     <div style={{ textAlign: 'center', padding: 20, color: '#64748b', fontSize: 13 }}>
-                        Brak transakcji
+                        No transactions
                     </div>
                 )}
             </div>
@@ -285,7 +285,7 @@ export default function MobileDashboard({
                         border: '1px solid rgba(52,211,153,0.3)',
                         textAlign: 'center'
                     }}>
-                        <span style={{ fontSize: 11, color: '#34d399' }}>✨ Odblokuj Pro i zobacz prognozę wydatków</span>
+                        <span style={{ fontSize: 11, color: '#34d399' }}>✨ Unlock Pro and see spending forecast</span>
                     </div>
                 </Link>
             )}

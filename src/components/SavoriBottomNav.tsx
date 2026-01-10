@@ -50,8 +50,8 @@ function NavItem({ href, icon: Icon, label, isActive, onClick, accentColor = 'em
             >
                 <Icon
                     className={`w-6 h-6 transition-colors duration-200 ${isActive
-                            ? `text-${accentColor}-400`
-                            : 'text-slate-500 group-hover:text-slate-300'
+                        ? `text-${accentColor}-400`
+                        : 'text-slate-500 group-hover:text-slate-300'
                         }`}
                     fill={isActive ? 'currentColor' : 'none'}
                     strokeWidth={isActive ? 1.5 : 2}
@@ -61,8 +61,8 @@ function NavItem({ href, icon: Icon, label, isActive, onClick, accentColor = 'em
             {/* Label */}
             <span
                 className={`text-[10px] mt-1 font-medium transition-colors duration-200 ${isActive
-                        ? `text-${accentColor}-400`
-                        : 'text-slate-500 group-hover:text-slate-300'
+                    ? `text-${accentColor}-400`
+                    : 'text-slate-500 group-hover:text-slate-300'
                     }`}
             >
                 {label}
@@ -113,7 +113,7 @@ export default function SavoriBottomNav() {
                                 </span>
                             </motion.div>
                             <span className="text-[10px] mt-1 font-medium text-slate-500 group-hover:text-slate-300 transition-colors">
-                                Głos
+                                Voice
                             </span>
                         </button>
 
@@ -121,7 +121,7 @@ export default function SavoriBottomNav() {
                         <NavItem
                             href="/budgets"
                             icon={PieChart}
-                            label="Budżet"
+                            label="Budget"
                             isActive={isActive('/budgets')}
                             onClick={handleNavClick}
                             accentColor="emerald"
@@ -131,7 +131,7 @@ export default function SavoriBottomNav() {
                         <NavItem
                             href="/expenses"
                             icon={Receipt}
-                            label="Transakcje"
+                            label="Transactions"
                             isActive={isActive('/expenses')}
                             onClick={handleNavClick}
                             accentColor="emerald"
@@ -147,13 +147,13 @@ export default function SavoriBottomNav() {
                                 <motion.div
                                     whileTap={{ scale: 0.95 }}
                                     className={`flex flex-col items-center justify-center w-14 h-14 rounded-2xl transition-all duration-300 ${isActive('/dashboard')
-                                            ? 'bg-emerald-500 shadow-lg shadow-emerald-500/30'
-                                            : 'bg-violet-500/90 shadow-lg shadow-violet-500/20'
+                                        ? 'bg-emerald-500 shadow-lg shadow-emerald-500/30'
+                                        : 'bg-violet-500/90 shadow-lg shadow-violet-500/20'
                                         }`}
                                 >
                                     <Home className="w-6 h-6 text-white" strokeWidth={2} />
                                     <span className="text-[9px] font-semibold text-white/90 mt-0.5">
-                                        Pulpit
+                                        Home
                                     </span>
                                 </motion.div>
                             </Link>

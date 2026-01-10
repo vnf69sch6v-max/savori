@@ -12,11 +12,11 @@ import {
 } from 'lucide-react';
 
 const NAV_ITEMS = [
-    { href: '/dashboard', icon: Home, label: 'Główna' },
-    { href: '/scan', icon: Camera, label: 'Skan', highlight: true },
-    { href: '/expenses', icon: Receipt, label: 'Wydatki' },
-    { href: '/budgets', icon: Wallet, label: 'Budżet' },
-    { href: '/settings', icon: Settings, label: 'Ustawienia' },
+    { href: '/dashboard', icon: Home, label: 'Home' },
+    { href: '/scan', icon: Camera, label: 'Scan', highlight: true },
+    { href: '/expenses', icon: Receipt, label: 'Expenses' },
+    { href: '/budgets', icon: Wallet, label: 'Budget' },
+    { href: '/settings', icon: Settings, label: 'Settings' },
 ];
 
 export default function MobileBottomNav() {

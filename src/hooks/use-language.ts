@@ -17,9 +17,9 @@ const EUR_RATE = 4.30;
 export const useLanguage = create<LanguageState>()(
     persist(
         (set) => ({
-            language: 'pl',
-            currency: 'PLN',
-            t: translations.pl,
+            language: 'en',
+            currency: 'EUR',
+            t: translations.en,
             setLanguage: (lang) => set({
                 language: lang,
                 currency: lang === 'pl' ? 'PLN' : 'EUR',
