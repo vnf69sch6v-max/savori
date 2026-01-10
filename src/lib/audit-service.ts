@@ -1,5 +1,5 @@
 import { db } from '@/lib/firebase';
-import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { collection, addDoc, serverTimestamp, FieldValue } from 'firebase/firestore';
 
 export type AuditActionType =
     | 'EXPENSE_CREATE'
@@ -16,8 +16,8 @@ export interface AuditLogEntry {
     action: AuditActionType;
     entity: string; // e.g., 'expense', 'budget'
     entityId?: string;
-    details?: Record<string, any>;
-    createdAt: any;
+    details?: Record<string, unknown>;
+    createdAt: FieldValue;
     ipHash?: string; // Optional for security
     userAgent?: string;
 }
@@ -32,7 +32,7 @@ export const AuditService = {
         action: AuditActionType,
         entity: string,
         entityId?: string,
-        details?: Record<string, any>
+        details?: Record<string, unknown>
     ) {
         try {
             if (!userId) {

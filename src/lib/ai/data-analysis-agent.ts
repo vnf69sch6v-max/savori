@@ -1,6 +1,10 @@
 import { getAIModel } from '@/lib/firebase';
 import { Expense, ExpenseCategory } from '@/types';
+import { Timestamp } from 'firebase/firestore';
 // Note: formatMoney import removed as it's not used in this server-side module
+
+// Helper type for date conversion
+type FirestoreDate = Timestamp | Date;
 
 // We need a robust prompt builder
 class PromptBuilder {
@@ -34,7 +38,7 @@ Styl: Profesjonalny, ale z charakterem. Używaj pogrubień dla kluczowych liczb.
 
     static analyzeTrends(expenses: Expense[]): string {
         // Safe date helper
-        const getDate = (d: any) => d?.toDate ? d.toDate() : new Date(d);
+        const getDate = (d: FirestoreDate): Date => d instanceof Timestamp ? d.toDate() : new Date(d);
 
         // Prepare simplified data for the AI to "see" patterns without slight noise
         const simplifiedData = expenses.map(e => ({
@@ -66,7 +70,7 @@ Odpowiedz krótko i intrygująco.
     }
 
     static forecastExpenses(expenses: Expense[]): string {
-        const getDate = (d: any) => d?.toDate ? d.toDate() : new Date(d);
+        const getDate = (d: FirestoreDate): Date => d instanceof Timestamp ? d.toDate() : new Date(d);
         const dailyTotals: Record<string, number> = {};
         expenses.forEach(e => {
             const date = getDate(e.date).toISOString().split('T')[0];
@@ -99,7 +103,7 @@ Odpowiedz WYŁĄCZNIE poprawnym formatem JSON:
 }
 
 export class DataAnalysisAgent {
-    private model: any;
+    private model: ReturnType<typeof getAIModel>;
 
     constructor() {
         // Uses Firebase AI Logic (Vertex AI) via centralized helper
@@ -146,7 +150,7 @@ export class DataAnalysisAgent {
         }
     }
 
-    async ask(question: string, contextData: any): Promise<string> {
+    async ask(question: string, contextData: Record<string, unknown>): Promise<string> {
         const prompt = `
 Jesteś inteligentnym asystentem finansowym Savori.
 Odpowiadasz na pytania użytkownika dotyczące jego finansów.
@@ -170,7 +174,7 @@ Bądź pomocny i uprzejmy.
         }
     }
 
-    async forecastExpenses(expenses: Expense[]): Promise<any[]> {
+    async forecastExpenses(expenses: Expense[]): Promise<Array<{ date: string; amount: number; reason: string }>> {
         if (expenses.length < 5) return [];
 
         const prompt = PromptBuilder.forecastExpenses(expenses);

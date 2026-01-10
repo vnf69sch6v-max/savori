@@ -35,7 +35,7 @@ export default function SettingsPage() {
     }, [userData?.displayName]);
 
     // Instant save handler for preferences
-    const updatePreference = async (key: string, value: any) => {
+    const updatePreference = async (key: string, value: string | boolean | { daily: boolean; weekly: boolean; goals: boolean }) => {
         if (!userData) return;
 
         try {

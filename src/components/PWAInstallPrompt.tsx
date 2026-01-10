@@ -5,8 +5,13 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Download, Share, PlusSquare, X, Smartphone } from 'lucide-react';
 import { Button } from '@/components/ui';
 
+interface BeforeInstallPromptEvent extends Event {
+    prompt: () => Promise<void>;
+    userChoice: Promise<{ outcome: 'accepted' | 'dismissed'; platform: string }>;
+}
+
 export default function PWAInstallPrompt() {
-    const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+    const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
     const [showIOSPrompt, setShowIOSPrompt] = useState(false);
     const [showAndroidPrompt, setShowAndroidPrompt] = useState(false);
     const [isDismissed, setIsDismissed] = useState(false);
@@ -23,16 +28,16 @@ export default function PWAInstallPrompt() {
         }
 
         // Android / Desktop Chrome
-        const handler = (e: any) => {
+        const handler = (e: Event) => {
             e.preventDefault();
-            setDeferredPrompt(e);
+            setDeferredPrompt(e as BeforeInstallPromptEvent);
             setShowAndroidPrompt(true);
         };
 
         window.addEventListener('beforeinstallprompt', handler);
 
         // iOS Detection - deferred to avoid sync setState
-        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
+        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !('MSStream' in window);
         let iosTimer: NodeJS.Timeout;
         if (isIOS) {
             iosTimer = setTimeout(() => setShowIOSPrompt(true), 0);

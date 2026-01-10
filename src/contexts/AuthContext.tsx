@@ -292,7 +292,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
             // 2. Update public doc if relevant fields changed
             // Only sync safe public fields
-            const publicUpdates: any = {};
+            const publicUpdates: Partial<Pick<User, 'displayName' | 'photoURL' | 'stats'>> = {};
             if (data.displayName !== undefined) publicUpdates.displayName = data.displayName;
             if (data.photoURL !== undefined) publicUpdates.photoURL = data.photoURL;
             if (data.stats !== undefined) publicUpdates.stats = data.stats;

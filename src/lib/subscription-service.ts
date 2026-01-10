@@ -5,7 +5,7 @@
 
 import { doc, updateDoc, Timestamp, increment, getDoc, setDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
-import { Subscription } from '@/types';
+import { Subscription, UserUsage } from '@/types';
 
 // ============ FEATURE DEFINITIONS ============
 
@@ -179,7 +179,7 @@ class SubscriptionService {
      * Get current usage from user object
      * Normalizes defaults if fields are missing
      */
-    getCurrentUsage(userUsage: any): {
+    getCurrentUsage(userUsage: UserUsage | undefined): {
         scans: number;
         aiMessages: number;
         scansRemaining: number;

@@ -43,23 +43,23 @@ export const redactor = {
         if (!obj) return obj;
 
         if (typeof obj === 'string') {
-            return this.text(obj) as any;
+            return this.text(obj) as T;
         }
 
         if (Array.isArray(obj)) {
-            return obj.map(item => this.object(item)) as any;
+            return obj.map(item => this.object(item)) as T;
         }
 
         if (typeof obj === 'object') {
-            const newObj: any = {};
+            const newObj: Record<string, unknown> = {};
             for (const key in obj) {
                 if (Object.prototype.hasOwnProperty.call(obj, key)) {
                     // Skip keys that shouldn't be redacted if they are structural (optional)
                     // For now, redact all string values
-                    newObj[key] = this.object((obj as any)[key]);
+                    newObj[key] = this.object(obj[key]);
                 }
             }
-            return newObj;
+            return newObj as T;
         }
 
         return obj;

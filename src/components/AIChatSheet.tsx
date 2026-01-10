@@ -7,6 +7,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { subscriptionService } from '@/lib/subscription-service';
 import UpgradeModal from './UpgradeModal';
+import { Expense, Budget } from '@/types';
 
 interface Message {
     id: string;
@@ -33,8 +34,8 @@ interface AIChatSheetProps {
     isOpen: boolean;
     onClose: () => void;
     context?: {
-        expenses: any[];
-        budget: any;
+        expenses: Expense[];
+        budget: Budget | null;
         userName: string;
     };
 }

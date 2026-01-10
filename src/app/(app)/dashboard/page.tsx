@@ -362,8 +362,8 @@ export default function DashboardPage() {
                             </CardHeader>
                             <CardContent>
                                 <div className="space-y-4">
-                                    {goals.map((goal: any, i: number) => {
-                                        const progress = (goal.current / goal.target) * 100;
+                                    {goals.map((goal, i: number) => {
+                                        const progress = (goal.currentAmount / goal.targetAmount) * 100;
                                         return (
                                             <motion.div
                                                 key={goal.id}
@@ -378,7 +378,7 @@ export default function DashboardPage() {
                                                         <div>
                                                             <p className="font-medium">{goal.name}</p>
                                                             <p className="text-sm text-slate-400">
-                                                                {formatMoney(goal.current)} / {formatMoney(goal.target)}
+                                                                {formatMoney(goal.currentAmount)} / {formatMoney(goal.targetAmount)}
                                                             </p>
                                                         </div>
                                                     </div>
